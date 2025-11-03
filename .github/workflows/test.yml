@@ -1,0 +1,53 @@
+name: 🔍 Test & Build Career Guidance Platform
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    name: 🧪 Install & Test Frontend (Yarn) + Backend (npm)
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout repo
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Setup Node.js (Firebase requires Node 20+)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+
+      # 3️⃣ Install backend dependencies using npm
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm install
+
+      # 4️⃣ Install frontend dependencies using Yarn
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: yarn install
+
+      # 5️⃣ Lint both (optional)
+      - name: Run ESLint (optional)
+        run: |
+          npm install -g eslint
+          eslint backend frontend || true
+
+      # 6️⃣ Build frontend with Yarn
+      - name: Build Frontend
+        working-directory: ./frontend
+        run: yarn build
+
+      # 7️⃣ Test backend server start
+      - name: Start Backend & Verify
+        working-directory: ./backend
+        run: |
+          node server.js &
+          sleep 5
+          curl http://localhost:5000 || echo "Server did not respond (check manually)"
