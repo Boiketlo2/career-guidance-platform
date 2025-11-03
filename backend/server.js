@@ -2,14 +2,8 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import admin from "firebase-admin";
-import fs from "fs";
-import path from "path";
-
-// Import routes
-import studentRoutes from "./routes/studentRoutes.js";
-import companyRoutes from "./routes/companyRoutes.js";
-import authRoutes from "./routes/authRoutes.js";
+import instituteRoutes from "./routes/instituteRoutes.js";
+import { db } from "./utils/firebase.js"; // ✅ Already initialized
 
 dotenv.config();
 
@@ -17,105 +11,25 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// -------------------------
-// Load Firebase credentials
-// -------------------------
-let serviceAccount;
+// Root route – just confirms backend is running
+app.get("/", (req, res) => {
+  res.send("🌍 Backend server running successfully!");
+});
 
-try {
-  if (process.env.FIREBASE_CREDENTIALS.startsWith("{")) {
-    // 🔹 Cloud environment: JSON string in env
-    serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
-    console.log("✅ Loaded Firebase credentials from environment variable.");
-  } else {
-    // 🔹 Local environment: path to JSON file
-    const serviceAccountPath = path.join(process.cwd(), process.env.FIREBASE_CREDENTIALS);
-    serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf8"));
-    console.log("✅ Loaded Firebase credentials from local file.");
-  }
-} catch (error) {
-  console.error("❌ Failed to load Firebase credentials:", error.message);
-  process.exit(1);
-}
-
-// -------------------------
-// Initialize Firebase Admin safely
-// -------------------------
-let appFirebase;
-
-// 🔹 Use admin.apps to check if Firebase is already initialized
-if (!admin.apps.length) {
-  appFirebase = admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    // No storageBucket — avoids billing-required features
-  });
-  console.log("🔥 Firebase initialized successfully.");
-} else {
-  appFirebase = admin.apps[0]; // reuse existing app
-  console.log("⚡ Firebase app already initialized, reusing existing app.");
-}
-
-const db = admin.firestore();
-
-// -------------------------
-// Routes
-// -------------------------
-app.get("/", (req, res) => res.send("✅ Backend is running"));
-
-// 🔹 Firestore connection test endpoint
-app.get("/test-db", async (req, res) => {
+// Test Firebase route – reads a few documents from Firestore
+app.get("/test-firebase", async (req, res) => {
   try {
-    const testRef = db.collection("test");
-    await testRef.doc("connection-check").set({
-      status: "success",
-      timestamp: new Date().toISOString(),
-    });
-
-    res.status(200).json({
-      connected: true,
-      message: "🔥 Firestore connection successful!",
-    });
+    const snapshot = await db.collection("serverTest").limit(5).get();
+    const docs = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
+    res.send({ message: "✅ Firebase connection OK", recentDocs: docs });
   } catch (error) {
-    console.error("Firestore connection error:", error);
-    res.status(500).json({
-      connected: false,
-      error: error.message,
-    });
+    console.error("Firebase test failed:", error);
+    res.status(500).send({ message: "Firebase test failed", error: error.message });
   }
 });
 
-// -------------------------
-// Student & Company Routes
-// -------------------------
-app.use("/api/students", studentRoutes);
-app.use("/api/companies", companyRoutes);
-app.use("/api/auth", authRoutes);
+// API routes
+app.use("/api/institute", instituteRoutes);
 
-// -------------------------
-// Auto-test Firestore on startup
-// -------------------------
-const testFirestore = async () => {
-  try {
-    const testRef = db.collection("test");
-    await testRef.doc("connection-check").set({
-      status: "success",
-      timestamp: new Date().toISOString(),
-    });
-    console.log("🔥 Firestore connection successful!");
-  } catch (error) {
-    console.error("Firestore connection error:", error.message);
-  }
-};
-
-testFirestore();
-
-// -------------------------
-// Start Server
-// -------------------------
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-
-// -------------------------
-// Export db for seeding or other modules
-// -------------------------
-export { db };
+app.listen(PORT, () => console.log(`🌍 Server running on port ${PORT}`));
