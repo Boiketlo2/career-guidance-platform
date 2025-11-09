@@ -1,117 +1,339 @@
-import { db } from "../utils/firebase.js";
+import { db, auth } from "../utils/firebase.js";
+import { asyncHandler } from "../middleware/errorHandler.js";
+import { sendCompanyApprovalEmail } from "../utils/emailService.js";
 
-// ------------------------
-// COMPANY CONTROLLER
-// ------------------------
+// ---------------------
+// Register a new company
+// ---------------------
+export const registerCompany = asyncHandler(async (req, res) => {
+  const { name, email, password, industry, website, description, location, contactPerson, phone } = req.body;
 
-// 🔹 Register a new company (store in "users" with role: company)
-export const registerCompany = async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
+  // Check if company already exists
+  const existing = await db.collection("companies").where("email", "==", email).get();
+  if (!existing.empty) return res.status(400).json({ success: false, error: "Company with this email already exists" });
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "All fields are required." });
-    }
+  // Create user in Firebase Auth
+  const userRecord = await auth.createUser({ 
+    email, 
+    password, 
+    displayName: name, 
+    emailVerified: false 
+  });
 
-    // Check if email already exists
-    const existing = await db.collection("users").where("email", "==", email).get();
-    if (!existing.empty) {
-      return res.status(400).json({ message: "Company already registered." });
-    }
+  const companyData = {
+    name,
+    email,
+    industry: industry || "",
+    website: website || "",
+    description: description || "",
+    location: location || "",
+    contactPerson: contactPerson || "",
+    phone: phone || "",
+    authUserId: userRecord.uid,
+    status: "pending",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
 
-    const newCompanyRef = db.collection("users").doc();
-    await newCompanyRef.set({
-      name,
-      email,
-      password,
-      role: "company",
-      createdAt: new Date().toISOString(),
-    });
+  await db.collection("companies").doc(userRecord.uid).set(companyData);
 
-    res.status(201).json({
-      message: "Company registered successfully",
-      uid: newCompanyRef.id,
-    });
-  } catch (error) {
-    console.error("❌ Error registering company:", error);
-    res.status(500).json({ error: error.message });
+  // Mirror in users collection
+  await db.collection("users").doc(userRecord.uid).set({
+    uid: userRecord.uid,
+    email,
+    role: "company",
+    companyName: name,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    emailVerified: false
+  });
+
+  res.status(201).json({
+    success: true,
+    message: "Company registered successfully. Awaiting admin approval.",
+    company: { uid: userRecord.uid, ...companyData }
+  });
+});
+
+// ---------------------
+// Post a new job
+// ---------------------
+export const postJob = asyncHandler(async (req, res) => {
+  const { 
+    companyId, 
+    title, 
+    description, 
+    requirements, 
+    qualifications, 
+    location, 
+    salaryRange, 
+    jobType, 
+    applicationDeadline 
+  } = req.body;
+
+  const companyDoc = await db.collection("companies").doc(companyId).get();
+  if (!companyDoc.exists) return res.status(404).json({ success: false, error: "Company not found" });
+
+  if (companyDoc.data().status !== "approved") {
+    return res.status(403).json({ success: false, error: "Company not approved to post jobs" });
   }
-};
 
-// 🔹 Post a job under the company's subcollection
-export const postJob = async (req, res) => {
-  try {
-    const { companyId, title, description, requirements, deadline } = req.body;
+  const jobData = {
+    title,
+    description,
+    requirements: Array.isArray(requirements) ? requirements : [],
+    qualifications: Array.isArray(qualifications) ? qualifications : [],
+    location,
+    salaryRange: salaryRange || {},
+    jobType: jobType || "full-time",
+    companyId,
+    companyName: companyDoc.data().name,
+    applicationDeadline: applicationDeadline ? new Date(applicationDeadline).toISOString() : null,
+    status: "active",
+    applicants: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
 
-    if (!companyId || !title || !description) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
+  const jobRef = await db.collection("jobs").add(jobData);
 
-    const companyRef = db.collection("users").doc(companyId);
-    const companyDoc = await companyRef.get();
+  // Also add to company's jobPosts subcollection
+  await db.collection("companies").doc(companyId).collection("jobPosts").doc(jobRef.id).set(jobData);
 
-    if (!companyDoc.exists) {
-      return res.status(404).json({ message: "Company not found" });
-    }
+  res.status(201).json({ 
+    success: true, 
+    message: "Job posted successfully", 
+    job: { id: jobRef.id, ...jobData } 
+  });
+});
 
-    // 🔹 Ensure requirements is always stored as an array
-    const formattedRequirements = Array.isArray(requirements)
-      ? requirements
-      : typeof requirements === "string"
-      ? requirements.split(",").map((r) => r.trim())
-      : [];
+// ---------------------
+// Get jobs by company
+// ---------------------
+export const getJobsByCompany = asyncHandler(async (req, res) => {
+  const { companyId } = req.params;
+  const companyDoc = await db.collection("companies").doc(companyId).get();
+  if (!companyDoc.exists) return res.status(404).json({ success: false, error: "Company not found" });
 
-    const jobRef = await companyRef.collection("jobPosts").add({
-      title,
-      description,
-      requirements: formattedRequirements,
-      deadline: deadline ? new Date(deadline).toISOString() : null,
-      createdAt: new Date().toISOString(),
-    });
+  const jobsSnapshot = await db.collection("jobs")
+    .where("companyId", "==", companyId)
+    .orderBy("createdAt", "desc")
+    .get();
+  
+  const jobs = jobsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    res.status(201).json({
-      message: "Job posted successfully",
-      jobId: jobRef.id,
-    });
-  } catch (error) {
-    console.error("Error posting job:", error);
-    res.status(500).json({ error: error.message });
+  res.status(200).json({ success: true, count: jobs.length, jobs });
+});
+
+// ---------------------
+// Get job applicants
+// ---------------------
+export const getJobApplicants = asyncHandler(async (req, res) => {
+  const { jobId } = req.params;
+  const jobDoc = await db.collection("jobs").doc(jobId).get();
+  if (!jobDoc.exists) return res.status(404).json({ success: false, error: "Job not found" });
+
+  const applicants = jobDoc.data().applicants || [];
+  
+  // Get detailed applicant information
+  const applicantDetails = await Promise.all(
+    applicants.map(async (applicantId) => {
+      try {
+        const studentDoc = await db.collection("students").doc(applicantId).get();
+        if (studentDoc.exists) {
+          return { 
+            id: applicantId, 
+            ...studentDoc.data(),
+            applicationStatus: "applied"
+          };
+        }
+        return null;
+      } catch (error) {
+        console.error(`Error fetching student ${applicantId}:`, error);
+        return null;
+      }
+    })
+  );
+
+  const validApplicants = applicantDetails.filter(a => a !== null);
+
+  res.status(200).json({ 
+    success: true, 
+    count: validApplicants.length, 
+    applicants: validApplicants 
+  });
+});
+
+// ---------------------
+// Update applicant status
+// ---------------------
+export const updateApplicantStatus = asyncHandler(async (req, res) => {
+  const { jobId, applicantId } = req.params;
+  const { status, notes } = req.body;
+
+  if (!status) {
+    return res.status(400).json({ success: false, error: "Status is required" });
   }
-};
 
-// 🔹 Get all jobs by company
-export const getJobsByCompany = async (req, res) => {
-  try {
-    const { companyId } = req.params;
-    const companyRef = db.collection("users").doc(companyId);
-    const companyDoc = await companyRef.get();
-
-    if (!companyDoc.exists) {
-      return res.status(404).json({ message: "Company not found" });
-    }
-
-    const jobSnap = await companyRef.collection("jobPosts").get();
-    const jobs = jobSnap.docs.map((doc) => ({
-      id: doc.id,
-      companyId,
-      companyName: companyDoc.data().name,
-      ...doc.data(),
-    }));
-
-    res.status(200).json(jobs);
-  } catch (error) {
-    console.error("Error fetching company jobs:", error);
-    res.status(500).json({ error: error.message });
+  const jobRef = db.collection("jobs").doc(jobId);
+  const jobDoc = await jobRef.get();
+  
+  if (!jobDoc.exists) {
+    return res.status(404).json({ success: false, error: "Job not found" });
   }
-};
 
-// 🔹 Keep existing placeholder functions
-export const viewApplicants = async (req, res) => {
-  /* keep your existing code here */
-};
-export const sendFeedback = async (req, res) => {
-  /* keep your existing code here */
-};
-export const updateCompanyProfile = async (req, res) => {
-  /* keep your existing code here */
-};
+  // Update applicant status in the job document
+  const jobData = jobDoc.data();
+  const updatedApplicants = jobData.applicants.map(applicant => 
+    applicant === applicantId 
+      ? { 
+          id: applicantId, 
+          status, 
+          notes: notes || "", 
+          updatedAt: new Date().toISOString() 
+        }
+      : applicant
+  );
+
+  await jobRef.update({ 
+    applicants: updatedApplicants, 
+    updatedAt: new Date().toISOString() 
+  });
+
+  // Also update in company's jobPosts subcollection
+  const companyJobRef = db.collection("companies")
+    .doc(jobData.companyId)
+    .collection("jobPosts")
+    .doc(jobId);
+  
+  await companyJobRef.update({
+    applicants: updatedApplicants,
+    updatedAt: new Date().toISOString()
+  });
+
+  res.status(200).json({ 
+    success: true, 
+    message: "Applicant status updated successfully" 
+  });
+});
+
+// ---------------------
+// Update company profile
+// ---------------------
+export const updateCompanyProfile = asyncHandler(async (req, res) => {
+  const { companyId } = req.params;
+  const updateData = { 
+    ...req.body, 
+    updatedAt: new Date().toISOString() 
+  };
+
+  const companyRef = db.collection("companies").doc(companyId);
+  const companyDoc = await companyRef.get();
+  
+  if (!companyDoc.exists) {
+    return res.status(404).json({ success: false, error: "Company not found" });
+  }
+
+  await companyRef.update(updateData);
+  
+  // Also update in users collection
+  await db.collection("users").doc(companyId).update(updateData);
+
+  res.status(200).json({ 
+    success: true, 
+    message: "Company profile updated successfully" 
+  });
+});
+
+// ---------------------
+// Get company profile
+// ---------------------
+export const getCompanyProfile = asyncHandler(async (req, res) => {
+  const { companyId } = req.params;
+  const companyDoc = await db.collection("companies").doc(companyId).get();
+  
+  if (!companyDoc.exists) {
+    return res.status(404).json({ success: false, error: "Company not found" });
+  }
+
+  res.status(200).json({ 
+    success: true, 
+    company: { id: companyDoc.id, ...companyDoc.data() } 
+  });
+});
+
+// ---------------------
+// Get company job posts
+// ---------------------
+export const getCompanyJobPosts = asyncHandler(async (req, res) => {
+  const { companyId } = req.params;
+  
+  const companyDoc = await db.collection("companies").doc(companyId).get();
+  if (!companyDoc.exists) {
+    return res.status(404).json({ success: false, error: "Company not found" });
+  }
+
+  const jobPostsSnapshot = await db.collection("companies")
+    .doc(companyId)
+    .collection("jobPosts")
+    .orderBy("createdAt", "desc")
+    .get();
+  
+  const jobPosts = jobPostsSnapshot.docs.map(doc => ({ 
+    id: doc.id, 
+    ...doc.data() 
+  }));
+
+  res.status(200).json({ 
+    success: true, 
+    count: jobPosts.length, 
+    jobPosts 
+  });
+});
+
+// ---------------------
+// Get all companies (for testing)
+// ---------------------
+export const getAllCompanies = asyncHandler(async (req, res) => {
+  const companiesSnapshot = await db.collection("companies").get();
+  const companies = companiesSnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+  
+  res.status(200).json({ 
+    success: true, 
+    count: companies.length, 
+    companies 
+  });
+});
+
+// ---------------------
+// Delete company (for testing cleanup)
+// ---------------------
+export const deleteCompany = asyncHandler(async (req, res) => {
+  const { companyId } = req.params;
+
+  const companyDoc = await db.collection("companies").doc(companyId).get();
+  if (!companyDoc.exists) {
+    return res.status(404).json({ success: false, error: "Company not found" });
+  }
+
+  // Delete from companies collection
+  await db.collection("companies").doc(companyId).delete();
+  
+  // Delete from users collection
+  await db.collection("users").doc(companyId).delete();
+  
+  // Delete from Firebase Auth
+  try {
+    await auth.deleteUser(companyId);
+  } catch (error) {
+    console.log("Note: Could not delete from Auth (might not exist)");
+  }
+
+  res.status(200).json({ 
+    success: true, 
+    message: "Company deleted successfully" 
+  });
+});

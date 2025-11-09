@@ -1,37 +1,48 @@
 import express from "express";
 import multer from "multer";
+
 import {
-  registerStudent,
+  getInstitutionsWithCourses,
+  getCoursesByInstitution,
   applyForCourse,
   uploadDocument,
   getAdmissionResults,
-  getInstitutionsWithCourses,
-  getCoursesByInstitution,
   getAllJobs,
+  applyForJob,
+  getStudentProfile,
+  updateStudentProfile,
+  addWorkExperience,
+  getStudentApplications,
+  getStudentDocuments,
+  getStudentJobApplications,
 } from "../controllers/studentController.js";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-// ✅ Register new student
-router.post("/register", registerStudent);
-
-// 🔹 Apply for a course
-router.post("/apply", applyForCourse);
-
-// 🔹 Upload transcript/document
-router.post("/upload", upload.single("file"), uploadDocument);
-
-// 🔹 Get admission results
-router.get("/results/:uid", getAdmissionResults);
-
-// 🔹 Get all institutions with courses
-router.get("/institutions-with-courses", getInstitutionsWithCourses);
-
-// 🔹 Get courses for a specific institution
+// 🔹 Public routes - NO AUTHENTICATION REQUIRED
+router.get("/institutions", getInstitutionsWithCourses);
 router.get("/courses/:institutionId", getCoursesByInstitution);
 
-// 🔹 Get all available jobs
+// Profile
+router.get("/profile/:studentId", getStudentProfile);
+router.put("/profile/:studentId", updateStudentProfile);
+
+// Course Applications
+router.post("/apply-course", applyForCourse);
+router.get("/applications/:studentId", getStudentApplications);
+router.get("/results/:studentId", getAdmissionResults);
+
+// Documents
+router.post("/upload-document", upload.single("file"), uploadDocument);
+router.get("/documents/:studentId", getStudentDocuments);
+
+// Work Experience
+router.post("/work-experience/:studentId", addWorkExperience);
+
+// Jobs
 router.get("/jobs", getAllJobs);
+router.post("/apply-job", applyForJob);
+router.get("/job-applications/:studentId", getStudentJobApplications);
 
 export default router;

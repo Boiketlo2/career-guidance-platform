@@ -1,20 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios"; // keep using axios for backend login
-import { useNavigate } from "react-router-dom";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { initializeApp } from "firebase/app";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyChdty11F_lDBCh82ADRwwv_L6-YZ7hrD8",
-  authDomain: "career-guidance-platform-a368e.firebaseapp.com",
-  projectId: "career-guidance-platform-a368e",
-  storageBucket: "career-guidance-platform-a368e.firebasestorage.app",
-  messagingSenderId: "158743703595",
-  appId: "1:158743703595:web:399ceab05a120424c9fa6e"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+import { useNavigate, Link } from "react-router-dom";
+import { authAPI } from "../../api/authAPI";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -30,19 +16,18 @@ const Login = () => {
     setError("");
 
     try {
-      // 🔹 Firebase login
-      const userCredential = await signInWithEmailAndPassword(auth, form.email, form.password);
-      const idToken = await userCredential.user.getIdToken();
+      const res = await authAPI.login(form);
+      const user = res.user;
 
-      // 🔹 Backend login (plural route)
-      const res = await axios.post("http://localhost:5000/api/auth/login", { token: idToken });
-      const user = res.data.user;
+      alert(`✅ Welcome back, ${user.name || user.institutionName || user.companyName}!`);
 
-      alert(`✅ Welcome back, ${user.name}!`);
-
-      if (user.role === "student") navigate(`/student/dashboard/${user.uid || user.id}`);
-      else if (user.role === "company" || user.role === "recruiter") navigate(`/company/dashboard/${user.uid || user.id}`);
+      // Redirect based on role
+      if (user.role === "student") navigate(`/student/dashboard/${user.uid}`);
+      else if (user.role === "company") navigate(`/company/dashboard/${user.uid}`);
+      else if (user.role === "institution") navigate(`/institute/dashboard/${user.uid}`);
+      else if (user.role === "admin") navigate(`/admin/dashboard/${user.uid}`);
       else navigate(`/`);
+      
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.error || err.message || "Invalid login credentials");
@@ -52,19 +37,17 @@ const Login = () => {
   };
 
   return (
-    <div className="container" style={{ maxWidth: 400, margin: "50px auto" }}>
+    <div className="container" style={{ maxWidth: 400, margin: "50px auto", textAlign: "center" }}>
       <h2>🔐 Login</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         <input type="email" name="email" placeholder="Email" value={form.email} onChange={handleChange} required />
         <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} required />
         <button type="submit" disabled={loading}>{loading ? "Logging in..." : "Login"}</button>
       </form>
       {error && <p style={{ color: "red" }}>{error}</p>}
-
-      <div style={{ marginTop: "20px" }}>
-        <p>🎓 New Student? <a href="/register/student">Register here</a></p>
-        <p>🏢 New Company? <a href="/register/company">Register here</a></p>
-      </div>
+      <Link to="/" style={{ display: "inline-block", marginTop: "20px", color: "#667eea", textDecoration: "underline" }}>
+        ← Go back to Home
+      </Link>
     </div>
   );
 };

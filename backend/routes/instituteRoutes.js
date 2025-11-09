@@ -1,5 +1,5 @@
-// routes/instituteRoutes.js
 import express from "express";
+import { isInstitution } from "../middleware/auth.js";
 import {
   registerInstitute,
   loginInstitute,
@@ -17,25 +17,32 @@ import {
 
 const router = express.Router();
 
-// Authentication
+// ---------------------
+// Public Routes
+// ---------------------
 router.post("/register", registerInstitute);
 router.post("/login", loginInstitute);
 
-// Profile management
+// ---------------------
+// Protected Routes
+// ---------------------
+router.use(isInstitution); // All routes below require institution auth
+
+// Profile Management
 router.get("/:institutionId/profile", getInstituteProfile);
 router.put("/:institutionId/profile", updateProfile);
 
-// Faculty management
+// Faculty Management
 router.get("/:institutionId/faculties", getFaculties);
 router.post("/:institutionId/faculties", addFaculty);
 
-// Course management
+// Course Management
 router.get("/:institutionId/courses", getCourses);
 router.post("/:institutionId/courses", addCourse);
 
-// Applications management
+// Applications Management
 router.get("/:institutionId/applications", getApplications);
-router.put("/applications/:applicationId", updateAdmissionStatus);
+router.patch("/applications/:applicationId", updateAdmissionStatus);
 
 // Admissions
 router.get("/:institutionId/admissions", getAdmissions);

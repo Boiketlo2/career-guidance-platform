@@ -3,29 +3,27 @@ import {
   registerCompany,
   postJob,
   getJobsByCompany,
-  viewApplicants,
-  sendFeedback,
+  getJobApplicants,
+  updateApplicantStatus,
   updateCompanyProfile,
+  getCompanyProfile,
+  getCompanyJobPosts,
+  getAllCompanies,
+  deleteCompany
 } from "../controllers/companyController.js";
 
 const router = express.Router();
 
-// 🔹 Register new company
+// Public routes (no authentication required for testing)
 router.post("/register", registerCompany);
-
-// 🔹 Post a new job (✅ fixed route to match frontend)
 router.post("/jobs", postJob);
-
-// 🔹 Get all jobs posted by a company
-router.get("/jobs/:companyId", getJobsByCompany);
-
-// 🔹 View qualified applicants
-router.get("/applicants/:companyId", viewApplicants);
-
-// 🔹 Send feedback
-router.post("/feedback", sendFeedback);
-
-// 🔹 Update company profile
-router.put("/update/:companyId", updateCompanyProfile);
+router.get("/jobs/company/:companyId", getJobsByCompany);
+router.get("/jobs/:jobId/applicants", getJobApplicants);
+router.patch("/jobs/:jobId/applicants/:applicantId", updateApplicantStatus);
+router.get("/profile/:companyId", getCompanyProfile);
+router.put("/profile/:companyId", updateCompanyProfile);
+router.get("/:companyId/job-posts", getCompanyJobPosts);
+router.get("/", getAllCompanies);
+router.delete("/:companyId", deleteCompany);
 
 export default router;

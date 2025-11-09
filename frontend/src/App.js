@@ -1,120 +1,369 @@
 // src/App.js
-import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from "react-router-dom";
-import { db } from "./firebase";
-import { collection, getDocs } from "firebase/firestore";
-import InstituteRegister from "./pages/institute/Register";
-import InstituteLogin from "./pages/institute/Login";
+import React, { useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import { UserProvider } from "./context/UserContext";
 
-// Pages
-import Dashboard from "./pages/institute/Dashboard";
-import Faculties from "./pages/institute/Faculties";
-import Courses from "./pages/institute/Courses";
-import Applications from "./pages/institute/Applications";
-import PublishAdmissions from "./pages/institute/PublishAdmissions";
-import Profile from "./pages/institute/Profile";
-import AddInstitution from "./pages/institute/AddInstitution";
-import AddFaculty from "./pages/institute/AddFaculty";
+// Auth Components
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import EmailVerification from "./pages/auth/EmailVerification";
+
+// Public Pages
+import Home from "./pages/public/Home";
+import Institutions from "./pages/public/Institutions";
+import Courses from "./pages/public/Courses";
+
+// Institute Pages
+import InstituteHome from "./pages/institute/InstituteHome";
+import ManageCourses from "./pages/institute/ManageCourses";
+import ManageFaculties from "./pages/institute/ManageFaculties";
+import ViewApplications from "./pages/institute/ViewApplications";
+import InstituteProfile from "./pages/institute/Profile";
 import AddCourse from "./pages/institute/AddCourse";
-import InstitutionsDirectory from "./pages/institute/InstitutionsDirectory"; // Corrected path
+import AddFaculty from "./pages/institute/AddFaculty";
+import PublishAdmissions from "./pages/institute/PublishAdmissions";
+import Admissions from "./pages/institute/Admissions"; // NEW IMPORT
 
+// Student Pages
+import StudentHome from "./pages/student/StudentHome";
+import ApplyCourses from "./pages/student/ApplyCourses";
+import JobPortal from "./pages/student/JobPortal";
+import StudentProfile from "./pages/student/Profile";
+import UploadDocuments from "./pages/student/UploadDocuments";
+import ViewAdmissions from "./pages/student/ViewAdmissions";
+
+// Company Pages
+import CompanyHome from "./pages/company/CompanyHome";
+import PostJobs from "./pages/company/PostJobs";
+import ManageJobs from "./pages/company/ManageJobs";
+import ViewApplicants from "./pages/company/ViewApplicants";
+import CompanyProfile from "./pages/company/CompanyProfile";
+
+// Admin Pages
+import AdminHome from "./pages/admin/AdminHome";
+import ManageInstitutes from "./pages/admin/ManageInstitutes";
+import ManageFacultiesCourses from "./pages/admin/ManageFacultiesCourses";
+import AdminPublishAdmissions from "./pages/admin/PublishAdmissions";
+import ManageCompanies from "./pages/admin/ManageCompanies";
+import SystemReports from "./pages/admin/SystemReports";
+
+// Common Components
+import Header from "./components/common/Header";
+import Footer from "./components/common/Footer";
+import LoadingSpinner from "./components/common/LoadingSpinner";
+
+// -------------------------
+// Protected Route Component
+// -------------------------
+const ProtectedRoute = ({ children, requiredRole }) => {
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  if (!user.uid) return <Navigate to="/login" />;
+  if (requiredRole && user.role !== requiredRole) return <Navigate to="/unauthorized" />;
+  return children;
+};
+
+// -------------------------
+// Role-based redirect
+// -------------------------
+const RoleBasedRedirect = () => {
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  useEffect(() => {
+    if (user.uid && user.role) {
+      switch (user.role) {
+        case "admin":
+          window.location.href = `/admin/dashboard/${user.uid}`;
+          break;
+        case "institution":
+          window.location.href = `/institute/${user.uid}/dashboard`;
+          break;
+        case "student":
+          window.location.href = `/student/${user.uid}/dashboard`;
+          break;
+        case "company":
+          window.location.href = `/company/${user.uid}/dashboard`;
+          break;
+        default:
+          window.location.href = "/";
+      }
+    }
+  }, [user]);
+  return <LoadingSpinner />;
+};
+
+// -------------------------
+// 404 Page
+// -------------------------
+const NotFound = () => (
+  <div style={{ textAlign: "center", padding: "50px" }}>
+    <h1>404 - Page Not Found</h1>
+    <p>The page you're looking for doesn't exist.</p>
+    <a href="/">Go back to homepage</a>
+  </div>
+);
+
+// -------------------------
+// Unauthorized Page
+// -------------------------
+const Unauthorized = () => (
+  <div style={{ textAlign: "center", padding: "50px" }}>
+    <h1>401 - Unauthorized</h1>
+    <p>You don't have permission to access this page.</p>
+    <a href="/">Go back to homepage</a>
+  </div>
+);
+
+// -------------------------
+// Main App Component
+// -------------------------
 function App() {
   return (
-    <Router>
-      <div style={{ padding: "20px" }}>
-        <Routes>
-          <Route path="/" element={<Navigate to="/institutions" />} />
+    <AuthProvider>
+      <UserProvider>
+        <Router>
+          <div className="App">
+            <Header />
+            <main style={{ minHeight: "80vh" }}>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Home />} />
+                <Route path="/institutions" element={<Institutions />} />
+                <Route path="/courses" element={<Courses />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register/:role?" element={<Register />} />
+                <Route path="/verify-email" element={<EmailVerification />} />
+                <Route path="/unauthorized" element={<Unauthorized />} />
 
-          {/* Public Routes */}
-          <Route path="/institutions" element={<InstitutionsDirectory />} />
+                {/* Auth Redirect */}
+                <Route path="/dashboard" element={<RoleBasedRedirect />} />
 
-          {/* Institute Routes */}
-          <Route path="/institutes/:institutionId/dashboard" element={<Dashboard />} />
-          <Route path="/institutes/:institutionId/faculties" element={<FacultiesWrapper />} />
-          <Route path="/institutes/:institutionId/faculties/add" element={<AddFaculty />} />
-          <Route path="/institutes/:institutionId/courses" element={<CoursesWrapper />} />
-          <Route path="/institutes/:institutionId/courses/add" element={<AddCourse />} />
-          <Route path="/institutes/:institutionId/applications" element={<ApplicationsWrapper />} />
-          <Route path="/institutes/:institutionId/publish-admissions" element={<PublishAdmissionsWrapper />} />
-          <Route path="/institutes/:institutionId/profile" element={<ProfileWrapper />} />
-          
-          {/* Authentication Routes */}
-          <Route path="/institute/register" element={<InstituteRegister />} />
-          <Route path="/institute/login" element={<InstituteLogin />} />
-          
-          {/* Admin Routes */}
-          <Route path="/add-institution" element={<AddInstitution />} />
+                {/* Admin Routes */}
+                <Route
+                  path="/admin/dashboard/:adminId"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminHome />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/institutions"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <ManageInstitutes />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/faculties"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <ManageFacultiesCourses />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/publish"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminPublishAdmissions />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/companies"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <ManageCompanies />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/reports"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <SystemReports />
+                    </ProtectedRoute>
+                  }
+                />
 
-          <Route path="*" element={<p>Page not found</p>} />
-        </Routes>
-      </div>
-    </Router>
+                {/* Institute Routes */}
+                <Route
+                  path="/institute/:institutionId/dashboard"
+                  element={
+                    <ProtectedRoute requiredRole="institution">
+                      <InstituteHome />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/institute/:institutionId/faculties"
+                  element={
+                    <ProtectedRoute requiredRole="institution">
+                      <ManageFaculties />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/institute/:institutionId/courses"
+                  element={
+                    <ProtectedRoute requiredRole="institution">
+                      <ManageCourses />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/institute/:institutionId/courses/add"
+                  element={
+                    <ProtectedRoute requiredRole="institution">
+                      <AddCourse />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/institute/:institutionId/faculties/add"
+                  element={
+                    <ProtectedRoute requiredRole="institution">
+                      <AddFaculty />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/institute/:institutionId/admissions/publish"
+                  element={
+                    <ProtectedRoute requiredRole="institution">
+                      <PublishAdmissions />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* NEW ADMISSIONS ROUTE */}
+                <Route
+                  path="/institute/:institutionId/admissions"
+                  element={
+                    <ProtectedRoute requiredRole="institution">
+                      <Admissions />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/institute/:institutionId/applications"
+                  element={
+                    <ProtectedRoute requiredRole="institution">
+                      <ViewApplications />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/institute/:institutionId/profile"
+                  element={
+                    <ProtectedRoute requiredRole="institution">
+                      <InstituteProfile />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Student Routes */}
+                <Route
+                  path="/student/:studentId/dashboard"
+                  element={
+                    <ProtectedRoute requiredRole="student">
+                      <StudentHome />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/student/:studentId/apply"
+                  element={
+                    <ProtectedRoute requiredRole="student">
+                      <ApplyCourses />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/student/:studentId/jobs"
+                  element={
+                    <ProtectedRoute requiredRole="student">
+                      <JobPortal />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/student/:studentId/profile"
+                  element={
+                    <ProtectedRoute requiredRole="student">
+                      <StudentProfile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/student/:studentId/upload"
+                  element={
+                    <ProtectedRoute requiredRole="student">
+                      <UploadDocuments />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/student/:studentId/results"
+                  element={
+                    <ProtectedRoute requiredRole="student">
+                      <ViewAdmissions />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Company Routes */}
+                <Route
+                  path="/company/:companyId/dashboard"
+                  element={
+                    <ProtectedRoute requiredRole="company">
+                      <CompanyHome />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/company/:companyId/post-job"
+                  element={
+                    <ProtectedRoute requiredRole="company">
+                      <PostJobs />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/company/:companyId/jobs"
+                  element={
+                    <ProtectedRoute requiredRole="company">
+                      <ManageJobs />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/company/:companyId/applicants"
+                  element={
+                    <ProtectedRoute requiredRole="company">
+                      <ViewApplicants />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/company/:companyId/profile"
+                  element={
+                    <ProtectedRoute requiredRole="company">
+                      <CompanyProfile />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Catch all route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+        </Router>
+      </UserProvider>
+    </AuthProvider>
   );
 }
-
-// 🔹 Wrappers (keep your existing wrapper code)
-const FacultiesWrapper = () => {
-  const { institutionId } = useParams();
-  return <Faculties institutionId={institutionId} />;
-};
-
-const CoursesWrapper = () => {
-  const { institutionId } = useParams();
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        // Fetch all courses
-        const coursesSnapshot = await getDocs(collection(db, "courses"));
-        const allCourses = coursesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        
-        // Fetch all faculties for this institution to filter courses
-        const facultiesSnapshot = await getDocs(collection(db, "faculties"));
-        const institutionFaculties = facultiesSnapshot.docs
-          .map(doc => ({ id: doc.id, ...doc.data() }))
-          .filter(faculty => faculty.institutionId === institutionId);
-        
-        // Filter courses that belong to faculties of this institution
-        const institutionCourses = allCourses.filter(course => {
-          const faculty = institutionFaculties.find(f => f.id === course.facultyId);
-          return faculty !== undefined;
-        }).map(course => {
-          const faculty = institutionFaculties.find(f => f.id === course.facultyId);
-          return {
-            ...course,
-            facultyName: faculty ? faculty.name : "Unknown Faculty"
-          };
-        });
-
-        setCourses(institutionCourses);
-      } catch (error) {
-        console.error("Error fetching courses:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCourses();
-  }, [institutionId]);
-
-  if (loading) return <p>Loading courses...</p>;
-  return <Courses courses={courses} />;
-};
-
-const ApplicationsWrapper = () => {
-  const { institutionId } = useParams();
-  return <Applications institutionId={institutionId} />;
-};
-
-const PublishAdmissionsWrapper = () => {
-  const { institutionId } = useParams();
-  return <PublishAdmissions institutionId={institutionId} />;
-};
-
-const ProfileWrapper = () => {
-  const { institutionId } = useParams();
-  return <Profile institutionId={institutionId} />;
-};
 
 export default App;

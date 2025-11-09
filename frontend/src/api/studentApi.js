@@ -1,20 +1,94 @@
-import axios from "axios";
+import axios from 'axios';
 
-const BASE_URL = "http://localhost:5000/api/students"; // ✅ plural
+const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000/api';
 
-export const registerStudent = (data) => axios.post(`${BASE_URL}/register`, data);
+const api = axios.create({
+  baseURL: API_BASE,
+  headers: { 'Content-Type': 'application/json' },
+});
 
-export const applyCourse = (data) => axios.post(`${BASE_URL}/apply`, data);
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-export const uploadDocument = (formData) =>
-  axios.post(`${BASE_URL}/upload`, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+export const studentAPI = {
+  // Profile Management
+  getProfile: async (studentId) => {
+    const { data } = await api.get(`/student/profile/${studentId}`);
+    return data;
+  },
 
-export const getResults = (uid) => axios.get(`${BASE_URL}/results/${uid}`);
+  updateProfile: async (studentId, profileData) => {
+    const { data } = await api.put(`/student/profile/${studentId}`, profileData);
+    return data;
+  },
 
-export const getInstitutions = () => axios.get(`${BASE_URL}/institutions-with-courses`);
+  // Documents Management
+  uploadDocument: async (documentData) => {
+    const { data } = await api.post('/student/upload-document', documentData);
+    return data;
+  },
 
-export const getCourses = (institutionId) => axios.get(`${BASE_URL}/courses/${institutionId}`);
+  getDocuments: async (studentId, type) => {
+    const { data } = await api.get(`/student/documents/${studentId}${type ? `?type=${type}` : ''}`);
+    return data;
+  },
 
-export const getJobs = () => axios.get(`${BASE_URL}/jobs`);
+  // Course Applications
+  getInstitutionsWithCourses: async () => {
+    const { data } = await api.get('/student/institutions');
+    return data;
+  },
+
+  getCoursesByInstitution: async (institutionId) => {
+    const { data } = await api.get(`/student/courses/${institutionId}`);
+    return data;
+  },
+
+  applyForCourse: async (applicationData) => {
+    const { data } = await api.post('/student/apply-course', applicationData);
+    return data;
+  },
+
+  getStudentApplications: async (studentId) => {
+    const { data } = await api.get(`/student/applications/${studentId}`);
+    return data;
+  },
+
+  getAdmissionResults: async (studentId) => {
+    console.log(`[studentAPI] Fetching admission results for: ${studentId}`);
+    const { data } = await api.get(`/student/results/${studentId}`);
+    console.log(`[studentAPI] Admission results response:`, data);
+    return data;
+  },
+
+  // Jobs Management
+  getAllJobs: async () => {
+    const { data } = await api.get('/student/jobs');
+    return data;
+  },
+
+  applyForJob: async (applicationData) => {
+    const { data } = await api.post('/student/apply-job', applicationData);
+    return data;
+  },
+
+  // Work Experience
+  addWorkExperience: async (studentId, workData) => {
+    const { data } = await api.post(`/student/work-experience/${studentId}`, workData);
+    return data;
+  },
+
+  // Debug endpoint
+  debugStudentData: async (studentId) => {
+    const { data } = await api.get(`/student/debug/${studentId}`);
+    return data;
+  },
+};
+
+export default studentAPI;
