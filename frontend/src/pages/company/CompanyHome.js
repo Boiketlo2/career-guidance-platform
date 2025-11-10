@@ -1,8 +1,6 @@
-// src/pages/company/CompanyHome.js
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { companyAPI } from "../../api/companyAPI";
-import { authAPI } from "../../api/authAPI";
 
 const CompanyHome = () => {
   const { companyId } = useParams();
@@ -11,223 +9,242 @@ const CompanyHome = () => {
   const [company, setCompany] = useState(null);
   const [stats, setStats] = useState({
     jobsPosted: 0,
-    applicants: 0,
+    totalApplicants: 0,
+    activeJobs: 0
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (companyId) {
       fetchCompanyProfile();
       fetchCompanyStats();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId]);
 
-  // Fetch company profile
   const fetchCompanyProfile = async () => {
     try {
+      setError('');
       const res = await companyAPI.getProfile(companyId);
-      if (res?.success) setCompany(res.company);
+      console.log('Company Profile Response:', res);
+      
+      if (res?.success) {
+        setCompany(res.company);
+      } else {
+        setError(res?.error || 'Failed to load company profile');
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching company profile:", err);
+      setError('Company not found or server error');
     }
   };
 
-  // Fetch company stats
   const fetchCompanyStats = async () => {
     try {
-      const jobs = await companyAPI.getJobs(companyId);
-      const applicants = await companyAPI.getApplicants(companyId);
-      setStats({
-        jobsPosted: jobs?.length || 0,
-        applicants: applicants?.length || 0,
-      });
+      setError('');
+      const res = await companyAPI.getJobs(companyId);
+      console.log('Jobs Response:', res);
+      
+      if (res?.success && res.jobs) {
+        let totalApplicants = 0;
+        res.jobs.forEach(job => {
+          totalApplicants += job.applicants?.length || 0;
+        });
+        
+        setStats({
+          jobsPosted: res.jobs.length,
+          totalApplicants,
+          activeJobs: res.jobs.filter(job => job.status === 'active').length
+        });
+      } else {
+        setError(res?.error || 'Failed to load company stats');
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching company stats:", err);
+      setError('Failed to load job data');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogout = () => {
-    authAPI.logout();
-    navigate("/login");
-  };
-
-  const handleResendVerification = async () => {
-    try {
-      const res = await authAPI.verifyEmail(companyId);
-      alert(res.success ? "Verification email sent." : "Failed to send email.");
-    } catch {
-      alert("Error sending verification email.");
-    }
-  };
-
-  if (loading)
-    return <div style={styles.loading}>Loading Company Dashboard...</div>;
+  if (loading) return (
+    <div className="flex justify-center items-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+  );
 
   return (
-    <div style={styles.container}>
-      {/* HEADER */}
-      <header style={styles.header}>
-        <h1>Company Dashboard</h1>
-        <button style={styles.logoutBtn} onClick={handleLogout}>
-          Logout
-        </button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Company Dashboard</h1>
+              <p className="text-sm text-gray-600 mt-1">
+                {company?.name || `Company ID: ${companyId}`}
+              </p>
+            </div>
+            <button
+              onClick={() => navigate('/')}
+              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              Back to Home
+            </button>
+          </div>
+        </div>
       </header>
 
-      {/* QUICK LINKS */}
-      <nav style={styles.quickNav}>
-        <QuickLink
-          label="📌 Post a Job"
-          to={`/company/${companyId}/post-job`}
-        />
-        <QuickLink
-          label="📝 Manage Jobs"
-          to={`/company/${companyId}/jobs`}
-        />
-        <QuickLink
-          label="👥 View Applicants"
-          to={`/company/${companyId}/applicants`}
-        />
-        <QuickLink
-          label="👤 Update Profile"
-          to={`/company/${companyId}/profile`}
-        />
-      </nav>
-
-      {/* EMAIL VERIFICATION ALERT */}
-      {company && !company.emailVerified && (
-        <div style={styles.verificationAlert}>
-          ⚠️ Please verify your email{" "}
-          <button style={styles.verifyBtn} onClick={handleResendVerification}>
-            Resend Verification
-          </button>
+      {/* Error Message */}
+      {error && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <span className="text-red-400">⚠️</span>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">
+                  {error}
+                </h3>
+                <p className="text-sm text-red-600 mt-1">
+                  Please check if the company ID is correct and try again.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* STATS CARDS */}
-      <div style={styles.cardsGrid}>
-        <StatCard
-          title="Company"
-          value={company?.name || "Company"}
-          onClick={() => navigate(`/company/${companyId}/profile`)}
-        />
-        <StatCard
-          title="Jobs Posted"
-          value={stats.jobsPosted}
-          onClick={() => navigate(`/company/${companyId}/jobs`)}
-        />
-        <StatCard
-          title="Applicants"
-          value={stats.applicants}
-          onClick={() => navigate(`/company/${companyId}/applicants`)}
-        />
+      {/* Quick Actions */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <QuickAction
+            icon="📋"
+            title="Post Job"
+            description="Create new job posting"
+            onClick={() => navigate(`/company/${companyId}/post-job`)}
+            color="blue"
+          />
+          <QuickAction
+            icon="💼"
+            title="Manage Jobs"
+            description="View and edit job postings"
+            onClick={() => navigate(`/company/${companyId}/jobs`)}
+            color="green"
+          />
+          <QuickAction
+            icon="👥"
+            title="Applicants"
+            description="Review job applications"
+            onClick={() => navigate(`/company/${companyId}/applicants`)}
+            color="purple"
+          />
+          <QuickAction
+            icon="⚙️"
+            title="Profile"
+            description="Update company information"
+            onClick={() => navigate(`/company/${companyId}/profile`)}
+            color="gray"
+          />
+        </div>
+
+        {/* Stats Cards */}
+        {!error && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <StatCard
+                title="Active Jobs"
+                value={stats.activeJobs}
+                change="Currently open positions"
+                icon="💼"
+              />
+              <StatCard
+                title="Total Applicants"
+                value={stats.totalApplicants}
+                change="All applications received"
+                icon="👥"
+              />
+              <StatCard
+                title="Jobs Posted"
+                value={stats.jobsPosted}
+                change="Total job postings"
+                icon="📈"
+              />
+            </div>
+
+            {/* Quick Info */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Information</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium text-gray-600">Company ID:</span>
+                  <p className="text-gray-900 font-mono">{companyId}</p>
+                </div>
+                {company && (
+                  <>
+                    <div>
+                      <span className="font-medium text-gray-600">Status:</span>
+                      <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        company.status === 'approved' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {company.status || 'pending'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-600">Industry:</span>
+                      <p className="text-gray-900">{company.industry || 'Not specified'}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-600">Location:</span>
+                      <p className="text-gray-900">{company.location || 'Not specified'}</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
 };
 
-// -------------------------
-// Quick link component
-// -------------------------
-const QuickLink = ({ label, to }) => (
-  <button style={styles.quickLinkBtn} onClick={() => (window.location.href = to)}>
-    {label}
-  </button>
-);
+const QuickAction = ({ icon, title, description, onClick, color }) => {
+  const colorClasses = {
+    blue: 'bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700',
+    green: 'bg-green-50 hover:bg-green-100 border-green-200 text-green-700',
+    purple: 'bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700',
+    gray: 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700'
+  };
 
-// -------------------------
-// Stat card component
-// -------------------------
-const StatCard = ({ title, value, onClick }) => (
-  <div style={styles.card} onClick={onClick}>
-    <h3>{title}</h3>
-    <p style={styles.cardValue}>{value}</p>
-  </div>
-);
+  return (
+    <button
+      onClick={onClick}
+      className={`${colorClasses[color]} border rounded-lg p-4 text-left transition-colors hover:shadow-md`}
+    >
+      <div className="text-2xl mb-2">{icon}</div>
+      <h3 className="font-semibold text-sm">{title}</h3>
+      <p className="text-xs opacity-75 mt-1">{description}</p>
+    </button>
+  );
+};
 
-// -------------------------
-// Internal Styles
-// -------------------------
-const styles = {
-  container: {
-    padding: "20px",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    background: "#f7f9fc",
-    minHeight: "100vh",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "20px",
-  },
-  logoutBtn: {
-    background: "#f44336",
-    color: "#fff",
-    border: "none",
-    padding: "8px 16px",
-    borderRadius: "4px",
-    cursor: "pointer",
-  },
-  quickNav: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginBottom: "20px",
-    flexWrap: "wrap",
-    gap: "10px",
-  },
-  quickLinkBtn: {
-    background: "#2196f3",
-    color: "#fff",
-    border: "none",
-    padding: "10px 14px",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontWeight: "bold",
-    flex: 1,
-    minWidth: "160px",
-  },
-  verificationAlert: {
-    background: "#fff3cd",
-    color: "#856404",
-    padding: "10px 16px",
-    borderRadius: "4px",
-    marginBottom: "20px",
-  },
-  verifyBtn: {
-    marginLeft: "10px",
-    padding: "4px 8px",
-    background: "#ffc107",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-  },
-  cardsGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-    gap: "20px",
-  },
-  card: {
-    background: "#fff",
-    borderRadius: "8px",
-    padding: "20px",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-    cursor: "pointer",
-    textAlign: "center",
-    transition: "transform 0.2s",
-  },
-  cardValue: {
-    fontSize: "1.5rem",
-    fontWeight: "bold",
-    marginTop: "10px",
-  },
-  loading: {
-    padding: "40px",
-    textAlign: "center",
-    fontSize: "1.2rem",
-  },
+const StatCard = ({ title, value, change, icon }) => {
+  return (
+    <div className="bg-white rounded-lg shadow-sm border p-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
+          <p className="text-xs text-gray-500 mt-1">{change}</p>
+        </div>
+        <div className="text-3xl opacity-50">{icon}</div>
+      </div>
+    </div>
+  );
 };
 
 export default CompanyHome;

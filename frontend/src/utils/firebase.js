@@ -3,12 +3,12 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  apiKey: "AIzaSyChdty11F_lDBCh82ADRwwv_L6-YZ7hrD8",
+  authDomain: "career-guidance-platform-a368e.firebaseapp.com",
+  projectId: "career-guidance-platform-a368e",
+  storageBucket: "career-guidance-platform-a368e.firebasestorage.app",
+  messagingSenderId: "158743703595",
+  appId: "1:158743703595:web:399ceab05a120424c9fa6e"
 };
 
 // Debug check (optional)
