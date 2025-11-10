@@ -1,0 +1,22 @@
+# Render service configuration (optional). Connect this repository to Render
+# and Render will use this file to create/update services.
+#
+# NOTE: After connecting the repo on Render, set the secret environment
+# variables (FIREBASE_CREDENTIALS, other keys) in the Render dashboard.
+
+services:
+  - type: web
+    name: career-guidance-platform-backend
+    env: node
+    plan: free
+    region: oregon
+    repo: https://github.com/Boiketlo2/career-guidance-platform
+    branch: main
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Add other env vars in the Render dashboard (secrets)
+      # - key: FIREBASE_CREDENTIALS
+      #   sync: true
