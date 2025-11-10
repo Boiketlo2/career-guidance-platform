@@ -80,7 +80,7 @@ async function initializeServer() {
   // Middleware
   app.use(
     cors({
-      origin: process.env.CLIENT_URL || "http://localhost:3000",
+  origin: process.env.CLIENT_URL || "https://career-guidance-platform-1-t41w.onrender.com",
       credentials: true,
     })
   );
