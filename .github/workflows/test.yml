@@ -50,4 +50,4 @@ jobs:
         run: |
           node server.js &
           sleep 5
-          curl http://localhost:5000 || echo "Server did not respond (check manually)"
+          curl https://career-guidance-platform-1-t41w.onrender.com || echo "Server did not respond (check manually)"

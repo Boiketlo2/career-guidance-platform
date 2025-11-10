@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getFirebaseToken, logout } from '../utils/authHelper';
 
-const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000/api';
+const API_BASE = process.env.REACT_APP_BACKEND_URL || 'https://career-guidance-platform-1-t41w.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_BASE,

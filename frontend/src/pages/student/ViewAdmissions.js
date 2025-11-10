@@ -72,7 +72,7 @@ const ViewAdmissions = () => {
     try {
       console.log("🔍 [ViewAdmissions] Fetching debug info...");
       // Using the debug endpoint we added
-      const response = await fetch(`http://localhost:5000/api/student/debug/${studentId}`, {
+  const response = await fetch(`https://career-guidance-platform-1-t41w.onrender.com/api/student/debug/${studentId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
