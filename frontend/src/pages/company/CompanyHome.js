@@ -85,12 +85,11 @@ const CompanyHome = () => {
                 {company?.name || `Company ID: ${companyId}`}
               </p>
             </div>
-            <button
-              onClick={() => navigate('/')}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-            >
-              Back to Home
-            </button>
+            <nav className="company-nav flex items-center space-x-3">
+              <button onClick={() => navigate(`/company/${companyId}/jobs`)} className="company-nav-link">Manage Jobs</button>
+              <button onClick={() => navigate(`/company/${companyId}/applicants`)} className="company-nav-link">Applicants</button>
+              <button onClick={() => navigate(`/company/${companyId}/profile`)} className="company-nav-link">Profile</button>
+            </nav>
           </div>
         </div>
       </header>
@@ -185,15 +184,13 @@ const QuickAction = ({ title, description, onClick, color }) => {
   );
 };
 
-const StatCard = ({ title, value, change, icon }) => {
+const StatCard = ({ title, value, change }) => {
   return (
-    <div className="glass-card" style={{padding: '18px'}}>
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
-          <p className="text-xs text-gray-500 mt-1">{change}</p>
-        </div>
+    <div className="glass-card stat-card">
+      <div>
+        <p className="text-sm font-medium text-gray-600 mb-2">{title}</p>
+        <p className="text-5xl font-extrabold text-gray-900">{value}</p>
+        <p className="text-sm text-gray-500 mt-3">{change}</p>
       </div>
     </div>
   );
