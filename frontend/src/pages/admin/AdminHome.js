@@ -15,11 +15,11 @@ function AdminHome() {
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>Admin Dashboard</h1>
-      <div style={styles.grid}>
+      <div className="cg-card-grid" style={styles.grid}>
         {cards.map((c) => (
-          <div key={c.title} onClick={() => navigate(c.path)} style={styles.card}>
-            <h2 style={styles.cardTitle}>{c.title}</h2>
-            <p style={styles.cardDesc}>{c.desc}</p>
+          <div key={c.title} onClick={() => navigate(c.path)} className="cg-card" style={{cursor:'pointer'}}>
+            <h2 className="title" style={styles.cardTitle}>{c.title}</h2>
+            <p className="muted" style={styles.cardDesc}>{c.desc}</p>
           </div>
         ))}
       </div>

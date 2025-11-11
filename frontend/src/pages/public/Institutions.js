@@ -33,13 +33,7 @@ const Institutions = () => {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' }}>
         {institutions.map((institution) => (
-          <div key={institution.id} style={{ 
-            border: '1px solid #ddd', 
-            padding: '20px', 
-            borderRadius: '8px',
-            backgroundColor: 'white',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-          }}>
+          <div key={institution.id} className="cg-card" style={{ padding: '18px' }}>
             <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>{institution.name}</h3>
             
             <div style={{ marginBottom: '15px' }}>

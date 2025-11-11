@@ -118,7 +118,7 @@ const CompanyHome = () => {
 
       {/* Quick Actions */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 cg-card-grid cg-quick-grid">
           <QuickAction
             icon="📋"
             title="Post Job"
@@ -152,7 +152,7 @@ const CompanyHome = () => {
         {/* Stats Cards */}
         {!error && (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 cg-card-grid">
               <StatCard
                 title="Active Jobs"
                 value={stats.activeJobs}
@@ -223,7 +223,7 @@ const QuickAction = ({ icon, title, description, onClick, color }) => {
   return (
     <button
       onClick={onClick}
-      className={`${colorClasses[color]} border rounded-lg p-4 text-left transition-colors hover:shadow-md`}
+      className={`cg-card ${colorClasses[color]} border rounded-lg p-4 text-left transition-colors hover:shadow-md`}
     >
       <div className="text-2xl mb-2">{icon}</div>
       <h3 className="font-semibold text-sm">{title}</h3>
@@ -234,7 +234,7 @@ const QuickAction = ({ icon, title, description, onClick, color }) => {
 
 const StatCard = ({ title, value, change, icon }) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-6">
+    <div className="cg-card" style={{padding: '18px'}}>
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-600">{title}</p>

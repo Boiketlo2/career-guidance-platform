@@ -188,7 +188,8 @@ const InstituteHome = () => {
       {/* Quick Stats Section */}
       <section style={styles.statsSection}>
         <h3 style={styles.sectionTitle}>Quick Overview</h3>
-        <div style={styles.grid}>
+        <div className="cg-card-grid" style={styles.grid}>
+          <div>
           <Card 
             icon="🏛️" 
             title="Faculties" 
@@ -225,6 +226,7 @@ const InstituteHome = () => {
             link={`/institute/${institutionId}/admissions`} 
             linkText="View" 
           />
+          </div>
         </div>
       </section>
     </div>

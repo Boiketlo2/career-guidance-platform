@@ -148,7 +148,7 @@ const StudentHome = () => {
       )}
 
       {/* Quick Navigation */}
-      <nav style={styles.quickNav}>
+  <nav className="cg-card-grid cg-quick-grid" style={styles.quickNav}>
         <QuickLink 
           label=" Apply for Courses" 
           description="Browse and apply to courses" 
@@ -185,7 +185,7 @@ const StudentHome = () => {
       {/* Stats Overview */}
       <div style={styles.statsSection}>
         <h2 style={styles.sectionTitle}>Overview</h2>
-        <div style={styles.statsGrid}>
+      <div className="cg-card-grid" style={styles.statsGrid}>
           <StatCard
             title="Course Applications"
             value={stats.applications}
@@ -229,19 +229,15 @@ const StudentHome = () => {
               View All
             </button>
           </div>
-          <div style={styles.applicationsList}>
+          <div className="cg-card-grid" style={{marginTop:8}}>
             {recentApplications.map((app, index) => (
-              <div key={app.id || index} style={styles.applicationCard}>
-                <div style={styles.applicationInfo}>
-                  <h4 style={styles.courseName}>{app.courseName}</h4>
-                  <p style={styles.institutionName}>{app.institutionName}</p>
-                  <p style={styles.applicationDate}>
-                    Applied: {new Date(app.appliedAt).toLocaleDateString()}
-                  </p>
+              <div key={app.id || index} className="cg-card">
+                <div>
+                  <h4 className="title">{app.courseName}</h4>
+                  <p className="subtitle">{app.institutionName}</p>
+                  <p className="muted">Applied: {new Date(app.appliedAt).toLocaleDateString()}</p>
                 </div>
-                <div style={styles.applicationStatus}>
-                  {getStatusBadge(app.status)}
-                </div>
+                <div style={{marginTop:12}}>{getStatusBadge(app.status)}</div>
               </div>
             ))}
           </div>
@@ -251,18 +247,18 @@ const StudentHome = () => {
       {/* Quick Tips */}
       <div style={styles.tipsSection}>
         <h3 style={styles.tipsTitle}> Quick Tips</h3>
-        <div style={styles.tipsGrid}>
-          <div style={styles.tipCard}>
-            <h4>Complete Your Profile</h4>
-            <p>Ensure your profile is up-to-date for better job matches</p>
+        <div className="cg-card-grid" style={styles.tipsGrid}>
+          <div className="cg-card">
+            <h4 className="title">Complete Your Profile</h4>
+            <p className="muted">Ensure your profile is up-to-date for better job matches</p>
           </div>
-          <div style={styles.tipCard}>
-            <h4>Upload Documents</h4>
-            <p>Add your transcripts and certificates for applications</p>
+          <div className="cg-card">
+            <h4 className="title">Upload Documents</h4>
+            <p className="muted">Add your transcripts and certificates for applications</p>
           </div>
-          <div style={styles.tipCard}>
-            <h4>Track Applications</h4>
-            <p>Regularly check your application status</p>
+          <div className="cg-card">
+            <h4 className="title">Track Applications</h4>
+            <p className="muted">Regularly check your application status</p>
           </div>
         </div>
       </div>
@@ -273,14 +269,15 @@ const StudentHome = () => {
 // QuickLink Component
 const QuickLink = ({ label, description, to, navigate }) => (
   <button
-    style={styles.quickLinkCard}
+    className="cg-card"
+    style={{ textAlign: 'left', border: 'none', cursor: 'pointer' }}
     onClick={() => navigate(to)}
   >
     <div style={styles.quickLinkContent}>
       <span style={styles.quickLinkIcon}>{label.split(' ')[0]}</span>
       <div>
-        <div style={styles.quickLinkLabel}>{label.split(' ').slice(1).join(' ')}</div>
-        <div style={styles.quickLinkDesc}>{description}</div>
+        <div className="title" style={{marginBottom:4}}>{label.split(' ').slice(1).join(' ')}</div>
+        <div className="muted">{description}</div>
       </div>
     </div>
     <span style={styles.quickLinkArrow}>→</span>
@@ -289,13 +286,13 @@ const QuickLink = ({ label, description, to, navigate }) => (
 
 // StatCard Component
 const StatCard = ({ title, value, icon, color, onClick }) => (
-  <div style={styles.statCard} onClick={onClick}>
+  <div className="cg-card" onClick={onClick} style={{display:'flex',alignItems:'center',gap:12}}>
     <div style={{...styles.statIcon, backgroundColor: color + '20', color }}>
       {icon}
     </div>
-    <div style={styles.statContent}>
-      <div style={styles.statValue}>{value}</div>
-      <div style={styles.statTitle}>{title}</div>
+    <div style={{flex:1}}>
+      <div className="large-number">{value}</div>
+      <div className="muted">{title}</div>
     </div>
   </div>
 );

@@ -1,0 +1,52 @@
+/* Global card and grid styles for Career Guidance Platform */
+
+:root{
+	--card-bg: #ffffff;
+	--card-border: #e6eef8;
+	--card-radius: 12px;
+	--card-shadow: 0 6px 18px rgba(16,24,40,0.06);
+	--card-padding: 18px;
+}
+
+.cg-card-grid{
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 18px;
+	align-items: start;
+}
+
+.cg-card{
+	background: var(--card-bg);
+	border: 1px solid var(--card-border);
+	border-radius: var(--card-radius);
+	padding: var(--card-padding);
+	box-shadow: var(--card-shadow);
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	transition: transform .18s ease, box-shadow .18s ease;
+	min-height: 120px;
+}
+
+.cg-card:hover{
+	transform: translateY(-6px);
+	box-shadow: 0 12px 30px rgba(16,24,40,0.12);
+}
+
+.cg-card-header{ margin-bottom: 8px; }
+.cg-card-body{ flex: 1 1 auto; }
+.cg-card-footer{ margin-top: 12px; display:flex; justify-content:flex-end; }
+
+.cg-card .title{ font-size: 1.05rem; font-weight: 600; color: #1f2937; }
+.cg-card .subtitle{ color: #64748b; font-size: .9rem; }
+
+/* helpers for consistent card content */
+.cg-card .large-number{ font-size: 2rem; font-weight:700; color:#0f172a; }
+.cg-card .muted { color: #6b7280; font-size: .9rem; }
+
+/* make quick grids responsive */
+.cg-quick-grid{ grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+
+@media (max-width: 640px){
+	.cg-card { min-height: 100px; }
+}

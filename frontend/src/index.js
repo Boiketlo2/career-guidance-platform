@@ -2,6 +2,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
+import "./styles/components.css";
 
 // Recover from dynamic chunk load failures (common after a deploy when a
 // cached index.html references old chunk filenames). On such failures we
