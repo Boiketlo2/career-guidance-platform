@@ -10,8 +10,9 @@
 
 .cg-card-grid{
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-	gap: 18px;
+	/* Responsive card columns: prefer 3 columns on large, 2 on medium, 1 on small */
+	grid-template-columns: repeat(3, minmax(240px, 1fr));
+	gap: 24px;
 	align-items: start;
 }
 
@@ -19,18 +20,18 @@
 	background: var(--card-bg);
 	border: 1px solid var(--card-border);
 	border-radius: var(--card-radius);
-	padding: var(--card-padding);
+	padding: calc(var(--card-padding) + 6px);
 	box-shadow: var(--card-shadow);
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
 	transition: transform .18s ease, box-shadow .18s ease;
-	min-height: 120px;
+	min-height: 160px;
 }
 
 .cg-card:hover{
-	transform: translateY(-6px);
-	box-shadow: 0 12px 30px rgba(16,24,40,0.12);
+	transform: translateY(-8px);
+	box-shadow: 0 18px 44px rgba(16,24,40,0.14);
 }
 
 .cg-card-header{ margin-bottom: 8px; }
@@ -45,10 +46,17 @@
 .cg-card .muted { color: #6b7280; font-size: .9rem; }
 
 /* make quick grids responsive */
-.cg-quick-grid{ grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.cg-quick-grid{ grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+
+@media (max-width: 1024px){
+	.cg-card { min-height: 140px; }
+	.cg-card-grid { grid-template-columns: repeat(2, minmax(220px, 1fr)); }
+}
 
 @media (max-width: 640px){
-	.cg-card { min-height: 100px; }
+	.cg-card { min-height: 120px; }
+	.cg-card-grid { grid-template-columns: 1fr; }
+	.cg-quick-grid { grid-template-columns: 1fr; }
 }
 
 /* Glassmorphism styles for auth forms */
@@ -63,13 +71,17 @@
 
 .glass-card{
 	width: 100%;
-	max-width: 480px;
+	max-width: 520px;
 	border-radius: 16px;
-	padding: 28px;
-	background: rgba(255,255,255,0.6);
-	box-shadow: 0 8px 24px rgba(16,24,40,0.08);
+	padding: 20px 22px;
+	background: rgba(255,255,255,0.62);
+	box-shadow: 0 10px 30px rgba(16,24,40,0.08);
 	border: 1px solid rgba(255,255,255,0.6);
-	backdrop-filter: blur(8px) saturate(120%);
+	backdrop-filter: blur(10px) saturate(120%);
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	min-height: 140px;
 }
 
 /* Wider panel variant for forms and dashboards */
@@ -83,6 +95,15 @@
     border: 1px solid rgba(255,255,255,0.5);
     backdrop-filter: blur(10px) saturate(120%);
 }
+
+/* Tweak QuickAction / card internals for better spacing */
+.glass-card h3{ margin: 0 0 8px 0; }
+.glass-card p{ margin: 0; }
+.glass-card { transition: transform .18s ease, box-shadow .18s ease; }
+.glass-card:hover{ transform: translateY(-6px); box-shadow: 0 18px 44px rgba(15,23,42,0.12); }
+
+/* Small utility to make quick action cards consistent */
+.quick-action { min-height: 160px; display:flex; flex-direction:column; justify-content:center; }
 
 .glass-form-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .glass-full{ grid-column: 1 / -1; }
