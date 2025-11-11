@@ -65,12 +65,45 @@ const ManageJobs = () => {
             <h1 className="text-2xl font-bold text-gray-900">Manage Jobs</h1>
             <p className="text-sm text-gray-600 mt-1">Create and manage your job postings</p>
           </div>
-          <button
+        </div>
+
+        {/* Quick action cards: Post Job & Available Functions */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+          <div
+            role="button"
+            tabIndex={0}
             onClick={() => navigate(`/company/${companyId}/post-job`)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
+            onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && navigate(`/company/${companyId}/post-job`)}
+            className="glass-card cursor-pointer"
+            aria-label="Post new job"
           >
-            <span className="mr-2">+</span> Post New Job
-          </button>
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-2">Post Job</p>
+              <p className="text-2xl font-extrabold text-gray-900">Create a new job posting</p>
+              <p className="text-sm text-gray-500 mt-3">Fill out the details and publish your opening</p>
+            </div>
+          </div>
+
+          <div className="glass-card">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-2">Available Functions</p>
+              <p className="text-2xl font-extrabold text-gray-900">Quick actions</p>
+              <div className="mt-4 flex gap-3">
+                <button
+                  onClick={() => navigate(`/company/${companyId}/jobs`)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                >
+                  View Listings
+                </button>
+                <button
+                  onClick={() => navigate(`/company/${companyId}/applicants`)}
+                  className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
+                >
+                  View Applicants
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         {error && (
