@@ -67,8 +67,8 @@ const ManageJobs = () => {
           </div>
         </div>
 
-        {/* Quick action cards: Post Job & Available Functions */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+  {/* Quick action cards: Post Job & Available Functions */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
           <div
             role="button"
             tabIndex={0}
@@ -121,19 +121,7 @@ const ManageJobs = () => {
           </div>
         )}
 
-        {jobs.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
-            <div className="text-4xl mb-4">💼</div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No jobs posted yet</h3>
-            <p className="text-gray-600 mb-4">Get started by posting your first job opening</p>
-            <button
-              onClick={() => navigate(`/company/${companyId}/post-job`)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium"
-            >
-              Post Your First Job
-            </button>
-          </div>
-        ) : (
+        {jobs.length > 0 && (
           <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
             <div className="px-6 py-4 border-b bg-gray-50">
               <div className="flex justify-between items-center">
