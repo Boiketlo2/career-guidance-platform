@@ -72,6 +72,21 @@
 	backdrop-filter: blur(8px) saturate(120%);
 }
 
+/* Wider panel variant for forms and dashboards */
+.glass-panel{
+    width: 100%;
+    max-width: 980px;
+    border-radius: 16px;
+    padding: 28px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.68), rgba(255,255,255,0.58));
+    box-shadow: 0 12px 40px rgba(15,23,42,0.08);
+    border: 1px solid rgba(255,255,255,0.5);
+    backdrop-filter: blur(10px) saturate(120%);
+}
+
+.glass-form-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.glass-full{ grid-column: 1 / -1; }
+
 .glass-card h2{
 	margin: 0 0 12px 0;
 	font-size: 1.5rem;
