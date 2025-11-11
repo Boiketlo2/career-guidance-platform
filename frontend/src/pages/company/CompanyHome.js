@@ -118,30 +118,20 @@ const CompanyHome = () => {
 
       {/* Quick Actions */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 cg-card-grid cg-quick-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 cg-card-grid cg-quick-grid">
           <QuickAction
-            icon="📋"
-            title="Post Job"
-            description="Create new job posting"
-            onClick={() => navigate(`/company/${companyId}/post-job`)}
-            color="blue"
-          />
-          <QuickAction
-            icon="💼"
             title="Manage Jobs"
             description="View and edit job postings"
             onClick={() => navigate(`/company/${companyId}/jobs`)}
             color="green"
           />
           <QuickAction
-            icon="👥"
             title="Applicants"
             description="Review job applications"
             onClick={() => navigate(`/company/${companyId}/applicants`)}
             color="purple"
           />
           <QuickAction
-            icon="⚙️"
             title="Profile"
             description="Update company information"
             onClick={() => navigate(`/company/${companyId}/profile`)}
@@ -157,53 +147,17 @@ const CompanyHome = () => {
                 title="Active Jobs"
                 value={stats.activeJobs}
                 change="Currently open positions"
-                icon="💼"
               />
               <StatCard
                 title="Total Applicants"
                 value={stats.totalApplicants}
                 change="All applications received"
-                icon="👥"
               />
               <StatCard
                 title="Jobs Posted"
                 value={stats.jobsPosted}
                 change="Total job postings"
-                icon="📈"
               />
-            </div>
-
-            {/* Quick Info */}
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Information</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium text-gray-600">Company ID:</span>
-                  <p className="text-gray-900 font-mono">{companyId}</p>
-                </div>
-                {company && (
-                  <>
-                    <div>
-                      <span className="font-medium text-gray-600">Status:</span>
-                      <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        company.status === 'approved' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {company.status || 'pending'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-gray-600">Industry:</span>
-                      <p className="text-gray-900">{company.industry || 'Not specified'}</p>
-                    </div>
-                    <div>
-                      <span className="font-medium text-gray-600">Location:</span>
-                      <p className="text-gray-900">{company.location || 'Not specified'}</p>
-                    </div>
-                  </>
-                )}
-              </div>
             </div>
           </>
         )}
@@ -212,7 +166,7 @@ const CompanyHome = () => {
   );
 };
 
-const QuickAction = ({ icon, title, description, onClick, color }) => {
+const QuickAction = ({ title, description, onClick, color }) => {
   const colorClasses = {
     blue: 'bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700',
     green: 'bg-green-50 hover:bg-green-100 border-green-200 text-green-700',
@@ -223,9 +177,8 @@ const QuickAction = ({ icon, title, description, onClick, color }) => {
   return (
     <button
       onClick={onClick}
-      className={`cg-card ${colorClasses[color]} border rounded-lg p-4 text-left transition-colors hover:shadow-md`}
+      className={`glass-card ${colorClasses[color]} border rounded-lg p-4 text-left transition-colors hover:shadow-md`}
     >
-      <div className="text-2xl mb-2">{icon}</div>
       <h3 className="font-semibold text-sm">{title}</h3>
       <p className="text-xs opacity-75 mt-1">{description}</p>
     </button>
@@ -234,14 +187,13 @@ const QuickAction = ({ icon, title, description, onClick, color }) => {
 
 const StatCard = ({ title, value, change, icon }) => {
   return (
-    <div className="cg-card" style={{padding: '18px'}}>
+    <div className="glass-card" style={{padding: '18px'}}>
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-600">{title}</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
           <p className="text-xs text-gray-500 mt-1">{change}</p>
         </div>
-        <div className="text-3xl opacity-50">{icon}</div>
       </div>
     </div>
   );
