@@ -1,4 +1,5 @@
 import express from "express";
+import { isCompany } from "../middleware/auth.js";
 import {
   registerCompany,
   postJob,
@@ -16,7 +17,8 @@ const router = express.Router();
 
 // Public routes (no authentication required for testing)
 router.post("/register", registerCompany);
-router.post("/jobs", postJob);
+// Protected: only authenticated company users may post jobs
+router.post("/jobs", isCompany, postJob);
 router.get("/jobs/company/:companyId", getJobsByCompany);
 router.get("/jobs/:jobId/applicants", getJobApplicants);
 router.patch("/jobs/:jobId/applicants/:applicantId", updateApplicantStatus);

@@ -74,7 +74,16 @@ export const postJob = asyncHandler(async (req, res) => {
   const companyDoc = await db.collection("companies").doc(companyId).get();
   if (!companyDoc.exists) return res.status(404).json({ success: false, error: "Company not found" });
 
-  if (companyDoc.data().status !== "approved") {
+  // Log current company status for easier debugging in server logs
+  const companyStatus = companyDoc.data().status || "unknown";
+  console.log(`postJob: companyId=${companyId} status=${companyStatus} requester=${req.user?.uid || 'anonymous'}`);
+
+  // Authorization: if a requester is present, ensure they are the company owner (or admin in future)
+  if (req.user && req.user.role === "company" && req.user.uid !== companyId) {
+    return res.status(403).json({ success: false, error: "Forbidden: cannot post jobs for another company" });
+  }
+
+  if (companyStatus !== "approved") {
     return res.status(403).json({ success: false, error: "Company not approved to post jobs" });
   }
 
