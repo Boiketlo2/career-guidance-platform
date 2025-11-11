@@ -58,8 +58,8 @@ const PostJobs = () => {
         setError(res.error || "Job posting failed");
       }
     } catch (err) {
-      console.error("Error posting job:", err);
-      setError(err.response?.data?.error || err.message || "Failed to post job");
+      console.error("Error posting job:", err, "response:", err.response?.data);
+      setError(err.response?.data?.error || err.response?.data || err.message || "Failed to post job");
     } finally {
       setLoading(false);
     }

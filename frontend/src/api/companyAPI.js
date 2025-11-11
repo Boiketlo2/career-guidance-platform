@@ -7,15 +7,15 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Remove auth interceptor for testing
-// api.interceptors.request.use(
-//   (config) => {
-//     const token = localStorage.getItem('token');
-//     if (token) config.headers.Authorization = `Bearer ${token}`;
-//     return config;
-//   },
-//   (error) => Promise.reject(error)
-// );
+// Attach token automatically for protected routes
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export const companyAPI = {
   register: async (companyData) => {
