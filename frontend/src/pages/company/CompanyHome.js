@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { companyAPI } from "../../api/companyAPI";
 
 const CompanyHome = () => {
   const { companyId } = useParams();
-  // navigation removed: actions moved out of page header
+  const navigate = useNavigate();
 
   const [company, setCompany] = useState(null);
   const [stats, setStats] = useState({
@@ -85,6 +85,11 @@ const CompanyHome = () => {
                 {company?.name || `Company ID: ${companyId}`}
               </p>
             </div>
+            <nav className="company-nav flex items-center space-x-3">
+              <button onClick={() => navigate(`/company/${companyId}/jobs`)} className="company-nav-link">Manage Jobs</button>
+              <button onClick={() => navigate(`/company/${companyId}/applicants`)} className="company-nav-link">Applicants</button>
+              <button onClick={() => navigate(`/company/${companyId}/profile`)} className="company-nav-link">Profile</button>
+            </nav>
           </div>
         </div>
       </header>
