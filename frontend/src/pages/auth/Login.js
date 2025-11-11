@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { authAPI } from "../../api/authAPI";
+import { useAuth } from "../../context/AuthContext";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -10,19 +11,21 @@ const Login = () => {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  const { login: contextLogin } = useAuth();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      const res = await authAPI.login(form);
+      // Use AuthContext.login so context state is updated immediately
+      const res = await contextLogin(form.email, form.password);
 
-      // Expect backend to return { success, user }
       const user = res?.user;
       const uid = user?.uid || user?._id || user?.id;
 
-      if (user) {
+      if (res.success && user) {
         if (user.role === "student") navigate(`/student/${uid}/home`);
         else if (user.role === "company") navigate(`/company/${uid}/home`);
         else if (user.role === "institution") navigate(`/institute/${uid}/home`);
