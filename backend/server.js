@@ -78,12 +78,22 @@ async function initializeServer() {
   await testFirebaseConnection();
 
   // Middleware
-  app.use(
-    cors({
-  origin: process.env.CLIENT_URL || "https://career-guidance-platform-1-t41w.onrender.com",
-      credentials: true,
-    })
-  );
+  // Configure CORS to accept one or more origins from the environment.
+  // Set CLIENT_URL to a single URL or a comma-separated list of allowed origins.
+  const rawClientUrls = process.env.CLIENT_URL || "http://localhost:3000,https://career-guidance-platform-1-t41w.onrender.com";
+  const allowedOrigins = rawClientUrls.split(",").map((s) => s.trim()).filter(Boolean);
+
+  const corsOptions = {
+    origin: function (origin, callback) {
+      // Allow non-browser requests (like curl, server-to-server) when origin is undefined
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) !== -1) return callback(null, true);
+      return callback(new Error("CORS policy: Origin not allowed"), false);
+    },
+    credentials: true,
+  };
+
+  app.use(cors(corsOptions));
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ extended: true }));
 
