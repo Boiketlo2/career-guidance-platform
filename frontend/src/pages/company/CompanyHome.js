@@ -119,39 +119,6 @@ const CompanyHome = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {!error && (
           <>
-            {/* Quick action cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={() => navigate(`/company/${companyId}/post-job`)}
-                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && navigate(`/company/${companyId}/post-job`)}
-                className="glass-card cursor-pointer"
-                aria-label="Post a new job"
-              >
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-2">Post Job</p>
-                  <p className="text-2xl font-extrabold text-gray-900">Create a new job posting</p>
-                  <p className="text-sm text-gray-500 mt-3">Let candidates apply to your open roles</p>
-                </div>
-              </div>
-
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={() => navigate(`/company/${companyId}/jobs`)}
-                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && navigate(`/company/${companyId}/jobs`)}
-                className="glass-card cursor-pointer"
-                aria-label="View available jobs"
-              >
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-2">View Jobs</p>
-                  <p className="text-2xl font-extrabold text-gray-900">Browse your current postings</p>
-                  <p className="text-sm text-gray-500 mt-3">See applicants and manage listings</p>
-                </div>
-              </div>
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-8 cg-card-grid">
               <StatCard
                 title="Active Jobs"
