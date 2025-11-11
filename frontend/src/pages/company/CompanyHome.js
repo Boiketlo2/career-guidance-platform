@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { companyAPI } from "../../api/companyAPI";
 
 const CompanyHome = () => {
   const { companyId } = useParams();
-  const navigate = useNavigate();
+  // navigation removed: actions moved out of page header
 
   const [company, setCompany] = useState(null);
   const [stats, setStats] = useState({
@@ -85,11 +85,6 @@ const CompanyHome = () => {
                 {company?.name || `Company ID: ${companyId}`}
               </p>
             </div>
-            <nav className="company-nav flex items-center space-x-3">
-              <button onClick={() => navigate(`/company/${companyId}/jobs`)} className="company-nav-link">Manage Jobs</button>
-              <button onClick={() => navigate(`/company/${companyId}/applicants`)} className="company-nav-link">Applicants</button>
-              <button onClick={() => navigate(`/company/${companyId}/profile`)} className="company-nav-link">Profile</button>
-            </nav>
           </div>
         </div>
       </header>
@@ -115,33 +110,11 @@ const CompanyHome = () => {
         </div>
       )}
 
-      {/* Quick Actions */}
+      {/* Stats Cards */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 cg-card-grid cg-quick-grid">
-          <QuickAction
-            title="Manage Jobs"
-            description="View and edit job postings"
-            onClick={() => navigate(`/company/${companyId}/jobs`)}
-            color="green"
-          />
-          <QuickAction
-            title="Applicants"
-            description="Review job applications"
-            onClick={() => navigate(`/company/${companyId}/applicants`)}
-            color="purple"
-          />
-          <QuickAction
-            title="Profile"
-            description="Update company information"
-            onClick={() => navigate(`/company/${companyId}/profile`)}
-            color="gray"
-          />
-        </div>
-
-        {/* Stats Cards */}
         {!error && (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 cg-card-grid">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-8 cg-card-grid">
               <StatCard
                 title="Active Jobs"
                 value={stats.activeJobs}
@@ -165,24 +138,7 @@ const CompanyHome = () => {
   );
 };
 
-const QuickAction = ({ title, description, onClick, color }) => {
-  const colorClasses = {
-    blue: 'bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700',
-    green: 'bg-green-50 hover:bg-green-100 border-green-200 text-green-700',
-    purple: 'bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700',
-    gray: 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700'
-  };
-
-  return (
-    <button
-      onClick={onClick}
-      className={`glass-card ${colorClasses[color]} border rounded-lg p-4 text-left transition-colors hover:shadow-md`}
-    >
-      <h3 className="font-semibold text-sm">{title}</h3>
-      <p className="text-xs opacity-75 mt-1">{description}</p>
-    </button>
-  );
-};
+/* QuickAction removed: actions are now in the header navigation */
 
 const StatCard = ({ title, value, change }) => {
   return (
