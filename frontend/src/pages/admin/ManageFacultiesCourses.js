@@ -9,6 +9,8 @@ export default function ManageFacultiesCourses() {
   // Form state for faculties and courses per institution
   const [facultyForms, setFacultyForms] = useState({});
   const [courseForms, setCourseForms] = useState({});
+  const [showFacultyForm, setShowFacultyForm] = useState({});
+  const [showCourseForm, setShowCourseForm] = useState({});
 
   const fetchInstitutions = async () => {
     setLoading(true);
@@ -112,69 +114,105 @@ export default function ManageFacultiesCourses() {
       {error && <p style={{ color: "red", textAlign: "center", marginBottom: "15px" }}>{error}</p>}
       {loading && <p style={{ textAlign: "center" }}>Loading...</p>}
 
-      <div style={styles.grid}>
+      <div className="cg-card-grid" style={{ maxWidth: 1200, margin: '0 auto', gap: 24 }}>
         {institutions.map(inst => (
-          <div key={inst.id} style={styles.card}>
+          <div key={inst.id} className="cg-card" style={{ padding: 20 }}>
             <h2 style={{ fontWeight: "700", fontSize: "20px" }}>{inst.name}</h2>
 
             {/* Faculties */}
             <div style={styles.section}>
-              <h3 style={{ fontWeight: "600" }}>Faculties:</h3>
+              <h3 style={{ fontWeight: "600" }}>Faculties</h3>
               {inst.faculties.length === 0 ? <p>No faculties</p> : (
                 <ul>
                   {inst.faculties.map(fac => <li key={fac.id}>{fac.name}</li>)}
                 </ul>
               )}
-              <input
-                style={styles.input}
-                placeholder="New Faculty Name"
-                value={facultyForms[inst.id]?.name || ""}
-                onChange={(e) => setFacultyForms({ ...facultyForms, [inst.id]: { ...facultyForms[inst.id], name: e.target.value } })}
-              />
-              <input
-                style={styles.input}
-                placeholder="Faculty Description"
-                value={facultyForms[inst.id]?.description || ""}
-                onChange={(e) => setFacultyForms({ ...facultyForms, [inst.id]: { ...facultyForms[inst.id], description: e.target.value } })}
-              />
-              <button style={styles.btn} onClick={() => handleAddFaculty(inst.id)}>Add Faculty</button>
+
+              {/* Add Faculty button */}
+              <div style={{ marginTop: 12 }}>
+                <button
+                  className="glass-button"
+                  onClick={() => setShowFacultyForm({ ...showFacultyForm, [inst.id]: !showFacultyForm[inst.id] })}
+                >
+                  {showFacultyForm[inst.id] ? 'Cancel' : 'Add Faculty'}
+                </button>
+              </div>
+
+              {/* Faculty form - toggled */}
+              {showFacultyForm[inst.id] && (
+                <div style={{ marginTop: 12 }}>
+                  <input
+                    style={styles.input}
+                    placeholder="Faculty Name"
+                    value={facultyForms[inst.id]?.name || ""}
+                    onChange={(e) => setFacultyForms({ ...facultyForms, [inst.id]: { ...facultyForms[inst.id], name: e.target.value } })}
+                  />
+                  <input
+                    style={styles.input}
+                    placeholder="Description"
+                    value={facultyForms[inst.id]?.description || ""}
+                    onChange={(e) => setFacultyForms({ ...facultyForms, [inst.id]: { ...facultyForms[inst.id], description: e.target.value } })}
+                  />
+                  <div style={{ marginTop: 8 }}>
+                    <button className="glass-button" onClick={() => handleAddFaculty(inst.id)}>Save Faculty</button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Courses */}
             <div style={styles.section}>
-              <h3 style={{ fontWeight: "600" }}>Courses:</h3>
+              <h3 style={{ fontWeight: "600" }}>Courses</h3>
               {inst.courses.length === 0 ? <p>No courses</p> : (
                 <ul>
                   {inst.courses.map(course => <li key={course.id}>{course.name}</li>)}
                 </ul>
               )}
-              <select
-                style={styles.input}
-                value={courseForms[inst.id]?.facultyId || ""}
-                onChange={(e) => setCourseForms({ ...courseForms, [inst.id]: { ...courseForms[inst.id], facultyId: e.target.value } })}
-              >
-                <option value="">Select Faculty</option>
-                {inst.faculties.map(fac => <option key={fac.id} value={fac.id}>{fac.name}</option>)}
-              </select>
-              <input
-                style={styles.input}
-                placeholder="Course Name"
-                value={courseForms[inst.id]?.name || ""}
-                onChange={(e) => setCourseForms({ ...courseForms, [inst.id]: { ...courseForms[inst.id], name: e.target.value } })}
-              />
-              <input
-                style={styles.input}
-                placeholder="Duration (e.g., 3 years)"
-                value={courseForms[inst.id]?.duration || ""}
-                onChange={(e) => setCourseForms({ ...courseForms, [inst.id]: { ...courseForms[inst.id], duration: e.target.value } })}
-              />
-              <input
-                style={styles.input}
-                placeholder="Requirements"
-                value={courseForms[inst.id]?.requirements || ""}
-                onChange={(e) => setCourseForms({ ...courseForms, [inst.id]: { ...courseForms[inst.id], requirements: e.target.value } })}
-              />
-              <button style={styles.btn} onClick={() => handleAddCourse(inst.id)}>Add Course</button>
+
+              {/* Add Course button */}
+              <div style={{ marginTop: 12 }}>
+                <button
+                  className="glass-button"
+                  onClick={() => setShowCourseForm({ ...showCourseForm, [inst.id]: !showCourseForm[inst.id] })}
+                >
+                  {showCourseForm[inst.id] ? 'Cancel' : 'Add Course'}
+                </button>
+              </div>
+
+              {/* Course form - toggled */}
+              {showCourseForm[inst.id] && (
+                <div style={{ marginTop: 12 }}>
+                  <select
+                    style={styles.input}
+                    value={courseForms[inst.id]?.facultyId || ""}
+                    onChange={(e) => setCourseForms({ ...courseForms, [inst.id]: { ...courseForms[inst.id], facultyId: e.target.value } })}
+                  >
+                    <option value="">Select Faculty</option>
+                    {inst.faculties.map(fac => <option key={fac.id} value={fac.id}>{fac.name}</option>)}
+                  </select>
+                  <input
+                    style={styles.input}
+                    placeholder="Course Name"
+                    value={courseForms[inst.id]?.name || ""}
+                    onChange={(e) => setCourseForms({ ...courseForms, [inst.id]: { ...courseForms[inst.id], name: e.target.value } })}
+                  />
+                  <input
+                    style={styles.input}
+                    placeholder="Duration (e.g., 3 years)"
+                    value={courseForms[inst.id]?.duration || ""}
+                    onChange={(e) => setCourseForms({ ...courseForms, [inst.id]: { ...courseForms[inst.id], duration: e.target.value } })}
+                  />
+                  <input
+                    style={styles.input}
+                    placeholder="Requirements"
+                    value={courseForms[inst.id]?.requirements || ""}
+                    onChange={(e) => setCourseForms({ ...courseForms, [inst.id]: { ...courseForms[inst.id], requirements: e.target.value } })}
+                  />
+                  <div style={{ marginTop: 8 }}>
+                    <button className="glass-button" onClick={() => handleAddCourse(inst.id)}>Save Course</button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         ))}
