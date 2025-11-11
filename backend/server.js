@@ -80,7 +80,10 @@ async function initializeServer() {
   // Middleware
   // Configure CORS to accept one or more origins from the environment.
   // Set CLIENT_URL to a single URL or a comma-separated list of allowed origins.
-  const rawClientUrls = process.env.CLIENT_URL || "http://localhost:3000,https://career-guidance-platform-1-t41w.onrender.com";
+  // Default allowed origins: local dev + Vercel frontend URL
+  const rawClientUrls =
+    process.env.CLIENT_URL ||
+    "http://localhost:3000,https://career-guidance-platform-ivao.onrender.com";
   const allowedOrigins = rawClientUrls.split(",").map((s) => s.trim()).filter(Boolean);
 
   const corsOptions = {
