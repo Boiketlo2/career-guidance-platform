@@ -17,17 +17,18 @@ const Login = () => {
 
     try {
       const res = await authAPI.login(form);
-      const user = res.user;
 
-      alert(`✅ Welcome back, ${user.name || user.institutionName || user.companyName}!`);
+      // Expect backend to return { success, user }
+      const user = res?.user;
+      const uid = user?.uid || user?._id || user?.id;
 
-  // Redirect based on role -> send users to their "home" pages
-  if (user.role === "student") navigate(`/student/${user.uid}/home`);
-  else if (user.role === "company") navigate(`/company/${user.uid}/home`);
-  else if (user.role === "institution") navigate(`/institute/${user.uid}/home`);
-  else if (user.role === "admin") navigate(`/admin/home/${user.uid}`);
-      else navigate(`/`);
-      
+      if (user) {
+        if (user.role === "student") navigate(`/student/${uid}/home`);
+        else if (user.role === "company") navigate(`/company/${uid}/home`);
+        else if (user.role === "institution") navigate(`/institute/${uid}/home`);
+        else if (user.role === "admin") navigate(`/admin/home/${uid}`);
+        else navigate("/");
+      }
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.error || err.message || "Invalid login credentials");
@@ -37,17 +38,17 @@ const Login = () => {
   };
 
   return (
-    <div className="container" style={{ maxWidth: 400, margin: "50px auto", textAlign: "center" }}>
-      <h2>🔐 Login</h2>
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        <input type="email" name="email" placeholder="Email" value={form.email} onChange={handleChange} required />
-        <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} required />
-        <button type="submit" disabled={loading}>{loading ? "Logging in..." : "Login"}</button>
-      </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <Link to="/" style={{ display: "inline-block", marginTop: "20px", color: "#667eea", textDecoration: "underline" }}>
-        ← Go back to Home
-      </Link>
+    <div className="auth-page">
+      <div className="glass-card" role="region" aria-label="Login form">
+        <h2>Login</h2>
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <input className="glass-input" type="email" name="email" placeholder="Email" value={form.email} onChange={handleChange} required />
+          <input className="glass-input" type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} required />
+          <button className="glass-button" type="submit" disabled={loading}>{loading ? "Logging in..." : "Login"}</button>
+        </form>
+        {error && <p style={{ color: "#b91c1c", marginTop: 10 }}>{error}</p>}
+        <Link to="/" className="auth-link">Go back to Home</Link>
+      </div>
     </div>
   );
 };
