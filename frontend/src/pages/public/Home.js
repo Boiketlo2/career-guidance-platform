@@ -6,10 +6,10 @@ const Home = () => {
 
   // 🧭 Dashboard route map
   const dashboardRoutes = {
-    student: (id) => `/student/${id}/dashboard`,
-    institution: (id) => `/institute/${id}/dashboard`,
-    company: (id) => `/company/${id}/dashboard`,
-    admin: (id) => `/admin/dashboard/${id}`,
+    student: (id) => `/student/${id}/home`,
+    institution: (id) => `/institute/${id}/home`,
+    company: (id) => `/company/${id}/home`,
+    admin: (id) => `/admin/home/${id}`,
   };
 
   // Determine redirect URL
@@ -140,7 +140,7 @@ const Home = () => {
               fontWeight: "600",
             }}
           >
-            Go to Dashboard
+            Go to Home
           </Link>
         </div>
       )}

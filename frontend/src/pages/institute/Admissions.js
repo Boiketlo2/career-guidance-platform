@@ -82,7 +82,7 @@ const Admissions = () => {
   };
 
   const handleBackToDashboard = () => {
-    navigate(`/institute/${institutionId}/dashboard`);
+    navigate(`/institute/${institutionId}/home`);
   };
 
   if (loading) return <div style={styles.loading}>Loading Admissions...</div>;
@@ -93,7 +93,7 @@ const Admissions = () => {
       <header style={styles.header}>
         <div style={styles.headerLeft}>
           <button style={styles.backButton} onClick={handleBackToDashboard}>
-            ← Back to Dashboard
+            ← Back to Home
           </button>
           <h1 style={styles.title}>Admissions Management</h1>
           <p style={styles.subtitle}>Manage approved student applications</p>

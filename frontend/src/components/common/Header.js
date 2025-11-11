@@ -28,8 +28,16 @@ const Header = () => {
         {user ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <span>Welcome, {user.name || user.institutionName || user.companyName}!</span>
-            <Link to={`/${user.role}/dashboard`} style={{ color: 'white', textDecoration: 'none' }}>
-              Dashboard
+            {/* Link to user's home page */}
+            <Link
+              to={
+                user.role === 'admin'
+                  ? `/admin/home/${user.uid}`
+                  : `/${user.role}/${user.uid}/home`
+              }
+              style={{ color: 'white', textDecoration: 'none' }}
+            >
+              Home
             </Link>
             <button 
               onClick={handleLogout}

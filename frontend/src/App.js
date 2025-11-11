@@ -72,16 +72,16 @@ const RoleBasedRedirect = () => {
     if (user.uid && user.role) {
       switch (user.role) {
         case "admin":
-          window.location.href = `/admin/dashboard/${user.uid}`;
+          window.location.href = `/admin/home/${user.uid}`;
           break;
         case "institution":
-          window.location.href = `/institute/${user.uid}/dashboard`;
+          window.location.href = `/institute/${user.uid}/home`;
           break;
         case "student":
-          window.location.href = `/student/${user.uid}/dashboard`;
+          window.location.href = `/student/${user.uid}/home`;
           break;
         case "company":
-          window.location.href = `/company/${user.uid}/dashboard`;
+          window.location.href = `/company/${user.uid}/home`;
           break;
         default:
           window.location.href = "/";
@@ -139,7 +139,7 @@ function App() {
 
                 {/* Admin Routes */}
                 <Route
-                  path="/admin/dashboard/:adminId"
+                  path="/admin/home/:adminId"
                   element={
                     <ProtectedRoute requiredRole="admin">
                       <AdminHome />
@@ -189,7 +189,7 @@ function App() {
 
                 {/* Institute Routes */}
                 <Route
-                  path="/institute/:institutionId/dashboard"
+                  path="/institute/:institutionId/home"
                   element={
                     <ProtectedRoute requiredRole="institution">
                       <InstituteHome />
@@ -264,7 +264,7 @@ function App() {
 
                 {/* Student Routes */}
                 <Route
-                  path="/student/:studentId/dashboard"
+                  path="/student/:studentId/home"
                   element={
                     <ProtectedRoute requiredRole="student">
                       <StudentHome />
@@ -314,7 +314,7 @@ function App() {
 
                 {/* Company Routes */}
                 <Route
-                  path="/company/:companyId/dashboard"
+                  path="/company/:companyId/home"
                   element={
                     <ProtectedRoute requiredRole="company">
                       <CompanyHome />

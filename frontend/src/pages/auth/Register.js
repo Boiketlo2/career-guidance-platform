@@ -44,11 +44,11 @@ const Register = () => {
 
       alert(`✅ ${form.role.charAt(0).toUpperCase() + form.role.slice(1)} registered successfully!`);
 
-      // Redirect based on role
-      if (form.role === "student") navigate(`/student/${res.user.uid}/dashboard`);
-      else if (form.role === "company") navigate(`/company/${res.user.uid}/dashboard`);
-      else if (form.role === "institution") navigate(`/institute/${res.user.uid}/dashboard`);
-      else if (form.role === "admin") navigate(`/admin/dashboard/${res.user.uid}`);
+  // Redirect based on role -> go to the dedicated home pages
+  if (form.role === "student") navigate(`/student/${res.user.uid}/home`);
+  else if (form.role === "company") navigate(`/company/${res.user.uid}/home`);
+  else if (form.role === "institution") navigate(`/institute/${res.user.uid}/home`);
+  else if (form.role === "admin") navigate(`/admin/home/${res.user.uid}`);
     } catch (err) {
       console.error(err);
       alert(`❌ Registration failed: ${err.response?.data?.error || err.message}`);

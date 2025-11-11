@@ -20,3 +20,5 @@ services:
       # Add other env vars in the Render dashboard (secrets)
       # - key: FIREBASE_CREDENTIALS
       #   sync: true
+    # Redeploy trigger: update this timestamp to force a redeploy via git push
+    redeployTrigger: "2025-11-10T15:55:00Z"

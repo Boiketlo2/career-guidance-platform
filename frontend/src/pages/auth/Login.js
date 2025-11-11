@@ -21,11 +21,11 @@ const Login = () => {
 
       alert(`✅ Welcome back, ${user.name || user.institutionName || user.companyName}!`);
 
-      // Redirect based on role
-      if (user.role === "student") navigate(`/student/dashboard/${user.uid}`);
-      else if (user.role === "company") navigate(`/company/dashboard/${user.uid}`);
-      else if (user.role === "institution") navigate(`/institute/dashboard/${user.uid}`);
-      else if (user.role === "admin") navigate(`/admin/dashboard/${user.uid}`);
+  // Redirect based on role -> send users to their "home" pages
+  if (user.role === "student") navigate(`/student/${user.uid}/home`);
+  else if (user.role === "company") navigate(`/company/${user.uid}/home`);
+  else if (user.role === "institution") navigate(`/institute/${user.uid}/home`);
+  else if (user.role === "admin") navigate(`/admin/home/${user.uid}`);
       else navigate(`/`);
       
     } catch (err) {
