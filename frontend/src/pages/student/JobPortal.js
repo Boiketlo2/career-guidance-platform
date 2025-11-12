@@ -52,7 +52,7 @@ const JobPortal = () => {
       });
       
       if (res.success) {
-        setMessage("🎉 Application submitted successfully!");
+        setMessage(" Application submitted successfully!");
         setAppliedJobs(prev => new Set([...prev, jobId]));
         setTimeout(() => setMessage(""), 3000);
         
@@ -134,7 +134,7 @@ const JobPortal = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             style={styles.searchInput}
           />
-          <span style={styles.searchIcon}>🔍</span>
+          <span style={styles.searchIcon}></span>
         </div>
         <div style={styles.filterGroup}>
           <button
@@ -160,7 +160,7 @@ const JobPortal = () => {
 
       {filteredJobs.length === 0 ? (
         <div style={styles.emptyState}>
-          <div style={styles.emptyIcon}>💼</div>
+          <div style={styles.emptyIcon}></div>
           <h3>No jobs found</h3>
           <p>No jobs match your current search criteria.</p>
           <button 
@@ -197,11 +197,11 @@ const JobPortal = () => {
 
               <div style={styles.jobDetails}>
                 <div style={styles.detailItem}>
-                  <span style={styles.detailIcon}>🏢</span>
+                  <span style={styles.detailIcon}></span>
                   <span>{job.companyIndustry}</span>
                 </div>
                 <div style={styles.detailItem}>
-                  <span style={styles.detailIcon}>📍</span>
+                  <span style={styles.detailIcon}></span>
                   <span>{job.location || "Lesotho"}</span>
                 </div>
                 {job.requirements && job.requirements.length > 0 && (
