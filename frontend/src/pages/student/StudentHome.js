@@ -135,7 +135,7 @@ const StudentHome = () => {
       {student && !student.emailVerified && (
         <div style={styles.verificationAlert}>
           <div style={styles.alertContent}>
-            <span style={styles.alertIcon}>⚠️</span>
+            <span style={styles.alertIcon}></span>
             <div>
               <strong>Verify your email address</strong>
               <p>Please verify your email to access all features</p>
