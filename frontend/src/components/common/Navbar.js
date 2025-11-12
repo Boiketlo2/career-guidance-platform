@@ -56,7 +56,7 @@ const Navbar = () => {
         zIndex: 100,
       }}
     >
-      {/* Logo / Brand Name */}
+      {/* --- LOGO / BRAND NAME --- */}
       <div style={{ fontSize: "1.4rem", fontWeight: "700", color: "#000" }}>
         <Link
           to={
@@ -72,7 +72,7 @@ const Navbar = () => {
         </Link>
       </div>
 
-      {/* Navigation Links */}
+      {/* --- NAV LINKS --- */}
       <div
         style={{
           display: "flex",
@@ -119,7 +119,7 @@ const Navbar = () => {
         })}
       </div>
 
-      {/* User + Logout */}
+      {/* --- USER + LOGOUT BUTTON --- */}
       <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
         <span style={{ color: "#555", fontSize: "0.95rem" }}>
           {user.email || "User"}
