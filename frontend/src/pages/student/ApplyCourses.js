@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { studentAPI } from "../../api/studentAPI";
 import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const ApplyCourses = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [institutions, setInstitutions] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -15,6 +17,7 @@ const ApplyCourses = () => {
   const [loadingInstitutions, setLoadingInstitutions] = useState(true);
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [applying, setApplying] = useState(false);
+  const [viewMode, setViewMode] = useState("all"); // "all" or "qualified"
 
   // Fetch all institutions with courses
   useEffect(() => {
@@ -112,6 +115,22 @@ const ApplyCourses = () => {
     return course ? course.name : '';
   };
 
+  const handleViewQualifiedCourses = () => {
+    if (!user) {
+      alert("Please log in first.");
+      return;
+    }
+    navigate('/qualified-courses');
+  };
+
+  const handleSetupAcademicRecords = () => {
+    if (!user) {
+      alert("Please log in first.");
+      return;
+    }
+    navigate(`/profile/${user.uid}?tab=academic`);
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
@@ -133,108 +152,173 @@ const ApplyCourses = () => {
         </div>
       )}
 
-      <div style={styles.formCard}>
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Select Institution *</label>
-          {loadingInstitutions ? (
-            <div style={styles.loadingSkeleton}>Loading institutions...</div>
-          ) : (
-            <select
-              style={styles.select}
-              value={selectedInstitution}
-              onChange={(e) => {
-                setSelectedInstitution(e.target.value);
-                setSelectedCourse("");
-              }}
-            >
-              <option value="">-- Select Institution --</option>
-              {institutions.map((inst) => (
-                <option key={inst.id} value={inst.id}>
-                  {inst.name}
-                </option>
-              ))}
-            </select>
-          )}
+      {/* Dual Card Selection */}
+      <div style={styles.selectionCards}>
+        <div 
+          style={styles.card}
+          onClick={() => setViewMode("all")}
+        >
+          <div style={{
+            ...styles.cardIcon,
+            background: viewMode === "all" ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" : "#e2e8f0"
+          }}>
+            
+          </div>
+          <h3 style={styles.cardTitle}>Browse All Courses</h3>
+          <p style={styles.cardDescription}>
+            Explore all available courses from all institutions. Apply to any course you're interested in.
+          </p>
+          <div style={styles.cardBadge}>
+            Current System
+          </div>
         </div>
 
-        {selectedInstitution && (
+        <div 
+          style={styles.card}
+          onClick={handleViewQualifiedCourses}
+        >
+          <div style={{
+            ...styles.cardIcon,
+            background: "linear-gradient(135deg, #10b981 0%, #059669 100%)"
+          }}>
+            
+          </div>
+          <h3 style={styles.cardTitle}>Show Qualified Courses</h3>
+          <p style={styles.cardDescription}>
+            See only the courses you qualify for based on your LGCSE grades and subject requirements.
+          </p>
+          <div style={{
+            ...styles.cardBadge,
+            background: "linear-gradient(135deg, #10b981 0%, #059669 100%)"
+          }}>
+            New Feature
+          </div>
+        </div>
+      </div>
+
+      {/* Setup Academic Records Prompt */}
+      <div style={styles.setupPrompt}>
+        <div style={styles.setupContent}>
+          <h4 style={styles.setupTitle}> First time here?</h4>
+          <p style={styles.setupText}>
+            To see courses you qualify for, you need to set up your academic records first.
+            Add your LGCSE subjects and grades in your profile.
+          </p>
+          <button 
+            onClick={handleSetupAcademicRecords}
+            style={styles.setupButton}
+          >
+            Setup Academic Records
+          </button>
+        </div>
+      </div>
+
+      {/* Original Application Form (Only shown for "all" view) */}
+      {viewMode === "all" && (
+        <div style={styles.formCard}>
           <div style={styles.formGroup}>
-            <label style={styles.label}>Select Course *</label>
-            {loadingCourses ? (
-              <div style={styles.loadingSkeleton}>Loading courses...</div>
+            <label style={styles.label}>Select Institution *</label>
+            {loadingInstitutions ? (
+              <div style={styles.loadingSkeleton}>Loading institutions...</div>
             ) : (
               <select
                 style={styles.select}
-                value={selectedCourse}
-                onChange={(e) => setSelectedCourse(e.target.value)}
+                value={selectedInstitution}
+                onChange={(e) => {
+                  setSelectedInstitution(e.target.value);
+                  setSelectedCourse("");
+                }}
               >
-                <option value="">-- Select Course --</option>
-                {courses.map((course) => (
-                  <option key={course.id} value={course.id}>
-                    {course.name} - {course.duration || "N/A"}
+                <option value="">-- Select Institution --</option>
+                {institutions.map((inst) => (
+                  <option key={inst.id} value={inst.id}>
+                    {inst.name}
                   </option>
                 ))}
               </select>
             )}
           </div>
-        )}
 
-        {selectedCourse && (
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Personal Statement</label>
-            <textarea
-              style={styles.textarea}
-              value={personalStatement}
-              onChange={(e) => setPersonalStatement(e.target.value)}
-              placeholder="Tell us why you're interested in this course and why you'd be a great candidate..."
-              rows="5"
-            />
-            <div style={styles.charCount}>
-              {personalStatement.length}/500 characters
+          {selectedInstitution && (
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Select Course *</label>
+              {loadingCourses ? (
+                <div style={styles.loadingSkeleton}>Loading courses...</div>
+              ) : (
+                <select
+                  style={styles.select}
+                  value={selectedCourse}
+                  onChange={(e) => setSelectedCourse(e.target.value)}
+                >
+                  <option value="">-- Select Course --</option>
+                  {courses.map((course) => (
+                    <option key={course.id} value={course.id}>
+                      {course.name} - {course.duration || "N/A"}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
-          </div>
-        )}
-
-        {(selectedInstitution && selectedCourse) && (
-          <div style={styles.summary}>
-            <h4 style={styles.summaryTitle}>Application Summary</h4>
-            <div style={styles.summaryItem}>
-              <strong>Institution:</strong> {getSelectedInstitutionName()}
-            </div>
-            <div style={styles.summaryItem}>
-              <strong>Course:</strong> {getSelectedCourseName()}
-            </div>
-          </div>
-        )}
-
-        <button
-          onClick={handleApply}
-          disabled={!selectedInstitution || !selectedCourse || applying}
-          style={{
-            ...styles.button,
-            ...((selectedInstitution && selectedCourse && !applying)
-              ? styles.buttonActive
-              : styles.buttonDisabled),
-          }}
-        >
-          {applying ? (
-            <>
-              <div style={styles.spinner}></div>
-              Submitting Application...
-            </>
-          ) : (
-            "Submit Application"
           )}
-        </button>
-      </div>
+
+          {selectedCourse && (
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Personal Statement</label>
+              <textarea
+                style={styles.textarea}
+                value={personalStatement}
+                onChange={(e) => setPersonalStatement(e.target.value)}
+                placeholder="Tell us why you're interested in this course and why you'd be a great candidate..."
+                rows="5"
+              />
+              <div style={styles.charCount}>
+                {personalStatement.length}/500 characters
+              </div>
+            </div>
+          )}
+
+          {(selectedInstitution && selectedCourse) && (
+            <div style={styles.summary}>
+              <h4 style={styles.summaryTitle}>Application Summary</h4>
+              <div style={styles.summaryItem}>
+                <strong>Institution:</strong> {getSelectedInstitutionName()}
+              </div>
+              <div style={styles.summaryItem}>
+                <strong>Course:</strong> {getSelectedCourseName()}
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={handleApply}
+            disabled={!selectedInstitution || !selectedCourse || applying}
+            style={{
+              ...styles.button,
+              ...((selectedInstitution && selectedCourse && !applying)
+                ? styles.buttonActive
+                : styles.buttonDisabled),
+            }}
+          >
+            {applying ? (
+              <>
+                <div style={styles.spinner}></div>
+                Submitting Application...
+              </>
+            ) : (
+              "Submit Application"
+            )}
+          </button>
+        </div>
+      )}
 
       <div style={styles.infoBox}>
-        <h4 style={styles.infoTitle}> Application Guidelines</h4>
+        <h4 style={styles.infoTitle}>Application Guidelines</h4>
         <ul style={styles.infoList}>
           <li>You can apply for maximum 2 courses per institution</li>
           <li>Ensure all information is accurate before submitting</li>
           <li>You will receive admission results via email and dashboard</li>
           <li>Contact institution directly for specific course requirements</li>
+          <li><strong>New:</strong> Set up your academic records to see only courses you qualify for</li>
         </ul>
       </div>
     </div>
@@ -243,7 +327,7 @@ const ApplyCourses = () => {
 
 const styles = {
   container: {
-    maxWidth: "800px",
+    maxWidth: "1000px",
     margin: "30px auto",
     padding: "0 20px",
     fontFamily: "'Inter', 'Segoe UI', sans-serif",
@@ -264,6 +348,89 @@ const styles = {
     fontSize: "1.1rem",
     color: "#666",
     fontWeight: "400",
+  },
+  selectionCards: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+    gap: "30px",
+    marginBottom: "40px",
+  },
+  card: {
+    background: "#fff",
+    padding: "30px",
+    borderRadius: "16px",
+    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+    border: "1px solid rgba(255, 255, 255, 0.2)",
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+    position: "relative",
+    overflow: "hidden",
+  },
+  cardIcon: {
+    width: "60px",
+    height: "60px",
+    borderRadius: "12px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "24px",
+    marginBottom: "20px",
+  },
+  cardTitle: {
+    fontSize: "1.3rem",
+    fontWeight: "600",
+    color: "#2d3748",
+    marginBottom: "12px",
+  },
+  cardDescription: {
+    color: "#4a5568",
+    lineHeight: "1.6",
+    fontSize: "14px",
+  },
+  cardBadge: {
+    position: "absolute",
+    top: "15px",
+    right: "15px",
+    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    color: "white",
+    padding: "4px 12px",
+    borderRadius: "20px",
+    fontSize: "12px",
+    fontWeight: "600",
+  },
+  setupPrompt: {
+    background: "linear-gradient(135deg, #fff5f5, #fed7d7)",
+    border: "1px solid #fed7d7",
+    borderRadius: "12px",
+    padding: "20px",
+    marginBottom: "30px",
+  },
+  setupContent: {
+    display: "flex",
+    alignItems: "center",
+    gap: "20px",
+  },
+  setupTitle: {
+    margin: "0 0 8px 0",
+    color: "#2d3748",
+    fontSize: "1.1rem",
+  },
+  setupText: {
+    margin: "0",
+    color: "#4a5568",
+    fontSize: "14px",
+    flex: "1",
+  },
+  setupButton: {
+    padding: "10px 20px",
+    background: "linear-gradient(135deg, #ed8936, #dd6b20)",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "14px",
+    whiteSpace: "nowrap",
   },
   formCard: {
     background: "#fff",
