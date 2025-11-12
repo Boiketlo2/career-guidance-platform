@@ -133,7 +133,7 @@ const ApplyCourses = () => {
       {/* Header */}
       <div style={styles.header}>
         <h2 style={styles.title}>Apply for Courses</h2>
-        <p style={styles.subtitle}>Explore courses from multiple institutions and apply easily</p>
+        <p style={styles.subtitle}>Explore courses from multiple institutions and submit your applications</p>
       </div>
 
       {message && <div style={styles.successMessage}>{message}</div>}
@@ -141,7 +141,16 @@ const ApplyCourses = () => {
 
       {/* Course Selection Cards */}
       <div style={styles.selectionCards}>
-        <div style={styles.card} onClick={() => setViewMode("all")}>
+        <div 
+          style={{ 
+            ...styles.card, 
+            ...(viewMode === "all" ? styles.cardActive : {}),
+            cursor: 'pointer'
+          }} 
+          onClick={() => setViewMode("all")}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+        >
           <h3 style={styles.cardTitle}>Browse All Courses</h3>
           <p style={styles.cardDescription}>
             Explore all available courses from all institutions. Apply to any course you're interested in.
@@ -149,28 +158,41 @@ const ApplyCourses = () => {
           <div style={styles.cardBadge}>Current System</div>
         </div>
 
-        <div style={styles.card} onClick={handleViewQualifiedCourses}>
+        <div 
+          style={{ 
+            ...styles.card, 
+            cursor: 'pointer'
+          }} 
+          onClick={handleViewQualifiedCourses}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+        >
           <h3 style={styles.cardTitle}>Show Qualified Courses</h3>
           <p style={styles.cardDescription}>
             See only the courses you qualify for based on your LGCSE grades and subject requirements.
           </p>
-          <div style={styles.cardBadge}>New Feature</div>
+          <div style={styles.cardBadgeNew}>New Feature</div>
         </div>
       </div>
 
       {/* Setup Academic Records */}
       <div style={styles.setupPrompt}>
         <div style={styles.setupContent}>
-          <div>
+          <div style={styles.setupTextContent}>
             <h4 style={styles.setupTitle}>First time here?</h4>
             <p style={styles.setupText}>
               To see courses you qualify for, you need to set up your academic records first.
               Add your LGCSE subjects and grades in your profile.
             </p>
-            <button onClick={handleSetupAcademicRecords} style={styles.setupButton}>
-              Setup Academic Records
-            </button>
           </div>
+          <button 
+            onClick={handleSetupAcademicRecords} 
+            style={styles.setupButton}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#333'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = '#1a1a1a'}
+          >
+            Setup Academic Records
+          </button>
         </div>
       </div>
 
@@ -216,6 +238,7 @@ const ApplyCourses = () => {
                 onChange={(e) => setPersonalStatement(e.target.value)}
                 placeholder="Tell us why you're interested in this course and why you'd be a great candidate..."
                 rows="5"
+                maxLength="500"
               />
               <div style={styles.charCount}>{personalStatement.length}/500 characters</div>
             </div>
@@ -232,7 +255,20 @@ const ApplyCourses = () => {
           <button
             onClick={handleApply}
             disabled={!selectedInstitution || !selectedCourse || applying}
-            style={{ ...styles.button, ...((selectedInstitution && selectedCourse && !applying) ? styles.buttonActive : styles.buttonDisabled) }}
+            style={{ 
+              ...styles.button, 
+              ...((selectedInstitution && selectedCourse && !applying) ? styles.buttonActive : styles.buttonDisabled) 
+            }}
+            onMouseEnter={(e) => {
+              if (selectedInstitution && selectedCourse && !applying) {
+                e.target.style.backgroundColor = '#333';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (selectedInstitution && selectedCourse && !applying) {
+                e.target.style.backgroundColor = '#1a1a1a';
+              }
+            }}
           >
             {applying ? "Submitting Application..." : "Submit Application"}
           </button>
@@ -255,38 +291,262 @@ const ApplyCourses = () => {
 };
 
 const styles = {
-  container: { maxWidth: "1000px", margin: "30px auto", padding: "0 20px", fontFamily: "'Inter', 'Segoe UI', sans-serif" },
-  header: { textAlign: "center", marginBottom: "40px", padding: "20px", borderRadius: "12px", backgroundColor: "#f7fafc", border: "1px solid #e2e8f0" },
-  title: { fontSize: "2.5rem", fontWeight: "700", color: "#2d3748", marginBottom: "10px" },
-  subtitle: { fontSize: "1.1rem", color: "#4a5568", fontWeight: "400" },
-  selectionCards: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "30px", marginBottom: "40px" },
-  card: { background: "#fff", padding: "30px", borderRadius: "16px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #e2e8f0", cursor: "pointer", transition: "all 0.3s ease", position: "relative", overflow: "hidden" },
-  cardTitle: { fontSize: "1.3rem", fontWeight: "600", color: "#2d3748", marginBottom: "12px" },
-  cardDescription: { color: "#4a5568", lineHeight: "1.6", fontSize: "14px" },
-  cardBadge: { position: "absolute", top: "15px", right: "15px", background: "#667eea", color: "white", padding: "4px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: "600" },
-  setupPrompt: { background: "#f7fafc", border: "1px solid #e2e8f0", borderRadius: "12px", padding: "20px", marginBottom: "30px" },
-  setupContent: { display: "flex", alignItems: "center", gap: "20px" },
-  setupTitle: { margin: "0 0 8px 0", color: "#2d3748", fontSize: "1.1rem" },
-  setupText: { margin: "0", color: "#4a5568", fontSize: "14px", flex: "1" },
-  setupButton: { padding: "10px 20px", background: "#667eea", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "600", fontSize: "14px" },
-  formCard: { background: "#fff", padding: "40px", borderRadius: "16px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #e2e8f0", marginBottom: "30px" },
-  formGroup: { marginBottom: "30px" },
-  label: { display: "block", fontWeight: "600", marginBottom: "12px", color: "#2d3748", fontSize: "1rem" },
-  select: { width: "100%", padding: "14px 16px", fontSize: "16px", borderRadius: "10px", border: "2px solid #e2e8f0", backgroundColor: "#fff", outline: "none" },
-  textarea: { width: "100%", padding: "16px", borderRadius: "10px", border: "2px solid #e2e8f0", fontSize: "15px", resize: "vertical", minHeight: "120px", outline: "none", fontFamily: "inherit" },
-  charCount: { textAlign: "right", fontSize: "12px", color: "#718096", marginTop: "5px" },
-  button: { width: "100%", padding: "16px", borderRadius: "10px", border: "none", fontSize: "16px", fontWeight: "600", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" },
-  buttonActive: { background: "#667eea", color: "#fff" },
-  buttonDisabled: { background: "#cbd5e0", color: "#718096", cursor: "not-allowed" },
-  summary: { background: "#f7fafc", padding: "20px", borderRadius: "10px", border: "1px solid #e2e8f0", marginBottom: "25px" },
-  summaryTitle: { margin: "0 0 15px 0", color: "#2d3748", fontSize: "1.1rem" },
-  summaryItem: { marginBottom: "8px", color: "#4a5568" },
-  infoBox: { background: "#f7fafc", padding: "25px", borderRadius: "12px", border: "1px solid #e2e8f0" },
-  infoTitle: { margin: "0 0 15px 0", color: "#2d3748", fontSize: "1.1rem" },
-  infoList: { margin: "0", paddingLeft: "20px", color: "#4a5568", lineHeight: "1.6" },
-  loadingSkeleton: { padding: "14px 16px", backgroundColor: "#f7fafc", border: "2px solid #e2e8f0", borderRadius: "10px", color: "#a0aec0", textAlign: "center" },
-  successMessage: { background: "#48bb78", color: "#fff", padding: "16px 20px", borderRadius: "10px", marginBottom: "25px" },
-  errorMessage: { background: "#f56565", color: "#fff", padding: "16px 20px", borderRadius: "10px", marginBottom: "25px" },
+  container: { 
+    maxWidth: "1000px", 
+    margin: "2rem auto", 
+    padding: "0 1.25rem", 
+    fontFamily: "'Inter', 'Segoe UI', sans-serif" 
+  },
+  header: { 
+    textAlign: "center", 
+    marginBottom: "2.5rem", 
+    padding: "2rem", 
+    borderRadius: "8px", 
+    backgroundColor: "#fff", 
+    border: "1px solid #e0e0e0",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)" 
+  },
+  title: { 
+    fontSize: "2rem", 
+    fontWeight: "700", 
+    color: "#1a1a1a", 
+    marginBottom: "0.75rem" 
+  },
+  subtitle: { 
+    fontSize: "1.1rem", 
+    color: "#666", 
+    fontWeight: "400",
+    margin: "0" 
+  },
+  selectionCards: { 
+    display: "grid", 
+    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", 
+    gap: "1.5rem", 
+    marginBottom: "2.5rem" 
+  },
+  card: { 
+    background: "#fff", 
+    padding: "2rem", 
+    borderRadius: "8px", 
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)", 
+    border: "1px solid #e0e0e0", 
+    cursor: "pointer", 
+    transition: "all 0.2s ease", 
+    position: "relative", 
+    overflow: "hidden" 
+  },
+  cardActive: {
+    border: "2px solid #1a1a1a",
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)"
+  },
+  cardTitle: { 
+    fontSize: "1.25rem", 
+    fontWeight: "600", 
+    color: "#1a1a1a", 
+    marginBottom: "0.75rem" 
+  },
+  cardDescription: { 
+    color: "#666", 
+    lineHeight: "1.6", 
+    fontSize: "0.9rem",
+    margin: "0" 
+  },
+  cardBadge: { 
+    position: "absolute", 
+    top: "1rem", 
+    right: "1rem", 
+    background: "#666", 
+    color: "white", 
+    padding: "0.25rem 0.75rem", 
+    borderRadius: "12px", 
+    fontSize: "0.75rem", 
+    fontWeight: "600" 
+  },
+  cardBadgeNew: { 
+    position: "absolute", 
+    top: "1rem", 
+    right: "1rem", 
+    background: "#1a1a1a", 
+    color: "white", 
+    padding: "0.25rem 0.75rem", 
+    borderRadius: "12px", 
+    fontSize: "0.75rem", 
+    fontWeight: "600" 
+  },
+  setupPrompt: { 
+    background: "#f8f8f8", 
+    border: "1px solid #e0e0e0", 
+    borderRadius: "8px", 
+    padding: "1.5rem", 
+    marginBottom: "2rem" 
+  },
+  setupContent: { 
+    display: "flex", 
+    alignItems: "center", 
+    justifyContent: "space-between",
+    gap: "1.5rem" 
+  },
+  setupTextContent: {
+    flex: "1"
+  },
+  setupTitle: { 
+    margin: "0 0 0.5rem 0", 
+    color: "#1a1a1a", 
+    fontSize: "1.1rem",
+    fontWeight: "600" 
+  },
+  setupText: { 
+    margin: "0", 
+    color: "#666", 
+    fontSize: "0.9rem", 
+    lineHeight: "1.5" 
+  },
+  setupButton: { 
+    padding: "0.75rem 1.5rem", 
+    background: "#1a1a1a", 
+    color: "white", 
+    border: "none", 
+    borderRadius: "6px", 
+    cursor: "pointer", 
+    fontWeight: "600", 
+    fontSize: "0.9rem",
+    transition: "all 0.2s ease",
+    whiteSpace: "nowrap"
+  },
+  formCard: { 
+    background: "#fff", 
+    padding: "2.5rem", 
+    borderRadius: "8px", 
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)", 
+    border: "1px solid #e0e0e0", 
+    marginBottom: "2rem" 
+  },
+  formGroup: { 
+    marginBottom: "1.5rem" 
+  },
+  label: { 
+    display: "block", 
+    fontWeight: "600", 
+    marginBottom: "0.5rem", 
+    color: "#1a1a1a", 
+    fontSize: "0.95rem" 
+  },
+  select: { 
+    width: "100%", 
+    padding: "0.875rem 1rem", 
+    fontSize: "0.95rem", 
+    borderRadius: "6px", 
+    border: "1px solid #e0e0e0", 
+    backgroundColor: "#fff", 
+    outline: "none",
+    transition: "border 0.2s ease"
+  },
+  textarea: { 
+    width: "100%", 
+    padding: "1rem", 
+    borderRadius: "6px", 
+    border: "1px solid #e0e0e0", 
+    fontSize: "0.95rem", 
+    resize: "vertical", 
+    minHeight: "120px", 
+    outline: "none", 
+    fontFamily: "inherit",
+    transition: "border 0.2s ease"
+  },
+  charCount: { 
+    textAlign: "right", 
+    fontSize: "0.8rem", 
+    color: "#999", 
+    marginTop: "0.5rem" 
+  },
+  button: { 
+    width: "100%", 
+    padding: "1rem", 
+    borderRadius: "6px", 
+    border: "none", 
+    fontSize: "1rem", 
+    fontWeight: "600", 
+    cursor: "pointer", 
+    display: "flex", 
+    alignItems: "center", 
+    justifyContent: "center", 
+    gap: "0.5rem",
+    transition: "all 0.2s ease"
+  },
+  buttonActive: { 
+    background: "#1a1a1a", 
+    color: "#fff" 
+  },
+  buttonDisabled: { 
+    background: "#f0f0f0", 
+    color: "#999", 
+    cursor: "not-allowed" 
+  },
+  summary: { 
+    background: "#f8f8f8", 
+    padding: "1.5rem", 
+    borderRadius: "6px", 
+    border: "1px solid #e0e0e0", 
+    marginBottom: "1.5rem" 
+  },
+  summaryTitle: { 
+    margin: "0 0 1rem 0", 
+    color: "#1a1a1a", 
+    fontSize: "1.1rem",
+    fontWeight: "600" 
+  },
+  summaryItem: { 
+    marginBottom: "0.5rem", 
+    color: "#666",
+    fontSize: "0.95rem" 
+  },
+  infoBox: { 
+    background: "#fff", 
+    padding: "1.5rem", 
+    borderRadius: "8px", 
+    border: "1px solid #e0e0e0",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)" 
+  },
+  infoTitle: { 
+    margin: "0 0 1rem 0", 
+    color: "#1a1a1a", 
+    fontSize: "1.1rem",
+    fontWeight: "600" 
+  },
+  infoList: { 
+    margin: "0", 
+    paddingLeft: "1.25rem", 
+    color: "#666", 
+    lineHeight: "1.6",
+    fontSize: "0.9rem" 
+  },
+  loadingSkeleton: { 
+    padding: "0.875rem 1rem", 
+    backgroundColor: "#f8f8f8", 
+    border: "1px solid #e0e0e0", 
+    borderRadius: "6px", 
+    color: "#999", 
+    textAlign: "center",
+    fontSize: "0.9rem" 
+  },
+  successMessage: { 
+    background: "#f0f8f0", 
+    color: "#2d5a2d", 
+    padding: "1rem 1.25rem", 
+    borderRadius: "6px", 
+    marginBottom: "1.5rem",
+    border: "1px solid #d0e8d0",
+    fontSize: "0.95rem"
+  },
+  errorMessage: { 
+    background: "#f8f0f0", 
+    color: "#8b2d2d", 
+    padding: "1rem 1.25rem", 
+    borderRadius: "6px", 
+    marginBottom: "1.5rem",
+    border: "1px solid #e8d0d0",
+    fontSize: "0.95rem"
+  },
 };
 
 export default ApplyCourses;
