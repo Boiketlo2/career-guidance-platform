@@ -1,370 +1,154 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { instituteAPI } from "../../api/instituteAPI";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 const Profile = () => {
-  const { institutionId } = useParams();
-
-  const [profile, setProfile] = useState({
-    name: "",
-    email: "",
-    location: "",
-    contact: "",
-    website: "",
-    description: "",
-    type: ""
-  });
+  const [institute, setInstitute] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchProfile();
-  }, [institutionId]);
+    const fetchInstitute = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user || !user.uid) {
+          setError("User not found.");
+          setLoading(false);
+          return;
+        }
 
-  const fetchProfile = async () => {
-    try {
-      const response = await instituteAPI.getProfile(institutionId);
-      if (response.success) {
-        setProfile(response.institution);
-      } else {
-        setError("Failed to load profile");
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/institute/${user.uid}`
+        );
+        setInstitute(response.data);
+      } catch (err) {
+        setError("Failed to load institute profile.");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Error fetching profile:", err);
-      setError("Failed to load profile");
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setProfile(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+    fetchInstitute();
+  }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setUpdating(true);
-    setMessage("");
-    setError("");
-
-    try {
-      const response = await instituteAPI.updateProfile(institutionId, profile);
-      if (response.success) {
-        setMessage("Profile updated successfully!");
-      } else {
-        setError(response.error || "Failed to update profile");
-      }
-    } catch (err) {
-      console.error("Error updating profile:", err);
-      setError("Failed to update profile");
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  if (loading) {
+  if (loading)
     return (
-      <div className="loading-container">
-        <div className="loading-spinner">Loading profile...</div>
+      <div style={{ textAlign: "center", marginTop: "50px" }}>
+        <p>Loading profile...</p>
       </div>
     );
-  }
+
+  if (error)
+    return (
+      <div style={{ textAlign: "center", marginTop: "50px", color: "red" }}>
+        <p>{error}</p>
+      </div>
+    );
 
   return (
-    <div className="institute-profile">
-      <style>{`
-        .institute-profile {
-          min-height: 100vh;
-          padding: 2rem;
-          background: linear-gradient(135deg, rgba(34,40,49,1), rgba(57,62,70,1));
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          color: #fff;
-          font-family: "Inter", sans-serif;
-        }
+    <div className="profile-container">
+      <style>
+        {`
+          .profile-container {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+          }
 
-        .page-header {
-          text-align: center;
-          margin-bottom: 2rem;
-        }
+          .profile-header {
+            background-color: #6c8ef7;
+            color: white;
+            padding: 30px 40px;
+            text-align: left;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          }
 
-        .page-header h1 {
-          font-size: 2rem;
-          font-weight: 700;
-          color: #fff;
-        }
+          .profile-header h2 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+          }
 
-        .page-header p {
-          color: rgba(255, 255, 255, 0.7);
-        }
+          .profile-header p {
+            margin-top: 5px;
+            font-size: 16px;
+            color: #f0f0f0;
+          }
 
-        .profile-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-          gap: 2rem;
-          width: 100%;
-          max-width: 1100px;
-          margin-top: 1rem;
-        }
+          .profile-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 25px;
+            padding: 40px 20px;
+          }
 
-        .glass-card {
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(15px);
-          -webkit-backdrop-filter: blur(15px);
-          border-radius: 20px;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          padding: 2rem;
-          transition: all 0.3s ease;
-          cursor: pointer;
-          box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-        }
+          .profile-card {
+            background-color: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            padding: 25px;
+            width: 350px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+          }
 
-        .glass-card:hover {
-          transform: translateY(-5px);
-          background: rgba(255, 255, 255, 0.15);
-        }
+          .profile-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+          }
 
-        .profile-form {
-          display: flex;
-          flex-direction: column;
-          gap: 1.5rem;
-        }
+          .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #6c8ef7;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #6c8ef7;
+            display: inline-block;
+            padding-bottom: 4px;
+          }
 
-        .form-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-          gap: 1.5rem;
-        }
+          .card-info {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-top: 5px;
+          }
 
-        .form-group {
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-        }
+          .card-info span {
+            font-weight: 600;
+            color: #222;
+          }
+        `}
+      </style>
 
-        .form-group label {
-          font-weight: 500;
-          font-size: 0.95rem;
-          color: #fff;
-        }
-
-        input, select, textarea {
-          background: rgba(255, 255, 255, 0.15);
-          border: none;
-          border-radius: 10px;
-          padding: 0.8rem;
-          color: #fff;
-          outline: none;
-          transition: all 0.2s ease;
-        }
-
-        input:focus, select:focus, textarea:focus {
-          background: rgba(255, 255, 255, 0.25);
-        }
-
-        textarea {
-          resize: none;
-        }
-
-        .form-actions {
-          display: flex;
-          gap: 1rem;
-          margin-top: 1rem;
-        }
-
-        .btn-primary {
-          background: linear-gradient(135deg, #00adb5, #00e0c6);
-          color: #fff;
-          border: none;
-          padding: 0.8rem 1.5rem;
-          border-radius: 12px;
-          cursor: pointer;
-          transition: 0.3s ease;
-          font-weight: 600;
-        }
-
-        .btn-primary:hover {
-          transform: scale(1.05);
-          background: linear-gradient(135deg, #00e0c6, #00adb5);
-        }
-
-        .btn-secondary {
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          color: #fff;
-          border-radius: 12px;
-          padding: 0.8rem 1.5rem;
-          cursor: pointer;
-        }
-
-        .btn-secondary:hover {
-          background: rgba(255, 255, 255, 0.2);
-        }
-
-        .profile-stats {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-        }
-
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-          gap: 1rem;
-        }
-
-        .stat-item {
-          background: rgba(255, 255, 255, 0.12);
-          padding: 1rem;
-          border-radius: 12px;
-          text-align: center;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .stat-label {
-          font-size: 0.85rem;
-          color: rgba(255, 255, 255, 0.7);
-        }
-
-        .stat-value {
-          display: block;
-          font-size: 1.1rem;
-          font-weight: 600;
-          margin-top: 0.5rem;
-        }
-
-        .status-active {
-          color: #00e0c6;
-        }
-
-        .success-message {
-          background: rgba(0, 255, 150, 0.2);
-          padding: 1rem;
-          border-radius: 10px;
-          color: #00ffcc;
-          margin-bottom: 1rem;
-        }
-
-        .error-message {
-          background: rgba(255, 99, 99, 0.2);
-          padding: 1rem;
-          border-radius: 10px;
-          color: #ff7070;
-          margin-bottom: 1rem;
-        }
-
-        .loading-container {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 80vh;
-          color: #fff;
-          font-size: 1.2rem;
-        }
-      `}</style>
-
-      <div className="page-header">
-        <h1>Institute Profile</h1>
-        <p>Manage your institution's information and settings</p>
+      <div className="profile-header">
+        <h2>Institute Profile</h2>
+        <p>Manage and view your institution’s details</p>
       </div>
 
-      {message && <div className="success-message">{message}</div>}
-      {error && <div className="error-message">{error}</div>}
-
-      <div className="profile-grid">
-        {/* 🧾 Basic Information Card */}
-        <div className="glass-card" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <h3>Basic Information</h3>
-          <form onSubmit={handleSubmit} className="profile-form">
-            <div className="form-grid">
-              <div className="form-group">
-                <label htmlFor="name">Institution Name *</label>
-                <input type="text" id="name" name="name" value={profile.name} onChange={handleChange} required />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="email">Email Address *</label>
-                <input type="email" id="email" name="email" value={profile.email} onChange={handleChange} required />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="location">Location *</label>
-                <input type="text" id="location" name="location" value={profile.location} onChange={handleChange} required />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="contact">Contact Number *</label>
-                <input type="text" id="contact" name="contact" value={profile.contact} onChange={handleChange} required />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="type">Institution Type</label>
-                <select id="type" name="type" value={profile.type} onChange={handleChange}>
-                  <option value="Public">Public</option>
-                  <option value="Private">Private</option>
-                  <option value="Community">Community</option>
-                  <option value="Technical">Technical</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="website">Website</label>
-                <input type="url" id="website" name="website" value={profile.website} onChange={handleChange} placeholder="https://example.com" />
-              </div>
-            </div>
-
-            <div className="form-group full-width">
-              <label htmlFor="description">Description</label>
-              <textarea
-                id="description"
-                name="description"
-                value={profile.description}
-                onChange={handleChange}
-                placeholder="Brief description of your institution, programs offered, mission, etc."
-                rows="4"
-              />
-            </div>
-
-            <div className="form-actions">
-              <button type="submit" disabled={updating} className="btn-primary">
-                {updating ? "Updating Profile..." : "Save Changes"}
-              </button>
-              <button type="button" onClick={() => window.location.reload()} className="btn-secondary">
-                Cancel
-              </button>
-            </div>
-          </form>
+      <div className="profile-content">
+        <div className="profile-card">
+          <div className="card-title">General Information</div>
+          <div className="card-info">
+            <p><span>Name:</span> {institute?.name || "N/A"}</p>
+            <p><span>Email:</span> {institute?.email || "N/A"}</p>
+            <p><span>Type:</span> {institute?.type || "N/A"}</p>
+          </div>
         </div>
 
-        {/* 📊 Institution Statistics Card */}
-        <div className="glass-card" onClick={() => alert('Statistics card clicked!')}>
-          <h3>Institution Statistics</h3>
-          <div className="profile-stats">
-            <div className="stats-grid">
-              <div className="stat-item">
-                <span className="stat-label">Institution ID</span>
-                <span className="stat-value">{institutionId}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Status</span>
-                <span className={`stat-value status-${profile.status || 'active'}`}>{profile.status || 'Active'}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Member Since</span>
-                <span className="stat-value">{profile.createdAt ? new Date(profile.createdAt).toLocaleDateString() : 'N/A'}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Last Updated</span>
-                <span className="stat-value">{profile.updatedAt ? new Date(profile.updatedAt).toLocaleDateString() : 'N/A'}</span>
-              </div>
-            </div>
+        <div className="profile-card">
+          <div className="card-title">Location & Contact</div>
+          <div className="card-info">
+            <p><span>Address:</span> {institute?.address || "N/A"}</p>
+            <p><span>Phone:</span> {institute?.phone || "N/A"}</p>
+            <p><span>Website:</span> {institute?.website || "N/A"}</p>
+          </div>
+        </div>
+
+        <div className="profile-card">
+          <div className="card-title">About</div>
+          <div className="card-info">
+            <p>{institute?.description || "No description provided."}</p>
           </div>
         </div>
       </div>
