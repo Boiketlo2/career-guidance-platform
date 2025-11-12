@@ -71,7 +71,7 @@ const AddCourse = () => {
     <div style={styles.container}>
       <div style={styles.card}>
         <div style={styles.header}>
-          <h1 style={styles.title}>➕ Add New Course</h1>
+          <h1 style={styles.title}> Add New Course</h1>
           <button
             style={styles.backButton}
             onClick={() => navigate(`/institute/${institutionId}/courses`)}
