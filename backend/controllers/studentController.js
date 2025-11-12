@@ -2,6 +2,301 @@ import { db } from "../utils/firebase.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
 import { sendJobApplicationNotification } from "../utils/emailService.js";
 
+// Grading configuration for Lesotho LGCSE
+const GRADING_SCALE = {
+  'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7
+};
+
+// Predefined Lesotho subjects
+const PREDEFINED_SUBJECTS = [
+  "Mathematics", "English", "Sesotho", "Science", "Biology", 
+  "Physics", "Chemistry", "Geography", "History", "Commerce",
+  "Accounting", "Agriculture", "Computer Studies", "Development Studies",
+  "Religious Education", "French", "Business Studies", "Economics",
+  "Physical Education", "Art and Design"
+];
+
+// Valid grades for dropdown
+const VALID_GRADES = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+
+// 🔹 Save student subjects and grades
+export const saveStudentSubjects = asyncHandler(async (req, res) => {
+  const { studentId } = req.params;
+  const { subjects } = req.body;
+
+  console.log(`📚 Saving subjects for student: ${studentId}`, subjects);
+
+  // Validate input
+  if (!subjects || !Array.isArray(subjects)) {
+    return res.status(400).json({ 
+      success: false, 
+      error: "Subjects must be an array" 
+    });
+  }
+
+  // Validate each subject
+  for (const subject of subjects) {
+    if (!subject.subject || !subject.grade) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Each subject must have subject name and grade" 
+      });
+    }
+    
+    if (!VALID_GRADES.includes(subject.grade.toUpperCase())) {
+      return res.status(400).json({ 
+        success: false, 
+        error: `Invalid grade: ${subject.grade}. Must be one of: ${VALID_GRADES.join(', ')}` 
+      });
+    }
+  }
+
+  const studentRef = db.collection("users").doc(studentId);
+  const studentDoc = await studentRef.get();
+
+  if (!studentDoc.exists) {
+    return res.status(404).json({ success: false, error: "Student not found" });
+  }
+
+  // Update student with subjects
+  await studentRef.update({
+    subjects: subjects.map(subject => ({
+      ...subject,
+      grade: subject.grade.toUpperCase() // Ensure consistent casing
+    })),
+    updatedAt: new Date().toISOString(),
+  });
+
+  res.status(200).json({ 
+    success: true, 
+    message: "Subjects saved successfully",
+    subjects: subjects.map(subject => ({
+      ...subject,
+      grade: subject.grade.toUpperCase()
+    }))
+  });
+});
+
+// 🔹 Get student subjects
+export const getStudentSubjects = asyncHandler(async (req, res) => {
+  const { studentId } = req.params;
+
+  const studentDoc = await db.collection("users").doc(studentId).get();
+  
+  if (!studentDoc.exists) {
+    return res.status(404).json({ success: false, error: "Student not found" });
+  }
+
+  const studentData = studentDoc.data();
+  const subjects = studentData.subjects || [];
+
+  res.status(200).json({ 
+    success: true, 
+    subjects,
+    predefinedSubjects: PREDEFINED_SUBJECTS,
+    validGrades: VALID_GRADES
+  });
+});
+
+// 🔹 Get predefined subjects list
+export const getPredefinedSubjects = asyncHandler(async (req, res) => {
+  res.status(200).json({ 
+    success: true, 
+    subjects: PREDEFINED_SUBJECTS,
+    grades: VALID_GRADES
+  });
+});
+
+// Helper function to parse course requirements
+const parseRequirement = (reqString) => {
+  // Handle different requirement formats
+  const patterns = [
+    /^([a-zA-Z\s]+)\s+([A-G1-7])$/,  // "Mathematics C"
+    /^([a-zA-Z\s]+)\s+Grade\s+([A-G1-7])$/i, // "Mathematics Grade C"
+    /^([a-zA-Z\s]+)\s+at\s+least\s+([A-G1-7])$/i, // "Mathematics at least C"
+    /^Grade\s+([A-G1-7])\s+in\s+([a-zA-Z\s]+)$/i // "Grade C in Mathematics"
+  ];
+  
+  for (let pattern of patterns) {
+    const match = reqString.match(pattern);
+    if (match) {
+      // Handle different pattern groups
+      let subject, minGrade;
+      if (pattern.source.includes('Grade.*in')) {
+        minGrade = match[1].toUpperCase();
+        subject = match[2].trim();
+      } else {
+        subject = match[1].trim();
+        minGrade = match[2].toUpperCase();
+      }
+      
+      return {
+        subject,
+        minGrade,
+        type: 'grade_requirement'
+      };
+    }
+  }
+  
+  // Handle non-grade requirements
+  if (reqString.toLowerCase().includes('at least') && 
+      reqString.toLowerCase().includes('pass')) {
+    return {
+      type: 'minimum_passes',
+      description: reqString
+    };
+  }
+  
+  // Return as general requirement
+  return {
+    type: 'general',
+    description: reqString
+  };
+};
+
+// Helper function to check if student qualifies for a course
+const studentQualifiesForCourse = (studentSubjects, courseRequirements) => {
+  if (!courseRequirements || !Array.isArray(courseRequirements) || courseRequirements.length === 0) {
+    return true; // No requirements specified, student qualifies
+  }
+
+  const studentGradeMap = {};
+  studentSubjects.forEach(subject => {
+    studentGradeMap[subject.subject.toLowerCase()] = subject.grade;
+  });
+
+  let totalPasses = 0;
+  let requiredPasses = 0;
+
+  for (const reqString of courseRequirements) {
+    const requirement = parseRequirement(reqString);
+    
+    if (requirement.type === 'grade_requirement') {
+      const studentGrade = studentGradeMap[requirement.subject.toLowerCase()];
+      
+      if (!studentGrade) {
+        return false; // Student doesn't have this required subject
+      }
+      
+      // Compare grades - lower number is better (A=1, B=2, etc.)
+      const studentGradeValue = GRADING_SCALE[studentGrade];
+      const requiredGradeValue = GRADING_SCALE[requirement.minGrade];
+      
+      if (studentGradeValue > requiredGradeValue) {
+        return false; // Student's grade is worse than required
+      }
+    }
+    else if (requirement.type === 'minimum_passes') {
+      // Count student's passes (E and above are passes)
+      totalPasses = studentSubjects.filter(subject => 
+        GRADING_SCALE[subject.grade] <= 5 // E or better
+      ).length;
+      
+      // Extract number from "at least X passes"
+      const match = requirement.description.match(/at least (\d+)/i);
+      requiredPasses = match ? parseInt(match[1]) : 5; // Default to 5 if not specified
+    }
+  }
+
+  // Check minimum passes requirement
+  if (requiredPasses > 0 && totalPasses < requiredPasses) {
+    return false;
+  }
+
+  return true;
+};
+
+// 🔹 Get qualified courses for student
+export const getQualifiedCourses = asyncHandler(async (req, res) => {
+  const { studentId } = req.params;
+
+  console.log(`🎯 Getting qualified courses for student: ${studentId}`);
+
+  try {
+    // Get student's subjects
+    const studentDoc = await db.collection("users").doc(studentId).get();
+    
+    if (!studentDoc.exists) {
+      return res.status(404).json({ success: false, error: "Student not found" });
+    }
+
+    const studentData = studentDoc.data();
+    const studentSubjects = studentData.subjects || [];
+
+    if (studentSubjects.length === 0) {
+      return res.status(200).json({ 
+        success: true, 
+        message: "No subjects found. Please add your academic records first.",
+        qualifiedCourses: [],
+        totalCourses: 0
+      });
+    }
+
+    // Get all institutions with courses
+    const institutionsSnapshot = await db.collection("institutions").orderBy("name").get();
+    
+    const qualifiedCourses = [];
+    let totalCoursesChecked = 0;
+
+    // Check each course from all institutions
+    for (const instDoc of institutionsSnapshot.docs) {
+      const institutionData = instDoc.data();
+      
+      const facultiesSnapshot = await db.collection("faculties")
+        .where("institutionId", "==", instDoc.id)
+        .get();
+
+      for (const facDoc of facultiesSnapshot.docs) {
+        const facultyData = facDoc.data();
+        
+        const coursesSnapshot = await db.collection("courses")
+          .where("facultyId", "==", facDoc.id)
+          .get();
+
+        for (const courseDoc of coursesSnapshot.docs) {
+          totalCoursesChecked++;
+          const courseData = courseDoc.data();
+          
+          // Check if student qualifies for this course
+          const qualifies = studentQualifiesForCourse(
+            studentSubjects, 
+            courseData.requirements
+          );
+
+          if (qualifies) {
+            qualifiedCourses.push({
+              id: courseDoc.id,
+              ...courseData,
+              faculty: facultyData.name,
+              institution: institutionData.name,
+              institutionId: instDoc.id,
+              facultyId: facDoc.id
+            });
+          }
+        }
+      }
+    }
+
+    console.log(`✅ Found ${qualifiedCourses.length} qualified courses out of ${totalCoursesChecked} total courses`);
+
+    res.status(200).json({ 
+      success: true, 
+      qualifiedCourses,
+      totalQualified: qualifiedCourses.length,
+      totalChecked: totalCoursesChecked,
+      studentSubjectsCount: studentSubjects.length
+    });
+
+  } catch (error) {
+    console.error("❌ Error in getQualifiedCourses:", error);
+    res.status(500).json({ 
+      success: false, 
+      error: "Failed to fetch qualified courses",
+      details: error.message 
+    });
+  }
+});
+
 // 🔹 Get all institutions with faculties and courses
 export const getInstitutionsWithCourses = asyncHandler(async (req, res) => {
   const institutionsSnapshot = await db.collection("institutions").orderBy("name").get();
