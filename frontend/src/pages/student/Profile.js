@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { studentAPI } from "../../api/studentAPI";
 
 const Profile = () => {
   const { studentId } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [profile, setProfile] = useState({
     name: "",
     email: "",
@@ -19,9 +20,13 @@ const Profile = () => {
     certificates: [],
     workExperience: []
   });
+  const [subjects, setSubjects] = useState([]);
+  const [predefinedSubjects, setPredefinedSubjects] = useState([]);
+  const [validGrades, setValidGrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [savingSubjects, setSavingSubjects] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("personal");
@@ -38,11 +43,22 @@ const Profile = () => {
     description: "",
     isCurrent: false
   });
+  const [newSubject, setNewSubject] = useState({
+    subject: "",
+    grade: ""
+  });
 
   useEffect(() => {
+    // Check for tab parameter in URL
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'academic') {
+      setActiveTab('academic');
+    }
+    
     fetchProfile();
     fetchDocuments();
-  }, [studentId]);
+    fetchStudentSubjects();
+  }, [studentId, searchParams]);
 
   const fetchProfile = async () => {
     try {
@@ -96,6 +112,26 @@ const Profile = () => {
     }
   };
 
+  const fetchStudentSubjects = async () => {
+    try {
+      const [subjectsRes, predefinedRes] = await Promise.all([
+        studentAPI.getStudentSubjects(studentId),
+        studentAPI.getPredefinedSubjects()
+      ]);
+
+      if (subjectsRes.success) {
+        setSubjects(subjectsRes.subjects || []);
+      }
+
+      if (predefinedRes.success) {
+        setPredefinedSubjects(predefinedRes.subjects || []);
+        setValidGrades(predefinedRes.grades || []);
+      }
+    } catch (err) {
+      console.error("Error fetching subjects:", err);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfile(prev => ({ ...prev, [name]: value }));
@@ -107,6 +143,11 @@ const Profile = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+  };
+
+  const handleSubjectChange = (e) => {
+    const { name, value } = e.target;
+    setNewSubject(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -206,10 +247,65 @@ const Profile = () => {
     }
   };
 
+  const handleAddSubject = () => {
+    if (!newSubject.subject || !newSubject.grade) {
+      setError("Please select both subject and grade.");
+      return;
+    }
+
+    // Check if subject already exists
+    if (subjects.find(s => s.subject === newSubject.subject)) {
+      setError("This subject has already been added.");
+      return;
+    }
+
+    const updatedSubjects = [...subjects, {
+      subject: newSubject.subject,
+      grade: newSubject.grade
+    }];
+
+    setSubjects(updatedSubjects);
+    setNewSubject({ subject: "", grade: "" });
+    setError("");
+  };
+
+  const handleRemoveSubject = (index) => {
+    const updatedSubjects = subjects.filter((_, i) => i !== index);
+    setSubjects(updatedSubjects);
+  };
+
+  const handleSaveSubjects = async () => {
+    if (subjects.length === 0) {
+      setError("Please add at least one subject.");
+      return;
+    }
+
+    setSavingSubjects(true);
+    setMessage("");
+    setError("");
+
+    try {
+      console.log("Saving subjects:", subjects);
+
+      const res = await studentAPI.saveStudentSubjects(studentId, subjects);
+      if (res.success) {
+        setMessage(" Academic records saved successfully!");
+        setSubjects(res.subjects || subjects);
+      } else {
+        setError(res.error || "Failed to save academic records");
+      }
+    } catch (err) {
+      console.error("Error saving subjects:", err);
+      setError("Error saving academic records. Please try again.");
+    } finally {
+      setSavingSubjects(false);
+    }
+  };
+
   const DocumentList = ({ docs, type }) => (
     <div style={styles.documentList}>
       <h4 style={styles.documentListTitle}>
-        {type === "transcripts" ? " Transcripts" : " Certificates"}
+        {type === "transcripts" ? "📊 Transcripts" : "🏆 Certificates"}
       </h4>
       {docs.length === 0 ? (
         <p style={styles.noDocuments}>No {type} uploaded yet</p>
@@ -235,7 +331,7 @@ const Profile = () => {
 
   const WorkExperienceList = ({ experiences }) => (
     <div style={styles.documentList}>
-      <h4 style={styles.documentListTitle}> Work Experience</h4>
+      <h4 style={styles.documentListTitle}>💼 Work Experience</h4>
       {experiences.length === 0 ? (
         <p style={styles.noDocuments}>No work experience added yet</p>
       ) : (
@@ -250,6 +346,32 @@ const Profile = () => {
             )}
           </div>
         ))
+      )}
+    </div>
+  );
+
+  const SubjectsList = () => (
+    <div style={styles.documentList}>
+      <h4 style={styles.documentListTitle}>📚 Your LGCSE Subjects & Grades</h4>
+      {subjects.length === 0 ? (
+        <p style={styles.noDocuments}>No subjects added yet. Add your LGCSE subjects and grades below.</p>
+      ) : (
+        <div style={styles.subjectsGrid}>
+          {subjects.map((subject, index) => (
+            <div key={index} style={styles.subjectItem}>
+              <div style={styles.subjectInfo}>
+                <strong style={styles.subjectName}>{subject.subject}</strong>
+                <span style={styles.subjectGrade}>Grade: {subject.grade}</span>
+              </div>
+              <button 
+                onClick={() => handleRemoveSubject(index)}
+                style={styles.removeButton}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -299,7 +421,7 @@ const Profile = () => {
           }} 
           onClick={() => setActiveTab("documents")}
         >
-          📄 Documents
+           Documents
         </button>
         <button 
           style={{
@@ -309,6 +431,15 @@ const Profile = () => {
           onClick={() => setActiveTab("work")}
         >
            Work Experience
+        </button>
+        <button 
+          style={{
+            ...styles.tabButton, 
+            ...(activeTab === "academic" ? styles.activeTab : {})
+          }} 
+          onClick={() => setActiveTab("academic")}
+        >
+           Academic Records
         </button>
       </div>
 
@@ -546,6 +677,78 @@ const Profile = () => {
             <WorkExperienceList experiences={documents.workExperience} />
           </>
         )}
+
+        {activeTab === "academic" && (
+          <>
+            <div style={styles.uploadSection}>
+              <h3 style={styles.uploadTitle}>Add LGCSE Subjects & Grades</h3>
+              <p style={styles.helpText}>
+                Add your Lesotho General Certificate of Secondary Education (LGCSE) subjects and grades. 
+                This information will be used to show you courses you qualify for.
+              </p>
+              <div style={styles.subjectForm}>
+                <div style={styles.formRow}>
+                  <select
+                    name="subject"
+                    value={newSubject.subject}
+                    onChange={handleSubjectChange}
+                    style={styles.input}
+                  >
+                    <option value="">Select Subject</option>
+                    {predefinedSubjects.map((subject) => (
+                      <option key={subject} value={subject}>
+                        {subject}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    name="grade"
+                    value={newSubject.grade}
+                    onChange={handleSubjectChange}
+                    style={styles.input}
+                  >
+                    <option value="">Select Grade</option>
+                    {validGrades.map((grade) => (
+                      <option key={grade} value={grade}>
+                        {grade}
+                      </option>
+                    ))}
+                  </select>
+                  <button 
+                    onClick={handleAddSubject}
+                    style={styles.addButton}
+                  >
+                    Add Subject
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <SubjectsList />
+
+            {subjects.length > 0 && (
+              <div style={styles.saveSection}>
+                <button 
+                  onClick={handleSaveSubjects}
+                  disabled={savingSubjects}
+                  style={styles.saveButton}
+                >
+                  {savingSubjects ? (
+                    <>
+                      <div style={styles.buttonSpinner}></div>
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Academic Records"
+                  )}
+                </button>
+                <p style={styles.saveNote}>
+                  💡 Don't forget to save your changes! Your academic records will be used to filter courses you qualify for.
+                </p>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
@@ -673,11 +876,27 @@ const styles = {
     color: "#1e293b",
     fontSize: "1.2rem",
   },
+  helpText: {
+    color: "#64748b",
+    fontSize: "14px",
+    marginBottom: "20px",
+    lineHeight: "1.5",
+  },
   uploadForm: {
     display: "flex",
     flexDirection: "column",
     gap: "15px",
     maxWidth: "500px",
+  },
+  subjectForm: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "15px",
+  },
+  formRow: {
+    display: "flex",
+    gap: "15px",
+    alignItems: "flex-end",
   },
   workForm: {
     display: "flex",
@@ -693,6 +912,41 @@ const styles = {
     cursor: "pointer",
     fontWeight: "600",
     alignSelf: "flex-start",
+  },
+  addButton: {
+    padding: "12px 24px",
+    background: "linear-gradient(135deg, #10b981, #059669)",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "600",
+    whiteSpace: "nowrap",
+  },
+  saveButton: {
+    padding: "15px 30px",
+    background: "linear-gradient(135deg, #667eea, #764ba2)",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontSize: "16px",
+    fontWeight: "600",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "10px",
+  },
+  removeButton: {
+    background: "#ef4444",
+    color: "white",
+    border: "none",
+    borderRadius: "50%",
+    width: "30px",
+    height: "30px",
+    cursor: "pointer",
+    fontSize: "16px",
+    fontWeight: "bold",
   },
   documentsSection: {
     display: "flex",
@@ -722,6 +976,35 @@ const styles = {
     background: "#f8fafc",
     borderRadius: "8px",
     marginBottom: "10px",
+  },
+  subjectItem: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "15px",
+    borderBottom: "1px solid #f1f5f9",
+    background: "#f8fafc",
+    borderRadius: "8px",
+    marginBottom: "10px",
+  },
+  subjectsGrid: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
+  },
+  subjectInfo: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "5px",
+  },
+  subjectName: {
+    color: "#1e293b",
+    fontSize: "14px",
+    fontWeight: "600",
+  },
+  subjectGrade: {
+    color: "#64748b",
+    fontSize: "12px",
   },
   documentInfo: {
     flex: "1",
@@ -769,6 +1052,20 @@ const styles = {
     gap: "8px",
     color: "#374151",
     fontSize: "14px",
+  },
+  saveSection: {
+    background: "#f0f9ff",
+    padding: "20px",
+    borderRadius: "12px",
+    border: "1px solid #bae6fd",
+    marginTop: "20px",
+    textAlign: "center",
+  },
+  saveNote: {
+    color: "#0369a1",
+    fontSize: "14px",
+    marginTop: "10px",
+    marginBottom: "0",
   },
   successMessage: {
     background: "linear-gradient(135deg, #10b981, #059669)",
