@@ -84,6 +84,28 @@ export const studentAPI = {
     return data;
   },
 
+  // 🔹 NEW: Academic Records Management
+  saveStudentSubjects: async (studentId, subjects) => {
+    const { data } = await api.post(`/student/subjects/${studentId}`, { subjects });
+    return data;
+  },
+
+  getStudentSubjects: async (studentId) => {
+    const { data } = await api.get(`/student/subjects/${studentId}`);
+    return data;
+  },
+
+  getPredefinedSubjects: async () => {
+    const { data } = await api.get('/student/subjects-list/predefined');
+    return data;
+  },
+
+  // 🔹 NEW: Qualified Courses
+  getQualifiedCourses: async (studentId) => {
+    const { data } = await api.get(`/student/qualified-courses/${studentId}`);
+    return data;
+  },
+
   // Debug endpoint
   debugStudentData: async (studentId) => {
     const { data } = await api.get(`/student/debug/${studentId}`);
