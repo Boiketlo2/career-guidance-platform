@@ -15,6 +15,11 @@ import {
   getStudentApplications,
   getStudentDocuments,
   getStudentJobApplications,
+  // New functions for academic records and qualified courses
+  saveStudentSubjects,
+  getStudentSubjects,
+  getPredefinedSubjects,
+  getQualifiedCourses,
 } from "../controllers/studentController.js";
 
 const router = express.Router();
@@ -44,5 +49,11 @@ router.post("/work-experience/:studentId", addWorkExperience);
 router.get("/jobs", getAllJobs);
 router.post("/apply-job", applyForJob);
 router.get("/job-applications/:studentId", getStudentJobApplications);
+
+// 🔹 NEW ROUTES: Academic Records and Qualified Courses
+router.post("/subjects/:studentId", saveStudentSubjects);
+router.get("/subjects/:studentId", getStudentSubjects);
+router.get("/subjects-list/predefined", getPredefinedSubjects);
+router.get("/qualified-courses/:studentId", getQualifiedCourses);
 
 export default router;
