@@ -123,11 +123,11 @@ const InstituteHome = () => {
         
         <div style={styles.headerRight}>
           <nav style={styles.nav}>
-            <NavLink text="🏛️ Faculties" link={`/institute/${institutionId}/faculties`} />
-            <NavLink text="📚 Courses" link={`/institute/${institutionId}/courses`} />
-            <NavLink text="🎓 Admissions" link={`/institute/${institutionId}/admissions`} />
-            <NavLink text="📢 Publish" link={`/institute/${institutionId}/admissions/publish`} />
-            <NavLink text="⚙️ Profile" link={`/institute/${institutionId}/profile`} />
+            <NavLink text=" Faculties" link={`/institute/${institutionId}/faculties`} />
+            <NavLink text="Courses" link={`/institute/${institutionId}/courses`} />
+            <NavLink text=" Admissions" link={`/institute/${institutionId}/admissions`} />
+            <NavLink text=" Publish" link={`/institute/${institutionId}/admissions/publish`} />
+            <NavLink text=" Profile" link={`/institute/${institutionId}/profile`} />
           </nav>
           <button style={styles.logoutBtn} onClick={handleLogout}>Logout</button>
         </div>
@@ -146,7 +146,7 @@ const InstituteHome = () => {
       {/* Verification Alert */}
       {institute && !institute.emailVerified && (
         <div style={styles.verificationAlert}>
-          <span>⚠️ Please verify your email to access all features</span>
+          <span> Please verify your email to access all features</span>
           <button style={styles.btnPrimary} onClick={handleResendVerification}>
             Resend Verification Email
           </button>
@@ -191,21 +191,21 @@ const InstituteHome = () => {
         <div className="cg-card-grid" style={styles.grid}>
           <div>
           <Card 
-            icon="🏛️" 
+            icon="" 
             title="Faculties" 
             number={stats.faculties} 
             link={`/institute/${institutionId}/faculties`} 
             linkText="Manage" 
           />
           <Card 
-            icon="📚" 
+            icon="" 
             title="Courses" 
             number={stats.courses} 
             link={`/institute/${institutionId}/courses`} 
             linkText="Manage" 
           />
           <Card
-            icon="📝"
+            icon=""
             title="Applications"
             number={stats.applications}
             pending={stats.pendingApplications}
@@ -213,14 +213,14 @@ const InstituteHome = () => {
             linkText="Review"
           />
           <Card 
-            icon="🎓" 
+            icon="" 
             title="Approved Students" 
             number={stats.approvedStudents} 
             link={`/institute/${institutionId}/admissions`} 
             linkText="Manage" 
           />
           <Card 
-            icon="📢" 
+            icon="" 
             title="Admission Cycles" 
             number={stats.admissions} 
             link={`/institute/${institutionId}/admissions`} 
