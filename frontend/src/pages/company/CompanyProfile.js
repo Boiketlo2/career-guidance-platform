@@ -48,7 +48,7 @@ const CompanyProfile = () => {
           
           {error ? (
             <div className="p-6 text-center">
-              <div className="text-red-500 text-lg mb-2">❌ {error}</div>
+              <div className="text-red-500 text-lg mb-2"> {error}</div>
               <p className="text-gray-600">Company ID: {companyId}</p>
             </div>
           ) : company ? (
