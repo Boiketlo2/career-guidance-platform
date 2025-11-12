@@ -26,14 +26,14 @@ const ViewAdmissions = () => {
       setError(null);
       setDebugInfo(null);
       
-      console.log("🔄 [ViewAdmissions] Starting to fetch admission results for student:", studentId);
+      console.log(" [ViewAdmissions] Starting to fetch admission results for student:", studentId);
       
       const res = await studentAPI.getAdmissionResults(studentId);
-      console.log("📨 [ViewAdmissions] RAW API Response:", res);
+      console.log(" [ViewAdmissions] RAW API Response:", res);
       
       if (res?.success) {
         const admissionsData = res.results || [];
-        console.log("✅ [ViewAdmissions] Processed admissions data:", admissionsData);
+        console.log(" [ViewAdmissions] Processed admissions data:", admissionsData);
         
         setAdmissions(admissionsData);
         
@@ -46,7 +46,7 @@ const ViewAdmissions = () => {
         };
         
         setStats(statsData);
-        console.log("📊 [ViewAdmissions] Calculated stats:", statsData);
+        console.log(" [ViewAdmissions] Calculated stats:", statsData);
         
         // Set debug info
         setDebugInfo({
@@ -57,11 +57,11 @@ const ViewAdmissions = () => {
         });
         
       } else {
-        console.error("❌ [ViewAdmissions] API returned success: false", res?.error);
+        console.error(" [ViewAdmissions] API returned success: false", res?.error);
         setError(res?.error || "Failed to fetch admissions");
       }
     } catch (err) {
-      console.error("💥 [ViewAdmissions] Error fetching admissions:", err);
+      console.error(" [ViewAdmissions] Error fetching admissions:", err);
       setError(err.message || "Failed to load admission results");
     } finally {
       setLoading(false);
@@ -70,7 +70,7 @@ const ViewAdmissions = () => {
 
   const fetchDebugInfo = async () => {
     try {
-      console.log("🔍 [ViewAdmissions] Fetching debug info...");
+      console.log(" [ViewAdmissions] Fetching debug info...");
       // Using the debug endpoint we added
   const response = await fetch(`https://career-guidance-platform-1-t41w.onrender.com/api/student/debug/${studentId}`, {
         headers: {
@@ -78,10 +78,10 @@ const ViewAdmissions = () => {
         }
       });
       const data = await response.json();
-      console.log("🐛 [ViewAdmissions] Debug info:", data);
+      console.log(" [ViewAdmissions] Debug info:", data);
       setDebugInfo(prev => ({ ...prev, debugEndpoint: data }));
     } catch (err) {
-      console.error("💥 [ViewAdmissions] Error fetching debug info:", err);
+      console.error(" [ViewAdmissions] Error fetching debug info:", err);
     }
   };
 
@@ -91,19 +91,19 @@ const ViewAdmissions = () => {
         return { 
           background: "linear-gradient(135deg, #10b981, #059669)",
           color: "#fff",
-          icon: "✅"
+          icon: ""
         };
       case 'rejected': 
         return { 
           background: "linear-gradient(135deg, #ef4444, #dc2626)",
           color: "#fff",
-          icon: "❌"
+          icon: ""
         };
       default: 
         return { 
           background: "linear-gradient(135deg, #f59e0b, #d97706)",
           color: "#fff",
-          icon: "⏳"
+          icon: ""
         };
     }
   };
@@ -167,14 +167,14 @@ const ViewAdmissions = () => {
 
         {admission.status === "approved" && (
           <div style={styles.approvedMessage}>
-            <span style={styles.approvedIcon}>🎉</span>
+            <span style={styles.approvedIcon}></span>
             Congratulations! You've been accepted into this program.
           </div>
         )}
 
         {admission.status === "rejected" && (
           <div style={styles.rejectedMessage}>
-            <span style={styles.rejectedIcon}>💡</span>
+            <span style={styles.rejectedIcon}></span>
             Don't worry! Explore other opportunities that match your profile.
           </div>
         )}
@@ -202,7 +202,7 @@ const ViewAdmissions = () => {
           style={styles.debugButton}
           onClick={fetchDebugInfo}
         >
-          🐛 Fetch Debug Info
+           Fetch Debug Info
         </button>
       </div>
     );
@@ -211,7 +211,7 @@ const ViewAdmissions = () => {
   if (error) {
     return (
       <div style={styles.errorContainer}>
-        <div style={styles.errorIcon}>⚠️</div>
+        <div style={styles.errorIcon}></div>
         <h3>Error Loading Admissions</h3>
         <p>{error}</p>
         <button 
@@ -224,7 +224,7 @@ const ViewAdmissions = () => {
           style={styles.debugButton}
           onClick={fetchDebugInfo}
         >
-          🐛 Fetch Debug Info
+           Fetch Debug Info
         </button>
         <p style={styles.debugText}>Student ID: {studentId}</p>
       </div>
@@ -273,13 +273,13 @@ const ViewAdmissions = () => {
           style={styles.refreshButton}
           onClick={fetchAdmissions}
         >
-          🔄 Refresh Results
+           Refresh Results
         </button>
         <button 
           style={styles.debugButton}
           onClick={fetchDebugInfo}
         >
-          🐛 Debug Info
+           Debug Info
         </button>
       </div>
 
@@ -328,9 +328,9 @@ const ViewAdmissions = () => {
         {getFilteredAdmissions().length === 0 ? (
           <div style={styles.emptyState}>
             <div style={styles.emptyIcon}>
-              {filter === "all" ? "📝" : 
-               filter === "approved" ? "✅" :
-               filter === "pending" ? "⏳" : "❌"}
+              {filter === "all" ? "" : 
+               filter === "approved" ? "" :
+               filter === "pending" ? "" : ""}
             </div>
             <h3>
               {filter === "all" ? "No Applications Yet" :
@@ -388,7 +388,7 @@ const ViewAdmissions = () => {
       {/* Help Section */}
       {admissions.length > 0 && (
         <div style={styles.helpSection}>
-          <h3 style={styles.helpTitle}>💡 Need Help?</h3>
+          <h3 style={styles.helpTitle}> Need Help?</h3>
           <div style={styles.helpGrid}>
             <div style={styles.helpCard}>
               <h4>Pending Applications</h4>
