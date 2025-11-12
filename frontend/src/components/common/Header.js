@@ -21,7 +21,7 @@ const Header = () => {
       alignItems: 'center'
     }}>
       <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>
-        <h1 style={{ margin: 0 }}>🎓 Career Guidance Platform</h1>
+        <h1 style={{ margin: 0 }}>Career Guidance Platform</h1>
       </Link>
       
       <nav>
