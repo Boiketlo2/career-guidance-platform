@@ -169,8 +169,8 @@ const UploadDocuments = () => {
 
   const getFileIcon = (fileType) => {
     switch (fileType) {
-      case "transcript": return "📊";
-      case "certificate": return "🏆";
+      case "transcript": return "";
+      case "certificate": return "";
       default: return "📄";
     }
   };
