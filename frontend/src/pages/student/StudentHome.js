@@ -60,11 +60,6 @@ const StudentHome = () => {
     }
   };
 
-  const handleLogout = () => {
-    authAPI.logout();
-    navigate("/login");
-  };
-
   const handleResendVerification = async () => {
     try {
       const res = await authAPI.verifyEmail(studentId);
@@ -115,16 +110,13 @@ const StudentHome = () => {
           <h1 style={styles.title}>Student Dashboard</h1>
           <p style={styles.welcomeText}>Welcome back, {student?.name || "Student"}!</p>
         </div>
-        <button style={styles.logoutBtn} onClick={handleLogout}>
-          Logout
-        </button>
+        {/* Logout button removed since it's in the header component */}
       </header>
 
       {/* Email Verification Alert */}
       {student && !student.emailVerified && (
         <div style={styles.verificationAlert}>
           <div style={styles.alertContent}>
-            <span style={styles.alertIcon}>⚠️</span>
             <div>
               <strong>Verify your email address</strong>
               <p>Please verify your email to access all features</p>
@@ -228,7 +220,6 @@ const styles = {
   header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px", flexWrap: "wrap", gap: "20px" },
   title: { fontSize: "2rem", fontWeight: "700", color: "#111827", borderBottom: "3px solid #3b82f6", display: "inline-block", paddingBottom: "6px" },
   welcomeText: { fontSize: "1.1rem", color: "#6b7280" },
-  logoutBtn: { background: "#111827", color: "#fff", border: "none", padding: "10px 20px", borderRadius: "8px", cursor: "pointer", fontWeight: "600" },
   verificationAlert: { background: "#fff8e1", borderLeft: "5px solid #fbbf24", padding: "15px 20px", borderRadius: "8px", marginBottom: "30px", display: "flex", justifyContent: "space-between", alignItems: "center" },
   verifyBtn: { background: "#fbbf24", color: "#111827", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: "600", cursor: "pointer" },
   quickNav: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "20px", marginBottom: "40px" },
