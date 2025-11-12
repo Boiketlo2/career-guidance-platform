@@ -21,7 +21,7 @@ const Home = () => {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        backgroundColor: "#f8f9fa", // very light grey background
+        backgroundColor: "#f8f9fa",
         color: "#111",
       }}
     >
@@ -34,12 +34,26 @@ const Home = () => {
           borderBottom: "1px solid #dee2e6",
         }}
       >
-        <h1 style={{ fontSize: "2.8rem", fontWeight: "700", marginBottom: "1rem" }}>
+        <h1
+          style={{
+            fontSize: "2.8rem",
+            fontWeight: "700",
+            marginBottom: "1rem",
+          }}
+        >
           Career Guidance & Employment Integration
         </h1>
-        <p style={{ fontSize: "1.2rem", color: "#555", maxWidth: "700px", margin: "0 auto" }}>
-          Helping students in Lesotho discover higher learning institutions, apply online,
-          and transition smoothly into the job market with trusted company partnerships.
+        <p
+          style={{
+            fontSize: "1.2rem",
+            color: "#555",
+            maxWidth: "700px",
+            margin: "0 auto",
+          }}
+        >
+          Helping students in Lesotho discover higher learning institutions,
+          apply online, and transition smoothly into the job market with trusted
+          company partnerships.
         </p>
 
         {/* Buttons */}
@@ -70,7 +84,9 @@ const Home = () => {
               Login
             </Link>
 
-            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+            <div
+              style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}
+            >
               <Link
                 to="/register/student"
                 style={{
@@ -83,8 +99,12 @@ const Home = () => {
                   border: "1px solid #ccc",
                   transition: "0.3s",
                 }}
-                onMouseEnter={(e) => (e.target.style.backgroundColor = "#f1f3f5")}
-                onMouseLeave={(e) => (e.target.style.backgroundColor = "#e9ecef")}
+                onMouseEnter={(e) =>
+                  (e.target.style.backgroundColor = "#f1f3f5")
+                }
+                onMouseLeave={(e) =>
+                  (e.target.style.backgroundColor = "#e9ecef")
+                }
               >
                 Student
               </Link>
@@ -100,8 +120,12 @@ const Home = () => {
                   border: "1px solid #ccc",
                   transition: "0.3s",
                 }}
-                onMouseEnter={(e) => (e.target.style.backgroundColor = "#f1f3f5")}
-                onMouseLeave={(e) => (e.target.style.backgroundColor = "#e9ecef")}
+                onMouseEnter={(e) =>
+                  (e.target.style.backgroundColor = "#f1f3f5")
+                }
+                onMouseLeave={(e) =>
+                  (e.target.style.backgroundColor = "#e9ecef")
+                }
               >
                 Institution
               </Link>
@@ -117,8 +141,12 @@ const Home = () => {
                   border: "1px solid #ccc",
                   transition: "0.3s",
                 }}
-                onMouseEnter={(e) => (e.target.style.backgroundColor = "#f1f3f5")}
-                onMouseLeave={(e) => (e.target.style.backgroundColor = "#e9ecef")}
+                onMouseEnter={(e) =>
+                  (e.target.style.backgroundColor = "#f1f3f5")
+                }
+                onMouseLeave={(e) =>
+                  (e.target.style.backgroundColor = "#e9ecef")
+                }
               >
                 Company
               </Link>
@@ -165,10 +193,13 @@ const Home = () => {
             border: "1px solid #dee2e6",
           }}
         >
-          <h3 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}> For Students</h3>
+          <h3 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}>
+            For Students
+          </h3>
           <p style={{ color: "#555" }}>
-            Explore universities and colleges in Lesotho, compare courses, and apply online
-            with your academic credentials securely stored on the platform.
+            Explore universities and colleges in Lesotho, compare courses, and
+            apply online with your academic credentials securely stored on the
+            platform.
           </p>
         </div>
 
@@ -181,10 +212,13 @@ const Home = () => {
             border: "1px solid #dee2e6",
           }}
         >
-          <h3 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}> For Institutions</h3>
+          <h3 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}>
+            For Institutions
+          </h3>
           <p style={{ color: "#555" }}>
-            Register your institution, publish available programs, receive applications,
-            and manage admissions with verified student information.
+            Register your institution, publish available programs, receive
+            applications, and manage admissions with verified student
+            information.
           </p>
         </div>
 
@@ -197,13 +231,16 @@ const Home = () => {
             border: "1px solid #dee2e6",
           }}
         >
-          <h3 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}> For Companies</h3>
+          <h3 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}>
+            For Companies
+          </h3>
           <p style={{ color: "#555" }}>
-            Post job opportunities, filter qualified graduates automatically, and
-            connect with candidates ready for employment interviews.
+            Post job opportunities, filter qualified graduates automatically,
+            and connect with candidates ready for employment interviews.
           </p>
         </div>
       </section>
+    </div>
   );
 };
 
