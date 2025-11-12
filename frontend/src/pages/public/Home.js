@@ -118,27 +118,7 @@ const Home = () => {
                   borderRadius: "4px",
                   fontWeight: "600",
                 }}
-              >
-                Admin
-              </Link>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div style={{ textAlign: "center" }}>
-          <p style={{ marginBottom: "1rem", fontSize: "1.2rem" }}>
-            Welcome back, {user.name || user.institutionName || user.companyName}!
-          </p>
-          <Link
-            to={dashboardLink}
-            style={{
-              padding: "12px 24px",
-              backgroundColor: "white",
-              color: "#667eea",
-              textDecoration: "none",
-              borderRadius: "4px",
-              fontWeight: "600",
-            }}
+  
           >
             Go to Home
           </Link>
