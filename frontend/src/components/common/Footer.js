@@ -17,7 +17,7 @@ const Footer = () => {
           Connecting students with higher learning institutions and career opportunities in Lesotho
         </p>
         <p style={{ margin: '1rem 0 0 0', color: '#999', fontSize: '0.8rem' }}>
-          © 2024 Career Guidance Platform. All rights reserved.
+          © 2025 Career Guidance Platform. All rights reserved.
         </p>
       </div>
     </footer>
