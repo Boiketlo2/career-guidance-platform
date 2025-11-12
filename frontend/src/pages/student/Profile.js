@@ -125,7 +125,7 @@ const Profile = () => {
 
       const res = await studentAPI.updateProfile(studentId, updateData);
       if (res.success) {
-        setMessage("✅ Profile updated successfully!");
+        setMessage(" Profile updated successfully!");
         // Refresh profile data
         await fetchProfile();
       } else {
@@ -160,7 +160,7 @@ const Profile = () => {
       });
 
       if (res.success) {
-        setMessage("✅ Document uploaded successfully!");
+        setMessage(" Document uploaded successfully!");
         setNewDocument({ type: "transcript", name: "", fileUrl: "" });
         // Refresh documents
         await fetchDocuments();
@@ -186,7 +186,7 @@ const Profile = () => {
 
       const res = await studentAPI.addWorkExperience(studentId, newWorkExperience);
       if (res.success) {
-        setMessage("✅ Work experience added successfully!");
+        setMessage(" Work experience added successfully!");
         setNewWorkExperience({
           company: "",
           position: "",
@@ -209,7 +209,7 @@ const Profile = () => {
   const DocumentList = ({ docs, type }) => (
     <div style={styles.documentList}>
       <h4 style={styles.documentListTitle}>
-        {type === "transcripts" ? "📊 Transcripts" : "🏆 Certificates"}
+        {type === "transcripts" ? " Transcripts" : " Certificates"}
       </h4>
       {docs.length === 0 ? (
         <p style={styles.noDocuments}>No {type} uploaded yet</p>
@@ -235,7 +235,7 @@ const Profile = () => {
 
   const WorkExperienceList = ({ experiences }) => (
     <div style={styles.documentList}>
-      <h4 style={styles.documentListTitle}>💼 Work Experience</h4>
+      <h4 style={styles.documentListTitle}> Work Experience</h4>
       {experiences.length === 0 ? (
         <p style={styles.noDocuments}>No work experience added yet</p>
       ) : (
@@ -290,7 +290,7 @@ const Profile = () => {
           }} 
           onClick={() => setActiveTab("personal")}
         >
-          👤 Personal Info
+           Personal Info
         </button>
         <button 
           style={{
@@ -308,7 +308,7 @@ const Profile = () => {
           }} 
           onClick={() => setActiveTab("work")}
         >
-          💼 Work Experience
+           Work Experience
         </button>
       </div>
 
