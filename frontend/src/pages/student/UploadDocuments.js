@@ -115,7 +115,7 @@ const UploadDocuments = () => {
       });
 
       if (res.success) {
-        setMessage("✅ Document uploaded successfully!");
+        setMessage(" Document uploaded successfully!");
         // Reset form
         setDocumentData({
           documentType: "transcript",
@@ -140,8 +140,8 @@ const UploadDocuments = () => {
 
   const getFileIcon = (fileType) => {
     switch (fileType) {
-      case "transcript": return "📊";
-      case "certificate": return "🏆";
+      case "transcript": return "";
+      case "certificate": return "";
       default: return "📄";
     }
   };
@@ -327,7 +327,7 @@ const UploadDocuments = () => {
       </div>
 
       <div style={styles.infoSection}>
-        <h3 style={styles.infoTitle}>📝 Document Guidelines</h3>
+        <h3 style={styles.infoTitle}> Document Guidelines</h3>
         <div style={styles.infoGrid}>
           <div style={styles.infoCard}>
             <h4>File Requirements</h4>
