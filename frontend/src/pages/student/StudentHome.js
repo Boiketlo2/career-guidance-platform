@@ -29,38 +29,29 @@ const StudentHome = () => {
       const [profileRes, applicationsRes, admissionsRes, jobsRes] = await Promise.all([
         studentAPI.getProfile(studentId),
         studentAPI.getStudentApplications(studentId),
-        studentAPI.getAdmissionResults(studentId), // Now using the fixed function
-        studentAPI.getAllJobs()
+        studentAPI.getAdmissionResults(studentId),
+        studentAPI.getAllJobs(),
       ]);
 
-      console.log("Student data responses:", { profileRes, applicationsRes, admissionsRes, jobsRes });
+      if (profileRes?.success) setStudent(profileRes.student);
 
-      // Set student profile
-      if (profileRes?.success) {
-        setStudent(profileRes.student);
-      }
-
-      // Set recent applications (last 3)
       if (applicationsRes?.success) {
         const apps = applicationsRes.applications || [];
         setRecentApplications(apps.slice(0, 3));
       }
 
-      // Calculate stats - now using admission results for status counts
       const apps = applicationsRes?.applications || [];
-      const admissions = admissionsRes?.results || []; // Using results from getAdmissionResults
+      const admissions = admissionsRes?.results || [];
       const jobs = jobsRes?.jobs || [];
 
-      const jobsApplied = jobs.filter(job => 
-        job.applicants?.includes(studentId)
-      ).length;
+      const jobsApplied = jobs.filter((job) => job.applicants?.includes(studentId)).length;
 
       setStats({
         applications: apps.length,
-        pending: admissions.filter(a => a.status === "pending").length,
-        approved: admissions.filter(a => a.status === "approved").length,
-        rejected: admissions.filter(a => a.status === "rejected").length,
-        jobsApplied: jobsApplied,
+        pending: admissions.filter((a) => a.status === "pending").length,
+        approved: admissions.filter((a) => a.status === "approved").length,
+        rejected: admissions.filter((a) => a.status === "rejected").length,
+        jobsApplied,
       });
     } catch (err) {
       console.error("Error fetching student data:", err);
@@ -68,9 +59,6 @@ const StudentHome = () => {
       setLoading(false);
     }
   };
-
-  // ... rest of the StudentHome.js code remains the same
-  // (handleLogout, handleResendVerification, getStatusBadge, components, and styles)
 
   const handleLogout = () => {
     authAPI.logout();
@@ -87,21 +75,24 @@ const StudentHome = () => {
   };
 
   const getStatusBadge = (status) => {
-    const statusStyles = {
-      pending: { background: "#fef3c7", color: "#92400e" },
-      approved: { background: "#d1fae5", color: "#065f46" },
-      rejected: { background: "#fee2e2", color: "#991b1b" }
+    const colors = {
+      pending: { bg: "#fff7ed", text: "#92400e" },
+      approved: { bg: "#ecfdf5", text: "#065f46" },
+      rejected: { bg: "#fef2f2", text: "#991b1b" },
     };
-    
-    const style = statusStyles[status] || statusStyles.pending;
+    const color = colors[status] || colors.pending;
+
     return (
-      <span style={{
-        padding: "4px 8px",
-        borderRadius: "12px",
-        fontSize: "12px",
-        fontWeight: "600",
-        ...style
-      }}>
+      <span
+        style={{
+          background: color.bg,
+          color: color.text,
+          padding: "4px 10px",
+          borderRadius: "20px",
+          fontSize: "12px",
+          fontWeight: "600",
+        }}
+      >
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     );
@@ -122,9 +113,7 @@ const StudentHome = () => {
       <header style={styles.header}>
         <div>
           <h1 style={styles.title}>Student Dashboard</h1>
-          <p style={styles.welcomeText}>
-            Welcome back, {student?.name || "Student"}! 
-          </p>
+          <p style={styles.welcomeText}>Welcome back, {student?.name || "Student"}!</p>
         </div>
         <button style={styles.logoutBtn} onClick={handleLogout}>
           Logout
@@ -135,7 +124,7 @@ const StudentHome = () => {
       {student && !student.emailVerified && (
         <div style={styles.verificationAlert}>
           <div style={styles.alertContent}>
-            <span style={styles.alertIcon}></span>
+            <span style={styles.alertIcon}>⚠️</span>
             <div>
               <strong>Verify your email address</strong>
               <p>Please verify your email to access all features</p>
@@ -148,72 +137,22 @@ const StudentHome = () => {
       )}
 
       {/* Quick Navigation */}
-  <nav className="cg-card-grid cg-quick-grid" style={styles.quickNav}>
-        <QuickLink 
-          label=" Apply for Courses" 
-          description="Browse and apply to courses" 
-          to={`/student/${studentId}/apply`} 
-          navigate={navigate} 
-        />
-      
-        <QuickLink 
-          label="Admission Results" 
-          description="See your admission decisions" 
-          to={`/student/${studentId}/results`} 
-          navigate={navigate} 
-        />
-        <QuickLink 
-          label=" Browse Jobs" 
-          description="Find career opportunities" 
-          to={`/student/${studentId}/jobs`} 
-          navigate={navigate} 
-        />
-        <QuickLink 
-          label=" Upload Documents" 
-          description="Manage your transcripts & certificates" 
-          to={`/student/${studentId}/upload`} 
-          navigate={navigate} 
-        />
-        <QuickLink 
-          label=" Update Profile" 
-          description="Edit your personal information" 
-          to={`/student/${studentId}/profile`} 
-          navigate={navigate} 
-        />
+      <nav style={styles.quickNav}>
+        <QuickLink label="Apply for Courses" description="Browse and apply to courses" to={`/student/${studentId}/apply`} navigate={navigate} />
+        <QuickLink label="Admission Results" description="See your admission decisions" to={`/student/${studentId}/results`} navigate={navigate} />
+        <QuickLink label="Browse Jobs" description="Find career opportunities" to={`/student/${studentId}/jobs`} navigate={navigate} />
+        <QuickLink label="Upload Documents" description="Manage your transcripts & certificates" to={`/student/${studentId}/upload`} navigate={navigate} />
+        <QuickLink label="Update Profile" description="Edit your personal information" to={`/student/${studentId}/profile`} navigate={navigate} />
       </nav>
 
-      {/* Stats Overview */}
+      {/* Stats */}
       <div style={styles.statsSection}>
         <h2 style={styles.sectionTitle}>Overview</h2>
-      <div className="cg-card-grid" style={styles.statsGrid}>
-          <StatCard
-            title="Course Applications"
-            value={stats.applications}
-            icon=""
-            color="#3b82f6"
-            onClick={() => navigate(`/student/${studentId}/applications`)}
-          />
-          <StatCard
-            title="Pending Decisions"
-            value={stats.pending}
-            icon=""
-            color="#f59e0b"
-            onClick={() => navigate(`/student/${studentId}/results`)}
-          />
-          <StatCard
-            title="Approved"
-            value={stats.approved}
-            icon=""
-            color="#10b981"
-            onClick={() => navigate(`/student/${studentId}/results`)}
-          />
-          <StatCard
-            title="Jobs Applied"
-            value={stats.jobsApplied}
-            icon=""
-            color="#8b5cf6"
-            onClick={() => navigate(`/student/${studentId}/jobs`)}
-          />
+        <div style={styles.statsGrid}>
+          <StatCard title="Course Applications" value={stats.applications} color="#3b82f6" onClick={() => navigate(`/student/${studentId}/applications`)} />
+          <StatCard title="Pending Decisions" value={stats.pending} color="#f59e0b" onClick={() => navigate(`/student/${studentId}/results`)} />
+          <StatCard title="Approved" value={stats.approved} color="#10b981" onClick={() => navigate(`/student/${studentId}/results`)} />
+          <StatCard title="Jobs Applied" value={stats.jobsApplied} color="#8b5cf6" onClick={() => navigate(`/student/${studentId}/jobs`)} />
         </div>
       </div>
 
@@ -222,43 +161,40 @@ const StudentHome = () => {
         <div style={styles.recentSection}>
           <div style={styles.sectionHeader}>
             <h2 style={styles.sectionTitle}>Recent Applications</h2>
-            <button 
-              style={styles.viewAllButton}
-              onClick={() => navigate(`/student/${studentId}/applications`)}
-            >
+            <button style={styles.viewAllButton} onClick={() => navigate(`/student/${studentId}/applications`)}>
               View All
             </button>
           </div>
-          <div className="cg-card-grid" style={{marginTop:8}}>
+          <div style={styles.recentList}>
             {recentApplications.map((app, index) => (
-              <div key={app.id || index} className="cg-card">
+              <div key={app.id || index} style={styles.recentCard}>
                 <div>
-                  <h4 className="title">{app.courseName}</h4>
-                  <p className="subtitle">{app.institutionName}</p>
-                  <p className="muted">Applied: {new Date(app.appliedAt).toLocaleDateString()}</p>
+                  <h4 style={styles.courseName}>{app.courseName}</h4>
+                  <p style={styles.institutionName}>{app.institutionName}</p>
+                  <p style={styles.applicationDate}>Applied: {new Date(app.appliedAt).toLocaleDateString()}</p>
                 </div>
-                <div style={{marginTop:12}}>{getStatusBadge(app.status)}</div>
+                {getStatusBadge(app.status)}
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Quick Tips */}
+      {/* Tips */}
       <div style={styles.tipsSection}>
-        <h3 style={styles.tipsTitle}> Quick Tips</h3>
-        <div className="cg-card-grid" style={styles.tipsGrid}>
-          <div className="cg-card">
-            <h4 className="title">Complete Your Profile</h4>
-            <p className="muted">Ensure your profile is up-to-date for better job matches</p>
+        <h3 style={styles.tipsTitle}>Quick Tips</h3>
+        <div style={styles.tipsGrid}>
+          <div style={styles.tipCard}>
+            <h4>Complete Your Profile</h4>
+            <p>Ensure your profile is up-to-date for better job matches</p>
           </div>
-          <div className="cg-card">
-            <h4 className="title">Upload Documents</h4>
-            <p className="muted">Add your transcripts and certificates for applications</p>
+          <div style={styles.tipCard}>
+            <h4>Upload Documents</h4>
+            <p>Add your transcripts and certificates for applications</p>
           </div>
-          <div className="cg-card">
-            <h4 className="title">Track Applications</h4>
-            <p className="muted">Regularly check your application status</p>
+          <div style={styles.tipCard}>
+            <h4>Track Applications</h4>
+            <p>Regularly check your application status</p>
           </div>
         </div>
       </div>
@@ -266,288 +202,54 @@ const StudentHome = () => {
   );
 };
 
-// QuickLink Component
+/* Components */
 const QuickLink = ({ label, description, to, navigate }) => (
-  <button
-    className="cg-card"
-    style={{ textAlign: 'left', border: 'none', cursor: 'pointer' }}
-    onClick={() => navigate(to)}
-  >
-    <div style={styles.quickLinkContent}>
-      <span style={styles.quickLinkIcon}>{label.split(' ')[0]}</span>
-      <div>
-        <div className="title" style={{marginBottom:4}}>{label.split(' ').slice(1).join(' ')}</div>
-        <div className="muted">{description}</div>
-      </div>
+  <button style={styles.quickLink} onClick={() => navigate(to)}>
+    <div>
+      <h4 style={{ margin: "0 0 6px 0", color: "#111827" }}>{label}</h4>
+      <p style={{ color: "#6b7280", fontSize: "14px" }}>{description}</p>
     </div>
-    <span style={styles.quickLinkArrow}>→</span>
+    <span style={{ color: "#9ca3af", fontSize: "18px" }}>→</span>
   </button>
 );
 
-// StatCard Component
-const StatCard = ({ title, value, icon, color, onClick }) => (
-  <div className="cg-card" onClick={onClick} style={{display:'flex',alignItems:'center',gap:12}}>
-    <div style={{...styles.statIcon, backgroundColor: color + '20', color }}>
-      {icon}
-    </div>
-    <div style={{flex:1}}>
-      <div className="large-number">{value}</div>
-      <div className="muted">{title}</div>
+const StatCard = ({ title, value, color, onClick }) => (
+  <div style={styles.statCard} onClick={onClick}>
+    <div style={{ ...styles.statIcon, backgroundColor: color + "1A", color }}>{value}</div>
+    <div>
+      <h4 style={{ margin: 0, color: "#111827" }}>{title}</h4>
     </div>
   </div>
 );
 
+/* Styles */
 const styles = {
-  container: {
-    padding: "20px",
-    maxWidth: "1200px",
-    margin: "0 auto",
-    fontFamily: "'Inter', 'Segoe UI', sans-serif",
-    background: "#f8fafc",
-    minHeight: "100vh",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: "30px",
-    flexWrap: "wrap",
-    gap: "20px",
-  },
-  title: {
-    fontSize: "2.5rem",
-    fontWeight: "700",
-    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-    margin: "0",
-  },
-  welcomeText: {
-    fontSize: "1.1rem",
-    color: "#64748b",
-    margin: "5px 0 0 0",
-  },
-  logoutBtn: {
-    background: "linear-gradient(135deg, #ef4444, #dc2626)",
-    color: "#fff",
-    border: "none",
-    padding: "12px 24px",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "600",
-    boxShadow: "0 4px 6px rgba(239, 68, 68, 0.25)",
-  },
-  verificationAlert: {
-    background: "linear-gradient(135deg, #fef3c7, #fde68a)",
-    border: "1px solid #f59e0b",
-    borderRadius: "12px",
-    padding: "20px",
-    marginBottom: "30px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flexWrap: "wrap",
-    gap: "15px",
-  },
-  alertContent: {
-    display: "flex",
-    alignItems: "center",
-    gap: "15px",
-  },
-  alertIcon: {
-    fontSize: "24px",
-  },
-  verifyBtn: {
-    background: "#f59e0b",
-    color: "#fff",
-    border: "none",
-    padding: "10px 20px",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontWeight: "600",
-  },
-  quickNav: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-    gap: "20px",
-    marginBottom: "40px",
-  },
-  quickLinkCard: {
-    background: "#fff",
-    border: "1px solid #e2e8f0",
-    borderRadius: "12px",
-    padding: "20px",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    textAlign: "left",
-    border: "none",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.05)",
-  },
-  quickLinkContent: {
-    display: "flex",
-    alignItems: "center",
-    gap: "15px",
-  },
-  quickLinkIcon: {
-    fontSize: "24px",
-  },
-  quickLinkLabel: {
-    fontWeight: "600",
-    color: "#1e293b",
-    marginBottom: "4px",
-  },
-  quickLinkDesc: {
-    fontSize: "14px",
-    color: "#64748b",
-  },
-  quickLinkArrow: {
-    color: "#64748b",
-    fontSize: "18px",
-  },
-  statsSection: {
-    marginBottom: "40px",
-  },
-  sectionTitle: {
-    fontSize: "1.5rem",
-    fontWeight: "600",
-    color: "#1e293b",
-    margin: "0 0 20px 0",
-  },
-  statsGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-    gap: "20px",
-  },
-  statCard: {
-    background: "#fff",
-    padding: "25px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.05)",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-    display: "flex",
-    alignItems: "center",
-    gap: "15px",
-  },
-  statIcon: {
-    width: "50px",
-    height: "50px",
-    borderRadius: "10px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "20px",
-  },
-  statContent: {
-    flex: "1",
-  },
-  statValue: {
-    fontSize: "2rem",
-    fontWeight: "700",
-    color: "#1e293b",
-    lineHeight: "1",
-  },
-  statTitle: {
-    fontSize: "14px",
-    color: "#64748b",
-    fontWeight: "500",
-    marginTop: "5px",
-  },
-  recentSection: {
-    marginBottom: "40px",
-  },
-  sectionHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "20px",
-  },
-  viewAllButton: {
-    background: "transparent",
-    color: "#3b82f6",
-    border: "1px solid #3b82f6",
-    padding: "8px 16px",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontWeight: "500",
-  },
-  applicationsList: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
-  },
-  applicationCard: {
-    background: "#fff",
-    padding: "20px",
-    borderRadius: "12px",
-    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  applicationInfo: {
-    flex: "1",
-  },
-  courseName: {
-    margin: "0 0 5px 0",
-    color: "#1e293b",
-    fontWeight: "600",
-  },
-  institutionName: {
-    margin: "0 0 5px 0",
-    color: "#64748b",
-    fontSize: "14px",
-  },
-  applicationDate: {
-    margin: "0",
-    color: "#94a3b8",
-    fontSize: "12px",
-  },
-  applicationStatus: {
-    marginLeft: "15px",
-  },
-  tipsSection: {
-    background: "#fff",
-    padding: "25px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.05)",
-  },
-  tipsTitle: {
-    margin: "0 0 20px 0",
-    color: "#1e293b",
-    fontSize: "1.2rem",
-  },
-  tipsGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-    gap: "20px",
-  },
-  tipCard: {
-    padding: "20px",
-    background: "#f8fafc",
-    borderRadius: "8px",
-    border: "1px solid #e2e8f0",
-  },
-  loadingContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "60px 20px",
-    color: "#64748b",
-  },
-  spinner: {
-    width: "40px",
-    height: "40px",
-    border: "4px solid #e2e8f0",
-    borderTop: "4px solid #667eea",
-    borderRadius: "50%",
-    animation: "spin 1s linear infinite",
-    marginBottom: "20px",
-  },
+  container: { background: "#f3f4f6", minHeight: "100vh", padding: "30px 20px", fontFamily: "'Inter', sans-serif" },
+  header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px", flexWrap: "wrap", gap: "20px" },
+  title: { fontSize: "2rem", fontWeight: "700", color: "#111827", borderBottom: "3px solid #3b82f6", display: "inline-block", paddingBottom: "6px" },
+  welcomeText: { fontSize: "1.1rem", color: "#6b7280" },
+  logoutBtn: { background: "#111827", color: "#fff", border: "none", padding: "10px 20px", borderRadius: "8px", cursor: "pointer", fontWeight: "600" },
+  verificationAlert: { background: "#fff8e1", borderLeft: "5px solid #fbbf24", padding: "15px 20px", borderRadius: "8px", marginBottom: "30px", display: "flex", justifyContent: "space-between", alignItems: "center" },
+  verifyBtn: { background: "#fbbf24", color: "#111827", border: "none", padding: "8px 14px", borderRadius: "6px", fontWeight: "600", cursor: "pointer" },
+  quickNav: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "20px", marginBottom: "40px" },
+  quickLink: { background: "#fff", border: "1px solid #e5e7eb", padding: "20px", borderRadius: "10px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 2px 4px rgba(0,0,0,0.05)", cursor: "pointer" },
+  statsSection: { marginBottom: "40px" },
+  statsGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "20px" },
+  statCard: { background: "#fff", padding: "20px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", boxShadow: "0 2px 6px rgba(0,0,0,0.05)", cursor: "pointer" },
+  statIcon: { width: "60px", height: "60px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", fontWeight: "700" },
+  sectionHeader: { display: "flex", justifyContent: "space-between", alignItems: "center" },
+  sectionTitle: { fontSize: "1.5rem", fontWeight: "600", color: "#111827" },
+  viewAllButton: { background: "transparent", border: "1px solid #3b82f6", color: "#3b82f6", padding: "8px 14px", borderRadius: "6px", cursor: "pointer", fontWeight: "500" },
+  recentCard: { background: "#fff", padding: "20px", borderRadius: "10px", boxShadow: "0 2px 4px rgba(0,0,0,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" },
+  courseName: { fontWeight: "600", color: "#111827", marginBottom: "5px" },
+  institutionName: { color: "#6b7280", marginBottom: "5px" },
+  applicationDate: { color: "#9ca3af", fontSize: "13px" },
+  tipsSection: { background: "#fff", padding: "25px", borderRadius: "10px", boxShadow: "0 2px 4px rgba(0,0,0,0.05)" },
+  tipsTitle: { color: "#111827", fontWeight: "600", marginBottom: "20px" },
+  tipsGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "20px" },
+  tipCard: { background: "#f9fafb", padding: "15px", borderRadius: "8px", border: "1px solid #e5e7eb" },
+  loadingContainer: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", color: "#6b7280" },
+  spinner: { width: "40px", height: "40px", border: "4px solid #e5e7eb", borderTop: "4px solid #3b82f6", borderRadius: "50%", animation: "spin 1s linear infinite", marginBottom: "20px" },
 };
 
 export default StudentHome;
