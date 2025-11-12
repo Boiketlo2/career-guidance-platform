@@ -214,7 +214,7 @@ const InstituteHome = () => {
                   {institute.status || "Active"}
                 </span>
                 <span style={styles.verificationStatus}>
-                  {institute.emailVerified ? "✅ Verified" : "⚠️ Unverified"}
+                  {institute.emailVerified ? " Verified" : " Unverified"}
                 </span>
               </div>
             </div>
@@ -247,21 +247,21 @@ const InstituteHome = () => {
         </div>
         <div style={styles.statsGrid}>
           <Card 
-            icon="🏛️" 
+            icon="" 
             title="Faculties" 
             number={stats.faculties} 
             link={`/institute/${institutionId}/faculties`} 
             linkText="Manage" 
           />
           <Card 
-            icon="📚" 
+            icon="" 
             title="Courses" 
             number={stats.courses} 
             link={`/institute/${institutionId}/courses`} 
             linkText="Manage" 
           />
           <Card
-            icon="📋"
+            icon=""
             title="Applications"
             number={stats.applications}
             pending={stats.pendingApplications}
@@ -269,14 +269,14 @@ const InstituteHome = () => {
             linkText="Review"
           />
           <Card 
-            icon="✅" 
+            icon="" 
             title="Approved Students" 
             number={stats.approvedStudents} 
             link={`/institute/${institutionId}/admissions`} 
             linkText="Manage" 
           />
           <Card 
-            icon="🔄" 
+            icon="" 
             title="Admission Cycles" 
             number={stats.admissions} 
             link={`/institute/${institutionId}/admissions`} 
@@ -316,25 +316,25 @@ const InstituteHome = () => {
           <h3 style={styles.sectionTitle}>Quick Actions</h3>
           <div style={styles.actionsGrid}>
             <QuickAction 
-              icon="➕"
+              icon=""
               title="Add New Course"
               description="Create and publish a new course"
               link={`/institute/${institutionId}/courses/new`}
             />
             <QuickAction 
-              icon="👥"
+              icon=""
               title="Review Applications"
               description="Process pending applications"
               link={`/institute/${institutionId}/applications`}
             />
             <QuickAction 
-              icon="📊"
+              icon=""
               title="View Analytics"
               description="See detailed institution insights"
               link={`/institute/${institutionId}/analytics`}
             />
             <QuickAction 
-              icon="⚙️"
+              icon=""
               title="Settings"
               description="Manage institution settings"
               link={`/institute/${institutionId}/profile`}
