@@ -9,7 +9,6 @@ const Home = () => {
     student: (id) => `/student/${id}/home`,
     institution: (id) => `/institute/${id}/home`,
     company: (id) => `/company/${id}/home`,
-    admin: (id) => `/admin/home/${id}`,
   };
 
   // Determine redirect URL
@@ -36,7 +35,7 @@ const Home = () => {
         Career Guidance Platform
       </h1>
       <p style={{ fontSize: "1.2rem", marginBottom: "2rem" }}>
-        Empowering Students, Institutions, Companies, and Admins to Connect and Grow
+        Empowering Students, Institutions, and Companies to Connect and Grow
       </p>
 
       {!user ? (
@@ -108,21 +107,24 @@ const Home = () => {
               >
                 Company
               </Link>
-              <Link
-                to="/register/admin"
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: "#fff",
-                  color: "#f56565",
-                  textDecoration: "none",
-                  borderRadius: "4px",
-                  fontWeight: "600",
-                }}
-  
-          >
-            Go to Home
-          </Link>
+            </div>
+          </div>
         </div>
+      ) : (
+        <Link
+          to={dashboardLink}
+          style={{
+            padding: "12px 24px",
+            backgroundColor: "white",
+            color: "#667eea",
+            textDecoration: "none",
+            borderRadius: "4px",
+            fontWeight: "600",
+            marginTop: "2rem",
+          }}
+        >
+          Go to Home
+        </Link>
       )}
     </div>
   );
