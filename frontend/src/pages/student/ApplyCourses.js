@@ -229,7 +229,7 @@ const ApplyCourses = () => {
       </div>
 
       <div style={styles.infoBox}>
-        <h4 style={styles.infoTitle}>📝 Application Guidelines</h4>
+        <h4 style={styles.infoTitle}> Application Guidelines</h4>
         <ul style={styles.infoList}>
           <li>You can apply for maximum 2 courses per institution</li>
           <li>Ensure all information is accurate before submitting</li>
