@@ -11,7 +11,7 @@ const Footer = () => {
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <p style={{ margin: '0 0 1rem 0', color: '#666' }}>
-          🎓 Career Guidance and Employment Integration Platform
+           Career Guidance and Employment Integration Platform
         </p>
         <p style={{ margin: '0', color: '#999', fontSize: '0.9rem' }}>
           Connecting students with higher learning institutions and career opportunities in Lesotho
