@@ -26,7 +26,7 @@ const Institutions = () => {
 
   return (
     <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <h1>🎓 Higher Learning Institutions in Lesotho</h1>
+      <h1> Higher Learning Institutions in Lesotho</h1>
       <p style={{ color: '#666', marginBottom: '30px' }}>
         Browse all registered institutions and their available courses
       </p>
@@ -38,21 +38,21 @@ const Institutions = () => {
             
             <div style={{ marginBottom: '15px' }}>
               <p style={{ margin: '5px 0', color: '#666' }}>
-                <strong>📍 Location:</strong> {institution.location || 'Not specified'}
+                <strong> Location:</strong> {institution.location || 'Not specified'}
               </p>
               {institution.contact && (
                 <p style={{ margin: '5px 0', color: '#666' }}>
-                  <strong>📞 Contact:</strong> {institution.contact}
+                  <strong> Contact:</strong> {institution.contact}
                 </p>
               )}
               {institution.email && (
                 <p style={{ margin: '5px 0', color: '#666' }}>
-                  <strong>📧 Email:</strong> {institution.email}
+                  <strong> Email:</strong> {institution.email}
                 </p>
               )}
               {institution.type && (
                 <p style={{ margin: '5px 0', color: '#666' }}>
-                  <strong>🏛️ Type:</strong> {institution.type}
+                  <strong> Type:</strong> {institution.type}
                 </p>
               )}
             </div>
@@ -163,7 +163,7 @@ const Institutions = () => {
 
       {/* Statistics */}
       <div style={{ marginTop: '40px', padding: '20px', background: '#f8f9fa', borderRadius: '8px' }}>
-        <h3>📊 Directory Statistics</h3>
+        <h3> Directory Statistics</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#667eea' }}>
