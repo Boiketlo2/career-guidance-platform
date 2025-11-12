@@ -15,9 +15,11 @@ const UploadDocuments = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadedDocuments, setUploadedDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [storageUsage, setStorageUsage] = useState({ used: 0, total: 50 }); // 50MB total storage
 
   useEffect(() => {
     fetchUploadedDocuments();
+    calculateStorageUsage();
   }, [studentId]);
 
   const fetchUploadedDocuments = async () => {
@@ -31,6 +33,12 @@ const UploadDocuments = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const calculateStorageUsage = () => {
+    // Mock storage calculation - in real app, calculate from actual file sizes
+    const usedMB = uploadedDocuments.length * 2; // Assume 2MB per document
+    setStorageUsage({ used: usedMB, total: 50 });
   };
 
   const handleInputChange = (e) => {
@@ -115,7 +123,7 @@ const UploadDocuments = () => {
       });
 
       if (res.success) {
-        setMessage(" Document uploaded successfully!");
+        setMessage("Document uploaded successfully!");
         // Reset form
         setDocumentData({
           documentType: "transcript",
@@ -127,6 +135,7 @@ const UploadDocuments = () => {
         setUploadProgress(0);
         // Refresh documents list
         await fetchUploadedDocuments();
+        calculateStorageUsage();
       } else {
         setError(res.error || "Failed to upload document.");
       }
@@ -138,11 +147,39 @@ const UploadDocuments = () => {
     }
   };
 
+  const handleDeleteDocument = async (documentId) => {
+    if (!window.confirm("Are you sure you want to delete this document?")) {
+      return;
+    }
+
+    try {
+      const res = await studentAPI.deleteDocument(studentId, documentId);
+      if (res.success) {
+        setMessage("Document deleted successfully!");
+        await fetchUploadedDocuments();
+        calculateStorageUsage();
+      } else {
+        setError("Failed to delete document.");
+      }
+    } catch (err) {
+      console.error("Error deleting document:", err);
+      setError("Error deleting document. Please try again.");
+    }
+  };
+
   const getFileIcon = (fileType) => {
     switch (fileType) {
-      case "transcript": return "";
-      case "certificate": return "";
+      case "transcript": return "📊";
+      case "certificate": return "🏆";
       default: return "📄";
+    }
+  };
+
+  const getFileTypeColor = (fileType) => {
+    switch (fileType) {
+      case "transcript": return "#2d5a2d";
+      case "certificate": return "#1a1a1a";
+      default: return "#666";
     }
   };
 
@@ -154,26 +191,52 @@ const UploadDocuments = () => {
     return (
       <div style={styles.documentTypeSection}>
         <h3 style={styles.documentTypeTitle}>
-          {getFileIcon(type)} {type === "transcript" ? "Transcripts" : "Certificates"}
+          <span style={{ 
+            ...styles.documentTypeIcon, 
+            backgroundColor: getFileTypeColor(type) + '1A',
+            color: getFileTypeColor(type)
+          }}>
+            {getFileIcon(type)}
+          </span>
+          {type === "transcript" ? "Transcripts" : "Certificates"}
           <span style={styles.docCount}>({filteredDocs.length})</span>
         </h3>
         
         {filteredDocs.length === 0 ? (
           <div style={styles.emptyState}>
-            <p>No {type}s uploaded yet</p>
+            <p style={styles.emptyText}>No {type}s uploaded yet</p>
+            <p style={styles.emptySubtext}>Upload your {type.toLowerCase()} to get started</p>
           </div>
         ) : (
           <div style={styles.documentsGrid}>
             {filteredDocs.map((doc, index) => (
-              <div key={doc.id || index} style={styles.documentCard}>
+              <div 
+                key={doc.id || index} 
+                style={styles.documentCard}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+                }}
+              >
                 <div style={styles.documentHeader}>
-                  <div style={styles.documentIcon}>
+                  <div style={{
+                    ...styles.documentIcon,
+                    backgroundColor: getFileTypeColor(type) + '1A',
+                    color: getFileTypeColor(type)
+                  }}>
                     {getFileIcon(type)}
                   </div>
                   <div style={styles.documentInfo}>
                     <h4 style={styles.documentName}>{doc.name || doc.documentName}</h4>
                     <p style={styles.documentDate}>
                       Uploaded: {new Date(doc.uploadedAt).toLocaleDateString()}
+                    </p>
+                    <p style={styles.documentType}>
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
                     </p>
                   </div>
                 </div>
@@ -188,6 +251,12 @@ const UploadDocuments = () => {
                       View
                     </a>
                   )}
+                  <button 
+                    onClick={() => handleDeleteDocument(doc.id)}
+                    style={styles.deleteButton}
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             ))}
@@ -202,6 +271,27 @@ const UploadDocuments = () => {
       <div style={styles.header}>
         <h1 style={styles.title}>Upload Documents</h1>
         <p style={styles.subtitle}>Manage your academic transcripts and certificates</p>
+        
+        {/* Storage Usage */}
+        <div style={styles.storageSection}>
+          <div style={styles.storageHeader}>
+            <span style={styles.storageLabel}>Storage Usage</span>
+            <span style={styles.storagePercentage}>
+              {Math.round((storageUsage.used / storageUsage.total) * 100)}% used
+            </span>
+          </div>
+          <div style={styles.storageBar}>
+            <div 
+              style={{
+                ...styles.storageFill,
+                width: `${(storageUsage.used / storageUsage.total) * 100}%`
+              }}
+            />
+          </div>
+          <p style={styles.storageText}>
+            {storageUsage.used}MB of {storageUsage.total}MB used
+          </p>
+        </div>
       </div>
 
       {message && (
@@ -250,7 +340,20 @@ const UploadDocuments = () => {
 
             <div style={styles.formGroup}>
               <label style={styles.label}>Select File *</label>
-              <div style={styles.fileUploadArea}>
+              <div 
+                style={{
+                  ...styles.fileUploadArea,
+                  ...(documentData.file ? styles.fileUploadAreaActive : {})
+                }}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const file = e.dataTransfer.files[0];
+                  if (file) {
+                    handleFileChange({ target: { files: [file] } });
+                  }
+                }}
+              >
                 <input
                   id="fileInput"
                   type="file"
@@ -263,7 +366,7 @@ const UploadDocuments = () => {
                   <div style={styles.fileUploadIcon}>📁</div>
                   <div>
                     <p style={styles.fileUploadText}>
-                      {documentData.file ? documentData.file.name : "Click to select file"}
+                      {documentData.file ? documentData.file.name : "Click to select or drag & drop file"}
                     </p>
                     <p style={styles.fileUploadHint}>
                       Supported formats: PDF, DOC, DOCX, JPG, PNG (Max 5MB)
@@ -294,7 +397,17 @@ const UploadDocuments = () => {
               disabled={uploading || !documentData.documentName || !documentData.file}
               style={{
                 ...styles.uploadButton,
-                ...(uploading ? styles.uploadButtonDisabled : {})
+                ...(uploading || !documentData.documentName || !documentData.file ? styles.uploadButtonDisabled : {})
+              }}
+              onMouseEnter={(e) => {
+                if (!uploading && documentData.documentName && documentData.file) {
+                  e.target.style.backgroundColor = '#333';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!uploading && documentData.documentName && documentData.file) {
+                  e.target.style.backgroundColor = '#1a1a1a';
+                }
               }}
             >
               {uploading ? (
@@ -316,7 +429,7 @@ const UploadDocuments = () => {
         {loading ? (
           <div style={styles.loadingState}>
             <div style={styles.spinner}></div>
-            <p>Loading your documents...</p>
+            <p style={styles.loadingText}>Loading your documents...</p>
           </div>
         ) : (
           <>
@@ -327,10 +440,10 @@ const UploadDocuments = () => {
       </div>
 
       <div style={styles.infoSection}>
-        <h3 style={styles.infoTitle}> Document Guidelines</h3>
+        <h3 style={styles.infoTitle}>Document Guidelines</h3>
         <div style={styles.infoGrid}>
           <div style={styles.infoCard}>
-            <h4>File Requirements</h4>
+            <h4 style={styles.infoCardTitle}>File Requirements</h4>
             <ul style={styles.infoList}>
               <li>Maximum file size: 5MB</li>
               <li>Supported formats: PDF, DOC, DOCX, JPG, PNG</li>
@@ -338,7 +451,7 @@ const UploadDocuments = () => {
             </ul>
           </div>
           <div style={styles.infoCard}>
-            <h4>Transcript Guidelines</h4>
+            <h4 style={styles.infoCardTitle}>Transcript Guidelines</h4>
             <ul style={styles.infoList}>
               <li>Include all academic transcripts</li>
               <li>Ensure grades are visible</li>
@@ -346,7 +459,7 @@ const UploadDocuments = () => {
             </ul>
           </div>
           <div style={styles.infoCard}>
-            <h4>Certificate Guidelines</h4>
+            <h4 style={styles.infoCardTitle}>Certificate Guidelines</h4>
             <ul style={styles.infoList}>
               <li>Include relevant certifications</li>
               <li>Professional development certificates</li>
@@ -363,83 +476,132 @@ const styles = {
   container: {
     maxWidth: "1000px",
     margin: "0 auto",
-    padding: "20px",
+    padding: "2rem",
     fontFamily: "'Inter', 'Segoe UI', sans-serif",
-    background: "#f8fafc",
+    background: "#f8f8f8",
     minHeight: "100vh",
   },
   header: {
-    textAlign: "center",
-    marginBottom: "40px",
+    background: "#fff",
+    padding: "2.5rem",
+    borderRadius: "8px",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    marginBottom: "2rem",
+    border: "1px solid #e0e0e0",
   },
   title: {
-    fontSize: "2.5rem",
+    fontSize: "2.25rem",
     fontWeight: "700",
-    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-    margin: "0 0 10px 0",
+    color: "#1a1a1a",
+    margin: "0 0 0.5rem 0",
   },
   subtitle: {
     fontSize: "1.1rem",
-    color: "#64748b",
+    color: "#666",
+    margin: "0 0 1.5rem 0",
+    lineHeight: "1.5",
+  },
+  storageSection: {
+    background: "#f8f8f8",
+    padding: "1.5rem",
+    borderRadius: "6px",
+    border: "1px solid #e0e0e0",
+  },
+  storageHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "0.75rem",
+  },
+  storageLabel: {
+    color: "#1a1a1a",
+    fontWeight: "600",
+    fontSize: "0.95rem",
+  },
+  storagePercentage: {
+    color: "#1a1a1a",
+    fontWeight: "700",
+    fontSize: "1rem",
+  },
+  storageBar: {
+    width: "100%",
+    height: "8px",
+    backgroundColor: "#f0f0f0",
+    borderRadius: "4px",
+    overflow: "hidden",
+    marginBottom: "0.5rem",
+  },
+  storageFill: {
+    height: "100%",
+    backgroundColor: "#1a1a1a",
+    transition: "width 0.3s ease",
+  },
+  storageText: {
+    color: "#666",
+    fontSize: "0.85rem",
     margin: "0",
   },
   uploadSection: {
-    marginBottom: "40px",
+    marginBottom: "2rem",
   },
   uploadCard: {
     background: "#fff",
-    borderRadius: "16px",
-    padding: "30px",
-    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-    border: "1px solid rgba(255, 255, 255, 0.2)",
+    borderRadius: "8px",
+    padding: "2.5rem",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    border: "1px solid #e0e0e0",
   },
   uploadTitle: {
-    margin: "0 0 25px 0",
-    color: "#1e293b",
+    margin: "0 0 1.5rem 0",
+    color: "#1a1a1a",
     fontSize: "1.5rem",
     fontWeight: "600",
   },
   form: {
     display: "flex",
     flexDirection: "column",
-    gap: "20px",
+    gap: "1.25rem",
   },
   formGroup: {
     display: "flex",
     flexDirection: "column",
-    gap: "8px",
+    gap: "0.5rem",
   },
   label: {
     fontWeight: "600",
-    color: "#374151",
-    fontSize: "14px",
+    color: "#1a1a1a",
+    fontSize: "0.9rem",
   },
   input: {
-    padding: "12px 16px",
-    border: "2px solid #e5e7eb",
-    borderRadius: "8px",
-    fontSize: "14px",
-    transition: "all 0.3s ease",
+    padding: "0.875rem 1rem",
+    border: "1px solid #e0e0e0",
+    borderRadius: "6px",
+    fontSize: "0.9rem",
+    transition: "all 0.2s ease",
     outline: "none",
+    backgroundColor: "#fff",
   },
   select: {
-    padding: "12px 16px",
-    border: "2px solid #e5e7eb",
-    borderRadius: "8px",
-    fontSize: "14px",
+    padding: "0.875rem 1rem",
+    border: "1px solid #e0e0e0",
+    borderRadius: "6px",
+    fontSize: "0.9rem",
     backgroundColor: "#fff",
     outline: "none",
   },
   fileUploadArea: {
     position: "relative",
-    border: "2px dashed #d1d5db",
-    borderRadius: "8px",
-    padding: "30px",
+    border: "2px dashed #e0e0e0",
+    borderRadius: "6px",
+    padding: "2rem",
     textAlign: "center",
-    transition: "all 0.3s ease",
+    transition: "all 0.2s ease",
     cursor: "pointer",
+    backgroundColor: "#f8f8f8",
+  },
+  fileUploadAreaActive: {
+    borderColor: "#1a1a1a",
+    backgroundColor: "#f0f0f0",
   },
   fileInput: {
     position: "absolute",
@@ -454,60 +616,62 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    gap: "10px",
+    gap: "0.75rem",
   },
   fileUploadIcon: {
     fontSize: "2rem",
-    color: "#6b7280",
+    color: "#666",
   },
   fileUploadText: {
     margin: "0",
-    color: "#374151",
+    color: "#1a1a1a",
     fontWeight: "500",
+    fontSize: "0.95rem",
   },
   fileUploadHint: {
     margin: "0",
-    color: "#6b7280",
-    fontSize: "12px",
+    color: "#666",
+    fontSize: "0.8rem",
   },
   progressSection: {
-    marginTop: "10px",
+    marginTop: "0.5rem",
   },
   progressBar: {
     width: "100%",
     height: "6px",
-    backgroundColor: "#e5e7eb",
+    backgroundColor: "#f0f0f0",
     borderRadius: "3px",
     overflow: "hidden",
   },
   progressFill: {
     height: "100%",
-    backgroundColor: "#10b981",
+    backgroundColor: "#1a1a1a",
     transition: "width 0.3s ease",
   },
   progressText: {
-    margin: "5px 0 0 0",
-    color: "#6b7280",
-    fontSize: "12px",
+    margin: "0.5rem 0 0 0",
+    color: "#666",
+    fontSize: "0.8rem",
     textAlign: "center",
   },
   uploadButton: {
-    padding: "15px 30px",
-    background: "linear-gradient(135deg, #10b981, #059669)",
-    color: "white",
+    padding: "1rem 2rem",
+    background: "#1a1a1a",
+    color: "#fff",
     border: "none",
-    borderRadius: "8px",
+    borderRadius: "6px",
     cursor: "pointer",
-    fontSize: "16px",
+    fontSize: "1rem",
     fontWeight: "600",
-    transition: "all 0.3s ease",
+    transition: "all 0.2s ease",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    gap: "10px",
+    gap: "0.5rem",
   },
   uploadButtonDisabled: {
-    opacity: "0.6",
+    backgroundColor: "#f0f0f0",
+    color: "#999",
     cursor: "not-allowed",
   },
   buttonSpinner: {
@@ -516,152 +680,204 @@ const styles = {
     border: "2px solid transparent",
     borderTop: "2px solid #fff",
     borderRadius: "50%",
+    animation: "spin 1s linear infinite",
   },
   documentsSection: {
-    marginBottom: "40px",
+    marginBottom: "2rem",
   },
   sectionTitle: {
     fontSize: "1.5rem",
     fontWeight: "600",
-    color: "#1e293b",
-    margin: "0 0 25px 0",
+    color: "#1a1a1a",
+    margin: "0 0 1.5rem 0",
   },
   documentTypeSection: {
-    marginBottom: "30px",
+    marginBottom: "2rem",
   },
   documentTypeTitle: {
     fontSize: "1.2rem",
     fontWeight: "600",
-    color: "#1e293b",
-    margin: "0 0 15px 0",
+    color: "#1a1a1a",
+    margin: "0 0 1rem 0",
     display: "flex",
     alignItems: "center",
-    gap: "10px",
+    gap: "0.75rem",
+  },
+  documentTypeIcon: {
+    padding: "0.5rem",
+    borderRadius: "6px",
+    fontSize: "1rem",
   },
   docCount: {
     fontSize: "0.9rem",
-    color: "#64748b",
+    color: "#666",
     fontWeight: "400",
+    marginLeft: "0.5rem",
   },
   documentsGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-    gap: "15px",
+    gap: "1rem",
   },
   documentCard: {
     background: "#fff",
-    border: "1px solid #e2e8f0",
-    borderRadius: "12px",
-    padding: "20px",
+    border: "1px solid #e0e0e0",
+    borderRadius: "6px",
+    padding: "1.5rem",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    transition: "all 0.3s ease",
+    transition: "all 0.2s ease",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
   },
   documentHeader: {
     display: "flex",
     alignItems: "center",
-    gap: "15px",
+    gap: "1rem",
   },
   documentIcon: {
-    fontSize: "24px",
+    padding: "0.75rem",
+    borderRadius: "6px",
+    fontSize: "1.25rem",
   },
   documentInfo: {
     flex: "1",
   },
   documentName: {
-    margin: "0 0 5px 0",
-    color: "#1e293b",
-    fontSize: "14px",
+    margin: "0 0 0.25rem 0",
+    color: "#1a1a1a",
+    fontSize: "0.9rem",
     fontWeight: "600",
   },
   documentDate: {
+    margin: "0 0 0.25rem 0",
+    color: "#666",
+    fontSize: "0.8rem",
+  },
+  documentType: {
     margin: "0",
-    color: "#64748b",
-    fontSize: "12px",
+    color: "#999",
+    fontSize: "0.75rem",
+    textTransform: "uppercase",
+    fontWeight: "600",
   },
   documentActions: {
-    marginLeft: "15px",
+    display: "flex",
+    gap: "0.5rem",
+    marginLeft: "1rem",
   },
   viewButton: {
-    padding: "6px 12px",
-    backgroundColor: "#3b82f6",
+    padding: "0.5rem 1rem",
+    backgroundColor: "#1a1a1a",
     color: "white",
     textDecoration: "none",
-    borderRadius: "6px",
-    fontSize: "12px",
+    borderRadius: "4px",
+    fontSize: "0.8rem",
     fontWeight: "500",
+    transition: "all 0.2s ease",
+  },
+  deleteButton: {
+    padding: "0.5rem 1rem",
+    backgroundColor: "#8b2d2d",
+    color: "white",
+    border: "none",
+    borderRadius: "4px",
+    fontSize: "0.8rem",
+    fontWeight: "500",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
   },
   emptyState: {
     textAlign: "center",
-    padding: "40px",
-    color: "#94a3b8",
-    background: "#f8fafc",
-    borderRadius: "8px",
-    border: "1px dashed #cbd5e1",
+    padding: "3rem",
+    color: "#999",
+    background: "#f8f8f8",
+    borderRadius: "6px",
+    border: "1px dashed #e0e0e0",
+  },
+  emptyText: {
+    margin: "0 0 0.5rem 0",
+    fontSize: "1rem",
+    fontWeight: "600",
+  },
+  emptySubtext: {
+    margin: "0",
+    fontSize: "0.9rem",
   },
   infoSection: {
     background: "#fff",
-    borderRadius: "16px",
-    padding: "30px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.05)",
+    borderRadius: "8px",
+    padding: "2rem",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    border: "1px solid #e0e0e0",
   },
   infoTitle: {
-    margin: "0 0 20px 0",
-    color: "#1e293b",
+    margin: "0 0 1.5rem 0",
+    color: "#1a1a1a",
     fontSize: "1.2rem",
+    fontWeight: "600",
   },
   infoGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-    gap: "20px",
+    gap: "1.25rem",
   },
   infoCard: {
-    padding: "20px",
-    background: "#f8fafc",
-    borderRadius: "8px",
-    border: "1px solid #e2e8f0",
+    padding: "1.5rem",
+    background: "#f8f8f8",
+    borderRadius: "6px",
+    border: "1px solid #e0e0e0",
+  },
+  infoCardTitle: {
+    margin: "0 0 0.75rem 0",
+    color: "#1a1a1a",
+    fontSize: "1rem",
+    fontWeight: "600",
   },
   infoList: {
     margin: "0",
-    paddingLeft: "20px",
-    color: "#475569",
-    fontSize: "14px",
+    paddingLeft: "1.25rem",
+    color: "#666",
+    fontSize: "0.85rem",
     lineHeight: "1.6",
   },
   successMessage: {
-    background: "linear-gradient(135deg, #10b981, #059669)",
-    color: "#fff",
-    padding: "16px 20px",
-    borderRadius: "10px",
-    marginBottom: "25px",
-    fontWeight: "500",
-    textAlign: "center",
+    background: "#f0f8f0",
+    color: "#2d5a2d",
+    padding: "1rem 1.25rem",
+    borderRadius: "6px",
+    marginBottom: "1.5rem",
+    border: "1px solid #d0e8d0",
+    fontSize: "0.9rem",
   },
   errorMessage: {
-    background: "linear-gradient(135deg, #ef4444, #dc2626)",
-    color: "#fff",
-    padding: "16px 20px",
-    borderRadius: "10px",
-    marginBottom: "25px",
-    fontWeight: "500",
-    textAlign: "center",
+    background: "#f8f0f0",
+    color: "#8b2d2d",
+    padding: "1rem 1.25rem",
+    borderRadius: "6px",
+    marginBottom: "1.5rem",
+    border: "1px solid #e8d0d0",
+    fontSize: "0.9rem",
   },
   loadingState: {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    padding: "40px",
-    color: "#64748b",
+    padding: "3rem",
+    color: "#666",
+  },
+  loadingText: {
+    marginTop: "1rem",
+    fontSize: "1rem",
   },
   spinner: {
     width: "40px",
     height: "40px",
-    border: "4px solid #e2e8f0",
-    borderTop: "4px solid #667eea",
+    border: "4px solid #e0e0e0",
+    borderTop: "4px solid #1a1a1a",
     borderRadius: "50%",
-    marginBottom: "20px",
+    animation: "spin 1s linear infinite",
   },
 };
 
