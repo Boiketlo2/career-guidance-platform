@@ -15,6 +15,7 @@ const ViewAdmissions = () => {
   });
   const [error, setError] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   useEffect(() => {
     fetchAdmissions();
@@ -36,6 +37,7 @@ const ViewAdmissions = () => {
         console.log(" [ViewAdmissions] Processed admissions data:", admissionsData);
         
         setAdmissions(admissionsData);
+        setLastUpdated(new Date());
         
         // Calculate stats
         const statsData = {
@@ -68,41 +70,27 @@ const ViewAdmissions = () => {
     }
   };
 
-  const fetchDebugInfo = async () => {
-    try {
-      console.log(" [ViewAdmissions] Fetching debug info...");
-      // Using the debug endpoint we added
-  const response = await fetch(`https://career-guidance-platform-1-t41w.onrender.com/api/student/debug/${studentId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
-      console.log(" [ViewAdmissions] Debug info:", data);
-      setDebugInfo(prev => ({ ...prev, debugEndpoint: data }));
-    } catch (err) {
-      console.error(" [ViewAdmissions] Error fetching debug info:", err);
-    }
-  };
-
   const getStatusStyle = (status) => {
     switch (status) {
       case 'approved': 
         return { 
-          background: "linear-gradient(135deg, #10b981, #059669)",
-          color: "#fff",
+          backgroundColor: "#f0f8f0",
+          color: "#2d5a2d",
+          borderColor: "#d0e8d0",
           icon: ""
         };
       case 'rejected': 
         return { 
-          background: "linear-gradient(135deg, #ef4444, #dc2626)",
-          color: "#fff",
+          backgroundColor: "#f8f0f0",
+          color: "#8b2d2d",
+          borderColor: "#e8d0d0",
           icon: ""
         };
       default: 
         return { 
-          background: "linear-gradient(135deg, #f59e0b, #d97706)",
-          color: "#fff",
+          backgroundColor: "#f8f8f8",
+          color: "#666",
+          borderColor: "#e0e0e0",
           icon: ""
         };
     }
@@ -122,22 +110,50 @@ const ViewAdmissions = () => {
     });
   };
 
+  const getTimeAgo = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return "1 day ago";
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
+    return `${Math.ceil(diffDays / 30)} months ago`;
+  };
+
   const AdmissionCard = ({ admission }) => {
     const statusStyle = getStatusStyle(admission.status);
     
     return (
-      <div style={styles.admissionCard}>
+      <div 
+        style={styles.admissionCard}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+        }}
+      >
         <div style={styles.cardHeader}>
           <div style={styles.courseInfo}>
             <h3 style={styles.courseName}>{admission.courseName || "Unknown Course"}</h3>
             <p style={styles.institutionName}>{admission.institutionName || "Unknown Institution"}</p>
-            <p style={styles.applicationId}>Application ID: {admission.id}</p>
-            <p style={styles.applicationId}>Course ID: {admission.courseId} | Institution ID: {admission.institutionId}</p>
+            <div style={styles.metaInfo}>
+              <span style={styles.applicationId}>Application ID: {admission.id}</span>
+              {admission.updatedAt && (
+                <span style={styles.updateTime}>Updated {getTimeAgo(admission.updatedAt)}</span>
+              )}
+            </div>
           </div>
           <div style={{
             ...styles.statusBadge,
-            background: statusStyle.background,
-            color: statusStyle.color
+            backgroundColor: statusStyle.backgroundColor,
+            color: statusStyle.color,
+            border: `1px solid ${statusStyle.borderColor}`
           }}>
             <span style={styles.statusIcon}>{statusStyle.icon}</span>
             {admission.status ? admission.status.charAt(0).toUpperCase() + admission.status.slice(1) : "Unknown"}
@@ -145,17 +161,19 @@ const ViewAdmissions = () => {
         </div>
         
         <div style={styles.cardDetails}>
-          <div style={styles.detailItem}>
-            <span style={styles.detailLabel}>Applied Date:</span>
-            <span style={styles.detailValue}>
-              {formatDate(admission.appliedAt)}
-            </span>
-          </div>
-          <div style={styles.detailItem}>
-            <span style={styles.detailLabel}>Last Updated:</span>
-            <span style={styles.detailValue}>
-              {formatDate(admission.updatedAt || admission.appliedAt)}
-            </span>
+          <div style={styles.detailGrid}>
+            <div style={styles.detailItem}>
+              <span style={styles.detailLabel}>Applied Date:</span>
+              <span style={styles.detailValue}>
+                {formatDate(admission.appliedAt)}
+              </span>
+            </div>
+            <div style={styles.detailItem}>
+              <span style={styles.detailLabel}>Last Updated:</span>
+              <span style={styles.detailValue}>
+                {formatDate(admission.updatedAt || admission.appliedAt)}
+              </span>
+            </div>
           </div>
           {admission.personalStatement && (
             <div style={styles.personalStatement}>
@@ -168,24 +186,56 @@ const ViewAdmissions = () => {
         {admission.status === "approved" && (
           <div style={styles.approvedMessage}>
             <span style={styles.approvedIcon}></span>
-            Congratulations! You've been accepted into this program.
+            <div>
+              <strong>Congratulations!</strong> You've been accepted into this program. 
+              You'll receive further instructions from the institution via email.
+            </div>
           </div>
         )}
 
         {admission.status === "rejected" && (
           <div style={styles.rejectedMessage}>
             <span style={styles.rejectedIcon}></span>
-            Don't worry! Explore other opportunities that match your profile.
+            <div>
+              <strong>Keep Going!</strong> This is just one opportunity. 
+              Many more await - continue exploring and applying to other programs.
+            </div>
+          </div>
+        )}
+
+        {admission.status === "pending" && (
+          <div style={styles.pendingMessage}>
+            <span style={styles.pendingIcon}>📋</span>
+            <div>
+              <strong>Under Review</strong> - The institution is currently reviewing your application. 
+              Check back regularly for updates.
+            </div>
           </div>
         )}
       </div>
     );
   };
 
-  const StatCard = ({ title, value, color, onClick }) => (
+  const StatCard = ({ title, value, color, onClick, isActive }) => (
     <div 
-      style={{...styles.statCard, borderLeft: `4px solid ${color}`}}
+      style={{
+        ...styles.statCard,
+        borderLeft: `4px solid ${color}`,
+        ...(isActive ? styles.statCardActive : {})
+      }}
       onClick={onClick}
+      onMouseEnter={(e) => {
+        if (onClick) {
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (onClick) {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+        }
+      }}
     >
       <div style={styles.statValue}>{value}</div>
       <div style={styles.statTitle}>{title}</div>
@@ -196,14 +246,8 @@ const ViewAdmissions = () => {
     return (
       <div style={styles.loadingContainer}>
         <div style={styles.spinner}></div>
-        <p>Loading admission results...</p>
+        <p style={styles.loadingText}>Loading admission results...</p>
         <p style={styles.debugText}>Student ID: {studentId}</p>
-        <button 
-          style={styles.debugButton}
-          onClick={fetchDebugInfo}
-        >
-           Fetch Debug Info
-        </button>
       </div>
     );
   }
@@ -212,132 +256,103 @@ const ViewAdmissions = () => {
     return (
       <div style={styles.errorContainer}>
         <div style={styles.errorIcon}></div>
-        <h3>Error Loading Admissions</h3>
-        <p>{error}</p>
-        <button 
-          style={styles.retryButton}
-          onClick={fetchAdmissions}
-        >
-          Try Again
-        </button>
-        <button 
-          style={styles.debugButton}
-          onClick={fetchDebugInfo}
-        >
-           Fetch Debug Info
-        </button>
+        <h3 style={styles.errorTitle}>Error Loading Admissions</h3>
+        <p style={styles.errorMessage}>{error}</p>
+        <div style={styles.errorActions}>
+          <button 
+            style={styles.retryButton}
+            onClick={fetchAdmissions}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#333'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = '#1a1a1a'}
+          >
+            Try Again
+          </button>
+        </div>
         <p style={styles.debugText}>Student ID: {studentId}</p>
       </div>
     );
   }
 
+  const filteredAdmissions = getFilteredAdmissions();
+
   return (
     <div style={styles.container}>
+      {/* Header Section */}
       <div style={styles.header}>
-        <div>
+        <div style={styles.headerContent}>
           <h1 style={styles.title}>Admission Results</h1>
           <p style={styles.subtitle}>Track your course application status and decisions</p>
-          <p style={styles.debugText}>Student ID: {studentId} | Total Applications: {stats.total}</p>
+          {lastUpdated && (
+            <p style={styles.lastUpdated}>
+              Last updated: {lastUpdated.toLocaleString()}
+            </p>
+          )}
         </div>
         <div style={styles.stats}>
           <StatCard 
             title="Total Applications" 
             value={stats.total} 
-            color="#3b82f6"
+            color="#1a1a1a"
             onClick={() => setFilter("all")}
+            isActive={filter === "all"}
           />
           <StatCard 
             title="Approved" 
             value={stats.approved} 
-            color="#10b981"
+            color="#2d5a2d"
             onClick={() => setFilter("approved")}
+            isActive={filter === "approved"}
           />
           <StatCard 
             title="Pending" 
             value={stats.pending} 
-            color="#f59e0b"
+            color="#666"
             onClick={() => setFilter("pending")}
+            isActive={filter === "pending"}
           />
           <StatCard 
             title="Rejected" 
             value={stats.rejected} 
-            color="#ef4444"
+            color="#8b2d2d"
             onClick={() => setFilter("rejected")}
+            isActive={filter === "rejected"}
           />
         </div>
       </div>
 
-      {/* Control Buttons */}
+      {/* Control Section */}
       <div style={styles.controlSection}>
-        <button 
-          style={styles.refreshButton}
-          onClick={fetchAdmissions}
-        >
-           Refresh Results
-        </button>
-        <button 
-          style={styles.debugButton}
-          onClick={fetchDebugInfo}
-        >
-           Debug Info
-        </button>
-      </div>
-
-      {/* Filter Tabs */}
-      <div style={styles.filterTabs}>
-        <button
-          style={{
-            ...styles.filterTab,
-            ...(filter === "all" ? styles.filterTabActive : {})
-          }}
-          onClick={() => setFilter("all")}
-        >
-          All Applications ({stats.total})
-        </button>
-        <button
-          style={{
-            ...styles.filterTab,
-            ...(filter === "approved" ? styles.filterTabActive : {})
-          }}
-          onClick={() => setFilter("approved")}
-        >
-          Approved ({stats.approved})
-        </button>
-        <button
-          style={{
-            ...styles.filterTab,
-            ...(filter === "pending" ? styles.filterTabActive : {})
-          }}
-          onClick={() => setFilter("pending")}
-        >
-          Pending ({stats.pending})
-        </button>
-        <button
-          style={{
-            ...styles.filterTab,
-            ...(filter === "rejected" ? styles.filterTabActive : {})
-          }}
-          onClick={() => setFilter("rejected")}
-        >
-          Rejected ({stats.rejected})
-        </button>
+        <div style={styles.controlGroup}>
+          <button 
+            style={styles.refreshButton}
+            onClick={fetchAdmissions}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#333'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = '#1a1a1a'}
+          >
+             Refresh Results
+          </button>
+          <div style={styles.resultsInfo}>
+            Showing {filteredAdmissions.length} of {stats.total} application{stats.total !== 1 ? 's' : ''}
+            {filter !== 'all' && ` (${filter})`}
+          </div>
+        </div>
       </div>
 
       {/* Admissions List */}
       <div style={styles.admissionsList}>
-        {getFilteredAdmissions().length === 0 ? (
+        {filteredAdmissions.length === 0 ? (
           <div style={styles.emptyState}>
             <div style={styles.emptyIcon}>
               {filter === "all" ? "" : 
                filter === "approved" ? "" :
                filter === "pending" ? "" : ""}
             </div>
-            <h3>
+            <h3 style={styles.emptyTitle}>
               {filter === "all" ? "No Applications Yet" :
                filter === "approved" ? "No Approved Applications" :
                filter === "pending" ? "No Pending Applications" : "No Rejected Applications"}
             </h3>
-            <p>
+            <p style={styles.emptyText}>
               {filter === "all" 
                 ? "You haven't applied to any courses yet. Start exploring opportunities!"
                 : `No ${filter} applications found in your records.`
@@ -347,6 +362,8 @@ const ViewAdmissions = () => {
               <button 
                 style={styles.viewAllButton}
                 onClick={() => setFilter("all")}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#333'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#1a1a1a'}
               >
                 View All Applications
               </button>
@@ -354,53 +371,60 @@ const ViewAdmissions = () => {
           </div>
         ) : (
           <div style={styles.admissionsGrid}>
-            {getFilteredAdmissions().map((admission, index) => (
+            {filteredAdmissions.map((admission, index) => (
               <AdmissionCard key={admission.id || index} admission={admission} />
             ))}
           </div>
         )}
       </div>
 
-      {/* Debug Information */}
-      <div style={styles.debugSection}>
-        <details>
-          <summary>Debug Information ({admissions.length} applications found)</summary>
-          <div style={styles.debugControls}>
-            <button 
-              style={styles.smallButton}
-              onClick={() => console.log("Debug Info:", debugInfo)}
-            >
-              Log to Console
-            </button>
-            <button 
-              style={styles.smallButton}
-              onClick={fetchDebugInfo}
-            >
-              Refresh Debug
-            </button>
+      {/* Success Rate Section */}
+      {stats.total > 0 && (
+        <div style={styles.successSection}>
+          <h3 style={styles.successTitle}>Application Success Rate</h3>
+          <div style={styles.successStats}>
+            <div style={styles.successStat}>
+              <div style={styles.successValue}>
+                {stats.approved > 0 ? Math.round((stats.approved / stats.total) * 100) : 0}%
+              </div>
+              <div style={styles.successLabel}>Acceptance Rate</div>
+            </div>
+            <div style={styles.successStat}>
+              <div style={styles.successValue}>{stats.pending}</div>
+              <div style={styles.successLabel}>Under Review</div>
+            </div>
+            <div style={styles.successStat}>
+              <div style={styles.successValue}>
+                {stats.total > 0 ? Math.round((stats.approved / stats.total) * 100) : 0}%
+              </div>
+              <div style={styles.successLabel}>Success Rate</div>
+            </div>
           </div>
-          <pre style={styles.debugPre}>
-            {JSON.stringify(debugInfo, null, 2)}
-          </pre>
-        </details>
-      </div>
+        </div>
+      )}
 
       {/* Help Section */}
       {admissions.length > 0 && (
         <div style={styles.helpSection}>
-          <h3 style={styles.helpTitle}> Need Help?</h3>
+          <h3 style={styles.helpTitle}>Application Guidance</h3>
           <div style={styles.helpGrid}>
             <div style={styles.helpCard}>
-              <h4>Pending Applications</h4>
-              <p>Institutions typically respond within 2-4 weeks. Check back regularly for updates.</p>
+              <h4 style={styles.helpCardTitle}>⏳ Pending Applications</h4>
+              <p style={styles.helpCardText}>
+                Institutions typically respond within 2-4 weeks. Check back regularly for updates and ensure your contact information is current.
+              </p>
             </div>
             <div style={styles.helpCard}>
-              <h4>Approved Applications</h4>
-              <p>Congratulations! You'll receive further instructions from the institution via email.</p>
+              <h4 style={styles.helpCardTitle}> Approved Applications</h4>
+              <p style={styles.helpCardText}>
+                Congratulations! You'll receive further instructions from the institution via email. Respond promptly to secure your spot.
+              </p>
             </div>
             <div style={styles.helpCard}>
-              <h4>Multiple Approvals</h4>
-              <p>If accepted to multiple programs, you'll need to choose one institution.</p>
+              <h4 style={styles.helpCardTitle}> Multiple Approvals</h4>
+              <p style={styles.helpCardText}>
+                If accepted to multiple programs, carefully compare your options and make your decision within the given timeframe.
+              </p>
             </div>
           </div>
         </div>
@@ -413,343 +437,409 @@ const styles = {
   container: {
     maxWidth: "1200px",
     margin: "0 auto",
-    padding: "20px",
+    padding: "2rem",
     fontFamily: "'Inter', 'Segoe UI', sans-serif",
-    background: "#f8fafc",
+    background: "#f8f8f8",
     minHeight: "100vh",
   },
   header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: "30px",
-    flexWrap: "wrap",
-    gap: "20px",
+    background: "#fff",
+    padding: "2.5rem",
+    borderRadius: "8px",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    marginBottom: "2rem",
+    border: "1px solid #e0e0e0",
+  },
+  headerContent: {
+    marginBottom: "1.5rem",
   },
   title: {
-    fontSize: "2.5rem",
+    fontSize: "2.25rem",
     fontWeight: "700",
-    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-    margin: "0 0 10px 0",
+    color: "#1a1a1a",
+    margin: "0 0 0.5rem 0",
   },
   subtitle: {
     fontSize: "1.1rem",
-    color: "#64748b",
+    color: "#666",
+    margin: "0 0 0.5rem 0",
+    lineHeight: "1.5",
+  },
+  lastUpdated: {
+    fontSize: "0.85rem",
+    color: "#999",
     margin: "0",
+    fontStyle: "italic",
   },
   stats: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-    gap: "15px",
-    minWidth: "300px",
+    gap: "1rem",
   },
   statCard: {
     background: "#fff",
-    padding: "20px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.05)",
+    padding: "1.5rem",
+    borderRadius: "6px",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
     cursor: "pointer",
-    transition: "all 0.3s ease",
+    transition: "all 0.2s ease",
+    border: "1px solid #f0f0f0",
+  },
+  statCardActive: {
+    backgroundColor: "#f8f8f8",
+    borderColor: "#1a1a1a",
   },
   statValue: {
     fontSize: "2rem",
     fontWeight: "700",
-    color: "#1e293b",
+    color: "#1a1a1a",
     lineHeight: "1",
   },
   statTitle: {
-    fontSize: "14px",
-    color: "#64748b",
+    fontSize: "0.9rem",
+    color: "#666",
     fontWeight: "500",
-    marginTop: "5px",
+    marginTop: "0.5rem",
   },
   controlSection: {
+    marginBottom: "1.5rem",
+  },
+  controlGroup: {
     display: "flex",
-    gap: "10px",
-    marginBottom: "20px",
-    justifyContent: "center",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: "1rem",
   },
   refreshButton: {
-    padding: "10px 20px",
-    background: "linear-gradient(135deg, #10b981, #059669)",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontWeight: "500",
-  },
-  debugButton: {
-    padding: "10px 20px",
-    background: "linear-gradient(135deg, #8b5cf6, #7c3aed)",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontWeight: "500",
-  },
-  smallButton: {
-    padding: "5px 10px",
-    background: "#6b7280",
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontSize: "12px",
-    marginRight: "10px",
-  },
-  filterTabs: {
-    display: "flex",
-    background: "#fff",
-    borderRadius: "12px",
-    padding: "5px",
-    marginBottom: "30px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.05)",
-    flexWrap: "wrap",
-  },
-  filterTab: {
-    flex: "1",
-    padding: "12px 20px",
-    border: "none",
-    background: "transparent",
-    cursor: "pointer",
-    fontWeight: "500",
-    borderRadius: "8px",
-    transition: "all 0.3s ease",
-    fontSize: "14px",
-    minWidth: "120px",
-  },
-  filterTabActive: {
-    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    padding: "0.75rem 1.5rem",
+    background: "#1a1a1a",
     color: "#fff",
-    boxShadow: "0 4px 15px rgba(102, 126, 234, 0.4)",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontWeight: "600",
+    transition: "all 0.2s ease",
+    fontSize: "0.9rem",
+  },
+  resultsInfo: {
+    color: "#666",
+    fontSize: "0.9rem",
+    fontWeight: "500",
   },
   admissionsList: {
-    marginBottom: "40px",
+    marginBottom: "2rem",
   },
   admissionsGrid: {
     display: "grid",
-    gap: "20px",
+    gap: "1.5rem",
   },
   admissionCard: {
     background: "#fff",
-    borderRadius: "16px",
-    padding: "25px",
-    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
-    border: "1px solid #f1f5f9",
+    borderRadius: "8px",
+    padding: "1.5rem",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    border: "1px solid #e0e0e0",
+    transition: "all 0.2s ease",
   },
   cardHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: "20px",
+    marginBottom: "1rem",
     flexWrap: "wrap",
-    gap: "15px",
+    gap: "1rem",
   },
   courseInfo: {
     flex: "1",
   },
   courseName: {
-    margin: "0 0 5px 0",
-    fontSize: "1.3rem",
+    margin: "0 0 0.5rem 0",
+    fontSize: "1.25rem",
     fontWeight: "600",
-    color: "#1e293b",
+    color: "#1a1a1a",
+    lineHeight: "1.3",
   },
   institutionName: {
-    margin: "0 0 5px 0",
-    color: "#64748b",
+    margin: "0 0 0.75rem 0",
+    color: "#666",
     fontWeight: "500",
+    fontSize: "1rem",
+  },
+  metaInfo: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.25rem",
   },
   applicationId: {
-    fontSize: "10px",
-    color: "#9ca3af",
-    margin: "2px 0 0 0",
+    fontSize: "0.8rem",
+    color: "#999",
     fontFamily: "monospace",
   },
+  updateTime: {
+    fontSize: "0.8rem",
+    color: "#999",
+    fontStyle: "italic",
+  },
   statusBadge: {
-    padding: "8px 16px",
+    padding: "0.5rem 1rem",
     borderRadius: "20px",
-    fontSize: "14px",
+    fontSize: "0.85rem",
     fontWeight: "600",
     display: "flex",
     alignItems: "center",
-    gap: "6px",
+    gap: "0.5rem",
     whiteSpace: "nowrap",
   },
   statusIcon: {
-    fontSize: "16px",
+    fontSize: "1rem",
   },
   cardDetails: {
     display: "flex",
     flexDirection: "column",
-    gap: "12px",
+    gap: "1rem",
+  },
+  detailGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+    gap: "1rem",
   },
   detailItem: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "8px 0",
-    borderBottom: "1px solid #f1f5f9",
+    padding: "0.5rem 0",
+    borderBottom: "1px solid #f0f0f0",
   },
   detailLabel: {
     fontWeight: "600",
-    color: "#374151",
-    fontSize: "14px",
+    color: "#1a1a1a",
+    fontSize: "0.9rem",
   },
   detailValue: {
-    color: "#6b7280",
-    fontSize: "14px",
+    color: "#666",
+    fontSize: "0.9rem",
   },
   personalStatement: {
-    marginTop: "10px",
-    padding: "15px",
-    background: "#f8fafc",
-    borderRadius: "8px",
-    border: "1px solid #e2e8f0",
+    marginTop: "0.5rem",
+    padding: "1rem",
+    background: "#f8f8f8",
+    borderRadius: "6px",
+    border: "1px solid #e0e0e0",
   },
   statementText: {
-    margin: "8px 0 0 0",
-    color: "#475569",
-    fontSize: "14px",
+    margin: "0.5rem 0 0 0",
+    color: "#666",
+    fontSize: "0.9rem",
     lineHeight: "1.5",
     fontStyle: "italic",
   },
   approvedMessage: {
-    marginTop: "15px",
-    padding: "12px 16px",
-    background: "linear-gradient(135deg, #d1fae5, #a7f3d0)",
-    color: "#065f46",
-    borderRadius: "8px",
+    marginTop: "1rem",
+    padding: "1rem",
+    background: "#f0f8f0",
+    color: "#2d5a2d",
+    borderRadius: "6px",
+    border: "1px solid #d0e8d0",
     display: "flex",
-    alignItems: "center",
-    gap: "10px",
+    alignItems: "flex-start",
+    gap: "0.75rem",
     fontWeight: "500",
   },
   rejectedMessage: {
-    marginTop: "15px",
-    padding: "12px 16px",
-    background: "linear-gradient(135deg, #fef3c7, #fde68a)",
-    color: "#92400e",
-    borderRadius: "8px",
+    marginTop: "1rem",
+    padding: "1rem",
+    background: "#f8f8f8",
+    color: "#666",
+    borderRadius: "6px",
+    border: "1px solid #e0e0e0",
     display: "flex",
-    alignItems: "center",
-    gap: "10px",
+    alignItems: "flex-start",
+    gap: "0.75rem",
     fontWeight: "500",
   },
-  approvedIcon: {
-    fontSize: "18px",
-  },
-  rejectedIcon: {
-    fontSize: "18px",
+  pendingMessage: {
+    marginTop: "1rem",
+    padding: "1rem",
+    background: "#f8f8f8",
+    color: "#666",
+    borderRadius: "6px",
+    border: "1px solid #e0e0e0",
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "0.75rem",
+    fontWeight: "500",
   },
   emptyState: {
     textAlign: "center",
-    padding: "60px 20px",
+    padding: "4rem 2rem",
     background: "#fff",
-    borderRadius: "16px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.05)",
+    borderRadius: "8px",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    border: "1px solid #e0e0e0",
   },
   emptyIcon: {
-    fontSize: "4rem",
-    marginBottom: "20px",
+    fontSize: "3rem",
+    marginBottom: "1rem",
+  },
+  emptyTitle: {
+    color: "#1a1a1a",
+    margin: "0 0 0.5rem 0",
+    fontSize: "1.25rem",
+    fontWeight: "600",
+  },
+  emptyText: {
+    color: "#666",
+    margin: "0 0 1.5rem 0",
+    lineHeight: "1.5",
   },
   viewAllButton: {
-    marginTop: "15px",
-    padding: "10px 20px",
-    background: "linear-gradient(135deg, #3b82f6, #1d4ed8)",
-    color: "white",
+    padding: "0.75rem 1.5rem",
+    background: "#1a1a1a",
+    color: "#fff",
     border: "none",
     borderRadius: "6px",
     cursor: "pointer",
     fontWeight: "500",
+    transition: "all 0.2s ease",
   },
-  debugText: {
-    fontSize: "12px",
-    color: "#6b7280",
-    fontFamily: "monospace",
-    margin: "5px 0 0 0",
-  },
-  errorContainer: {
-    textAlign: "center",
-    padding: "60px 20px",
+  successSection: {
     background: "#fff",
-    borderRadius: "16px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.05)",
-    margin: "20px",
+    padding: "2rem",
+    borderRadius: "8px",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    marginBottom: "2rem",
+    border: "1px solid #e0e0e0",
+    textAlign: "center",
   },
-  errorIcon: {
-    fontSize: "3rem",
-    marginBottom: "20px",
+  successTitle: {
+    color: "#1a1a1a",
+    fontSize: "1.25rem",
+    fontWeight: "600",
+    margin: "0 0 1.5rem 0",
   },
-  retryButton: {
-    marginTop: "15px",
-    padding: "10px 20px",
-    background: "linear-gradient(135deg, #3b82f6, #1d4ed8)",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
+  successStats: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+    gap: "2rem",
+    maxWidth: "500px",
+    margin: "0 auto",
+  },
+  successStat: {
+    textAlign: "center",
+  },
+  successValue: {
+    fontSize: "2rem",
+    fontWeight: "700",
+    color: "#1a1a1a",
+    marginBottom: "0.5rem",
+  },
+  successLabel: {
+    color: "#666",
+    fontSize: "0.9rem",
     fontWeight: "500",
-    marginRight: "10px",
+  },
+  helpSection: {
+    background: "#fff",
+    borderRadius: "8px",
+    padding: "2rem",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    border: "1px solid #e0e0e0",
+  },
+  helpTitle: {
+    color: "#1a1a1a",
+    fontSize: "1.25rem",
+    fontWeight: "600",
+    margin: "0 0 1.5rem 0",
+    textAlign: "center",
+  },
+  helpGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+    gap: "1.5rem",
+  },
+  helpCard: {
+    padding: "1.5rem",
+    background: "#f8f8f8",
+    borderRadius: "6px",
+    border: "1px solid #e0e0e0",
+  },
+  helpCardTitle: {
+    color: "#1a1a1a",
+    fontSize: "1rem",
+    fontWeight: "600",
+    margin: "0 0 0.75rem 0",
+  },
+  helpCardText: {
+    color: "#666",
+    fontSize: "0.9rem",
+    lineHeight: "1.5",
+    margin: "0",
   },
   loadingContainer: {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    padding: "60px 20px",
-    color: "#64748b",
+    padding: "4rem 2rem",
+    color: "#666",
+  },
+  loadingText: {
+    marginTop: "1rem",
+    fontSize: "1rem",
   },
   spinner: {
     width: "40px",
     height: "40px",
-    border: "4px solid #e2e8f0",
-    borderTop: "4px solid #667eea",
+    border: "4px solid #e0e0e0",
+    borderTop: "4px solid #1a1a1a",
     borderRadius: "50%",
     animation: "spin 1s linear infinite",
-    marginBottom: "20px",
   },
-  debugSection: {
-    background: "#f8fafc",
-    padding: "20px",
-    borderRadius: "8px",
-    marginTop: "20px",
-    border: "1px solid #e2e8f0",
-  },
-  debugControls: {
-    marginBottom: "10px",
-  },
-  debugPre: {
-    fontSize: "12px",
-    background: "#1f2937",
-    color: "#f3f4f6",
-    padding: "15px",
-    borderRadius: "6px",
-    overflow: "auto",
-    maxHeight: "300px",
-  },
-  helpSection: {
+  errorContainer: {
+    textAlign: "center",
+    padding: "4rem 2rem",
     background: "#fff",
-    borderRadius: "16px",
-    padding: "30px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.05)",
-  },
-  helpTitle: {
-    margin: "0 0 20px 0",
-    color: "#1e293b",
-    fontSize: "1.2rem",
-  },
-  helpGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-    gap: "20px",
-  },
-  helpCard: {
-    padding: "20px",
-    background: "#f8fafc",
     borderRadius: "8px",
-    border: "1px solid #e2e8f0",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    margin: "2rem",
+    border: "1px solid #e0e0e0",
+  },
+  errorIcon: {
+    fontSize: "3rem",
+    marginBottom: "1rem",
+  },
+  errorTitle: {
+    color: "#1a1a1a",
+    margin: "0 0 0.5rem 0",
+    fontSize: "1.5rem",
+  },
+  errorMessage: {
+    color: "#8b2d2d",
+    margin: "0 0 1.5rem 0",
+    lineHeight: "1.5",
+  },
+  errorActions: {
+    display: "flex",
+    gap: "1rem",
+    justifyContent: "center",
+    flexWrap: "wrap",
+  },
+  retryButton: {
+    padding: "0.75rem 1.5rem",
+    background: "#1a1a1a",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontWeight: "500",
+    transition: "all 0.2s ease",
+  },
+  debugText: {
+    fontSize: "0.8rem",
+    color: "#999",
+    fontFamily: "monospace",
+    margin: "1rem 0 0 0",
   },
 };
 
