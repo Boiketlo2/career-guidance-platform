@@ -294,8 +294,8 @@ const InstituteHome = () => {
               recentActivity.map(activity => (
                 <div key={activity.id} style={styles.activityItem}>
                   <div style={styles.activityIcon}>
-                    {activity.type === 'application' ? '📥' : 
-                     activity.type === 'approval' ? '✅' : '📚'}
+                    {activity.type === 'application' ? '' : 
+                     activity.type === 'approval' ? '' : ''}
                   </div>
                   <div style={styles.activityContent}>
                     <p style={styles.activityMessage}>{activity.message}</p>
