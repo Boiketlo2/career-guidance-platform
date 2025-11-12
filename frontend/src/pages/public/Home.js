@@ -165,7 +165,7 @@ const Home = () => {
             border: "1px solid #dee2e6",
           }}
         >
-          <h3 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}>🎓 For Students</h3>
+          <h3 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}> For Students</h3>
           <p style={{ color: "#555" }}>
             Explore universities and colleges in Lesotho, compare courses, and apply online
             with your academic credentials securely stored on the platform.
@@ -181,7 +181,7 @@ const Home = () => {
             border: "1px solid #dee2e6",
           }}
         >
-          <h3 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}>🏫 For Institutions</h3>
+          <h3 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}> For Institutions</h3>
           <p style={{ color: "#555" }}>
             Register your institution, publish available programs, receive applications,
             and manage admissions with verified student information.
@@ -197,28 +197,13 @@ const Home = () => {
             border: "1px solid #dee2e6",
           }}
         >
-          <h3 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}>💼 For Companies</h3>
+          <h3 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}> For Companies</h3>
           <p style={{ color: "#555" }}>
             Post job opportunities, filter qualified graduates automatically, and
             connect with candidates ready for employment interviews.
           </p>
         </div>
       </section>
-
-      {/* FOOTER */}
-      <footer
-        style={{
-          backgroundColor: "#fff",
-          textAlign: "center",
-          padding: "1rem",
-          borderTop: "1px solid #dee2e6",
-          color: "#666",
-          fontSize: "0.9rem",
-        }}
-      >
-        © {new Date().getFullYear()} Career Guidance Platform — All Rights Reserved
-      </footer>
-    </div>
   );
 };
 
