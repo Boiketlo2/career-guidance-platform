@@ -372,16 +372,16 @@ const JobPortal = () => {
         <h3 style={styles.tipsTitle}>Job Search Tips</h3>
         <div style={styles.tipsGrid}>
           <div style={styles.tipCard}>
-            <h4 style={styles.tipHeading">Tailor Your Applications</h4>
-            <p style={styles.tipText">Customize your personal statement for each job application to stand out.</p>
+            <h4 style={styles.tipHeading}>Tailor Your Applications</h4>
+            <p style={styles.tipText}>Customize your personal statement for each job application to stand out.</p>
           </div>
           <div style={styles.tipCard}>
-            <h4 style={styles.tipHeading">Research Companies</h4>
-            <p style={styles.tipText">Learn about companies before applying to show genuine interest.</p>
+            <h4 style={styles.tipHeading}>Research Companies</h4>
+            <p style={styles.tipText}>Learn about companies before applying to show genuine interest.</p>
           </div>
           <div style={styles.tipCard}>
-            <h4 style={styles.tipHeading">Follow Up</h4>
-            <p style={styles.tipText">Consider following up on applications after 1-2 weeks.</p>
+            <h4 style={styles.tipHeading}>Follow Up</h4>
+            <p style={styles.tipText}>Consider following up on applications after 1-2 weeks.</p>
           </div>
         </div>
       </div>
@@ -731,7 +731,7 @@ const styles = {
     borderRadius: "6px",
     marginBottom: "1.5rem",
     border: "1px solid #d0e8d0",
-    fontSize: "0.95rem",
+    fontSize: "0.9rem",
     textAlign: "center",
   },
   errorMessage: {
@@ -741,7 +741,7 @@ const styles = {
     borderRadius: "6px",
     marginBottom: "1.5rem",
     border: "1px solid #e8d0d0",
-    fontSize: "0.95rem",
+    fontSize: "0.9rem",
     textAlign: "center",
   },
   loadingContainer: {
