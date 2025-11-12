@@ -134,7 +134,7 @@ const StudentHome = () => {
       {/* Encouragement Banner */}
       <div style={styles.encouragementBanner}>
         <div style={styles.encouragementContent}>
-          <h3 style={styles.encouragementTitle}>🎯 Keep Moving Forward!</h3>
+          <h3 style={styles.encouragementTitle}>Keep Moving Forward!</h3>
           <p style={styles.encouragementMessage}>
             Every application brings you closer to your dream career. Stay persistent and believe in your potential!
           </p>
@@ -194,19 +194,19 @@ const StudentHome = () => {
         <h3 style={styles.tipsTitle}>Success Tips & Motivation</h3>
         <div style={styles.tipsGrid}>
           <div style={styles.tipCard}>
-            <h4 style={styles.tipTitle}>📚 Complete Your Profile</h4>
+            <h4 style={styles.tipTitle}>Complete Your Profile</h4>
             <p style={styles.tipText}>Ensure your profile is up-to-date for better job matches and application success.</p>
           </div>
           <div style={styles.tipCard}>
-            <h4 style={styles.tipTitle}>📄 Upload Documents</h4>
+            <h4 style={styles.tipTitle}>Upload Documents</h4>
             <p style={styles.tipText}>Add your transcripts and certificates to streamline your application process.</p>
           </div>
           <div style={styles.tipCard}>
-            <h4 style={styles.tipTitle}>🔍 Track Applications</h4>
+            <h4 style={styles.tipTitle}>Track Applications</h4>
             <p style={styles.tipText}>Regularly check your application status and follow up when needed.</p>
           </div>
           <div style={styles.tipCard}>
-            <h4 style={styles.tipTitle}>💪 Stay Persistent</h4>
+            <h4 style={styles.tipTitle}>Stay Persistent</h4>
             <p style={styles.tipText}>Every 'no' brings you closer to a 'yes'. Keep applying and learning!</p>
           </div>
         </div>
@@ -216,7 +216,7 @@ const StudentHome = () => {
       <div style={styles.finalEncouragement}>
         <p style={styles.finalEncouragementText}>
           <strong>Remember:</strong> Your dedication today builds your success tomorrow. 
-          Keep pushing forward – you've got this! 🌟
+          Keep pushing forward – you've got this! 
         </p>
       </div>
     </div>
