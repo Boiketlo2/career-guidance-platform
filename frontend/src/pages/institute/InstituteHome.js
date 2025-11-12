@@ -1,4 +1,3 @@
-// src/pages/institute/InstituteHome.js
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { instituteAPI } from "../../api/instituteAPI";
@@ -19,6 +18,7 @@ const InstituteHome = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [recentActivity, setRecentActivity] = useState([]);
 
   // Check if user is actually an institution
   useEffect(() => {
@@ -32,6 +32,7 @@ const InstituteHome = () => {
   useEffect(() => {
     fetchInstituteData();
     fetchStats();
+    fetchRecentActivity();
   }, [institutionId]);
 
   const fetchInstituteData = async () => {
@@ -96,6 +97,20 @@ const InstituteHome = () => {
     }
   };
 
+  const fetchRecentActivity = async () => {
+    try {
+      // Mock recent activity - in real app, fetch from API
+      const mockActivity = [
+        { id: 1, type: 'application', message: 'New application received for Computer Science', time: '2 hours ago' },
+        { id: 2, type: 'approval', message: 'Application approved for John Doe', time: '1 day ago' },
+        { id: 3, type: 'course', message: 'New course "Data Analytics" published', time: '2 days ago' },
+      ];
+      setRecentActivity(mockActivity);
+    } catch (err) {
+      console.error("Error fetching recent activity:", err);
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -110,46 +125,81 @@ const InstituteHome = () => {
     }
   };
 
-  if (loading) return <div style={styles.loading}>Loading Institute Dashboard...</div>;
+  const getApplicationRate = () => {
+    if (stats.applications === 0) return 0;
+    return Math.round((stats.approvedStudents / stats.applications) * 100);
+  };
+
+  if (loading) {
+    return (
+      <div style={styles.loadingContainer}>
+        <div style={styles.spinner}></div>
+        <p style={styles.loadingText}>Loading Institute Dashboard...</p>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.container}>
       {/* Header with Navigation */}
       <header style={styles.header}>
-        <div style={styles.headerLeft}>
-          <h1 style={styles.title}>Institute Dashboard</h1>
-          <p style={styles.subtitle}>Welcome back, {institute?.name}</p>
-        </div>
-        
-        <div style={styles.headerRight}>
-          <nav style={styles.nav}>
-            <NavLink text=" Faculties" link={`/institute/${institutionId}/faculties`} />
-            <NavLink text="Courses" link={`/institute/${institutionId}/courses`} />
-            <NavLink text=" Admissions" link={`/institute/${institutionId}/admissions`} />
-            <NavLink text=" Publish" link={`/institute/${institutionId}/admissions/publish`} />
-            <NavLink text=" Profile" link={`/institute/${institutionId}/profile`} />
-          </nav>
-          <button style={styles.logoutBtn} onClick={handleLogout}>Logout</button>
+        <div style={styles.headerContent}>
+          <div style={styles.headerLeft}>
+            <h1 style={styles.title}>Institute Dashboard</h1>
+            <p style={styles.subtitle}>Welcome back, {institute?.name}</p>
+          </div>
+          
+          <div style={styles.headerRight}>
+            <nav style={styles.nav}>
+              <NavLink text="Faculties" link={`/institute/${institutionId}/faculties`} />
+              <NavLink text="Courses" link={`/institute/${institutionId}/courses`} />
+              <NavLink text="Admissions" link={`/institute/${institutionId}/admissions`} />
+              <NavLink text="Publish" link={`/institute/${institutionId}/admissions/publish`} />
+              <NavLink text="Profile" link={`/institute/${institutionId}/profile`} />
+            </nav>
+            <button 
+              style={styles.logoutBtn} 
+              onClick={handleLogout}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#333'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#1a1a1a'}
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Error Display */}
       {error && (
         <div style={styles.error}>
-          {error}
-          <button onClick={() => window.location.reload()} style={styles.retryBtn}>
-            Retry
-          </button>
+          <div style={styles.errorContent}>
+            <span style={styles.errorText}>{error}</span>
+            <button 
+              onClick={() => window.location.reload()} 
+              style={styles.retryBtn}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#333'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#1a1a1a'}
+            >
+              Retry
+            </button>
+          </div>
         </div>
       )}
 
       {/* Verification Alert */}
       {institute && !institute.emailVerified && (
         <div style={styles.verificationAlert}>
-          <span> Please verify your email to access all features</span>
-          <button style={styles.btnPrimary} onClick={handleResendVerification}>
-            Resend Verification Email
-          </button>
+          <div style={styles.alertContent}>
+            <span style={styles.alertText}>Please verify your email to access all features</span>
+            <button 
+              style={styles.verifyBtn} 
+              onClick={handleResendVerification}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#333'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#1a1a1a'}
+            >
+              Resend Verification Email
+            </button>
+          </div>
         </div>
       )}
 
@@ -157,10 +207,17 @@ const InstituteHome = () => {
       {institute && (
         <div style={styles.instituteCard}>
           <div style={styles.instituteHeader}>
-            <h2 style={styles.instituteName}>{institute.name}</h2>
-            <span style={institute.status === 'active' ? styles.activeBadge : styles.inactiveBadge}>
-              {institute.status || "Active"}
-            </span>
+            <div style={styles.instituteInfo}>
+              <h2 style={styles.instituteName}>{institute.name}</h2>
+              <div style={styles.instituteMeta}>
+                <span style={institute.status === 'active' ? styles.activeBadge : styles.inactiveBadge}>
+                  {institute.status || "Active"}
+                </span>
+                <span style={styles.verificationStatus}>
+                  {institute.emailVerified ? "✅ Verified" : "⚠️ Unverified"}
+                </span>
+              </div>
+            </div>
           </div>
           <div style={styles.instituteDetails}>
             <div style={styles.detailItem}>
@@ -175,37 +232,36 @@ const InstituteHome = () => {
             <div style={styles.detailItem}>
               <strong>Type:</strong> {institute.type || "Private"}
             </div>
-            <div style={styles.detailItem}>
-              <strong>Email Verified:</strong>{" "}
-              <span style={institute.emailVerified ? styles.verified : styles.unverified}>
-                {institute.emailVerified ? "Verified" : "Unverified"}
-              </span>
-            </div>
           </div>
         </div>
       )}
 
       {/* Quick Stats Section */}
       <section style={styles.statsSection}>
-        <h3 style={styles.sectionTitle}>Quick Overview</h3>
-        <div className="cg-card-grid" style={styles.grid}>
-          <div>
+        <div style={styles.sectionHeader}>
+          <h3 style={styles.sectionTitle}>Quick Overview</h3>
+          <div style={styles.performanceIndicator}>
+            <span style={styles.performanceLabel}>Acceptance Rate:</span>
+            <span style={styles.performanceValue}>{getApplicationRate()}%</span>
+          </div>
+        </div>
+        <div style={styles.statsGrid}>
           <Card 
-            icon="" 
+            icon="🏛️" 
             title="Faculties" 
             number={stats.faculties} 
             link={`/institute/${institutionId}/faculties`} 
             linkText="Manage" 
           />
           <Card 
-            icon="" 
+            icon="📚" 
             title="Courses" 
             number={stats.courses} 
             link={`/institute/${institutionId}/courses`} 
             linkText="Manage" 
           />
           <Card
-            icon=""
+            icon="📋"
             title="Applications"
             number={stats.applications}
             pending={stats.pendingApplications}
@@ -213,29 +269,96 @@ const InstituteHome = () => {
             linkText="Review"
           />
           <Card 
-            icon="" 
+            icon="✅" 
             title="Approved Students" 
             number={stats.approvedStudents} 
             link={`/institute/${institutionId}/admissions`} 
             linkText="Manage" 
           />
           <Card 
-            icon="" 
+            icon="🔄" 
             title="Admission Cycles" 
             number={stats.admissions} 
             link={`/institute/${institutionId}/admissions`} 
             linkText="View" 
           />
-          </div>
         </div>
       </section>
+
+      {/* Recent Activity & Quick Actions */}
+      <div style={styles.bottomSection}>
+        <div style={styles.activitySection}>
+          <h3 style={styles.sectionTitle}>Recent Activity</h3>
+          <div style={styles.activityList}>
+            {recentActivity.length > 0 ? (
+              recentActivity.map(activity => (
+                <div key={activity.id} style={styles.activityItem}>
+                  <div style={styles.activityIcon}>
+                    {activity.type === 'application' ? '📥' : 
+                     activity.type === 'approval' ? '✅' : '📚'}
+                  </div>
+                  <div style={styles.activityContent}>
+                    <p style={styles.activityMessage}>{activity.message}</p>
+                    <span style={styles.activityTime}>{activity.time}</span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={styles.noActivity}>
+                <p style={styles.noActivityText}>No recent activity</p>
+                <p style={styles.noActivitySubtext}>Activity will appear here as you manage your institution</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div style={styles.actionsSection}>
+          <h3 style={styles.sectionTitle}>Quick Actions</h3>
+          <div style={styles.actionsGrid}>
+            <QuickAction 
+              icon="➕"
+              title="Add New Course"
+              description="Create and publish a new course"
+              link={`/institute/${institutionId}/courses/new`}
+            />
+            <QuickAction 
+              icon="👥"
+              title="Review Applications"
+              description="Process pending applications"
+              link={`/institute/${institutionId}/applications`}
+            />
+            <QuickAction 
+              icon="📊"
+              title="View Analytics"
+              description="See detailed institution insights"
+              link={`/institute/${institutionId}/analytics`}
+            />
+            <QuickAction 
+              icon="⚙️"
+              title="Settings"
+              description="Manage institution settings"
+              link={`/institute/${institutionId}/profile`}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
-// 🧱 Card Component
+// Card Component
 const Card = ({ icon, title, number, link, linkText, pending }) => (
-  <div style={styles.card}>
+  <div 
+    style={styles.card}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.transform = 'translateY(-2px)';
+      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.transform = 'translateY(0)';
+      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+    }}
+  >
     <div style={styles.cardHeader}>
       <div style={styles.cardIcon}>{icon}</div>
       <h4 style={styles.cardTitle}>{title}</h4>
@@ -248,312 +371,507 @@ const Card = ({ icon, title, number, link, linkText, pending }) => (
         </div>
       )}
     </div>
-    <Link to={link} style={styles.cardLink}>
+    <Link 
+      to={link} 
+      style={styles.cardLink}
+      onMouseEnter={(e) => e.target.style.color = '#333'}
+      onMouseLeave={(e) => e.target.style.color = '#1a1a1a'}
+    >
       {linkText} →
     </Link>
   </div>
 );
 
-// 🧭 Navigation Link Component
+// Navigation Link Component
 const NavLink = ({ text, link }) => (
-  <Link to={link} style={styles.navLink}>{text}</Link>
+  <Link 
+    to={link} 
+    style={styles.navLink}
+    onMouseEnter={(e) => {
+      e.target.style.backgroundColor = '#1a1a1a';
+      e.target.style.color = '#fff';
+    }}
+    onMouseLeave={(e) => {
+      e.target.style.backgroundColor = 'transparent';
+      e.target.style.color = '#666';
+    }}
+  >
+    {text}
+  </Link>
 );
 
-// 💅 Styles
+// Quick Action Component
+const QuickAction = ({ icon, title, description, link }) => (
+  <Link 
+    to={link} 
+    style={styles.quickAction}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.transform = 'translateY(-2px)';
+      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.transform = 'translateY(0)';
+      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+    }}
+  >
+    <div style={styles.quickActionIcon}>{icon}</div>
+    <div style={styles.quickActionContent}>
+      <h4 style={styles.quickActionTitle}>{title}</h4>
+      <p style={styles.quickActionDescription}>{description}</p>
+    </div>
+  </Link>
+);
+
+// Styles
 const styles = {
   container: { 
-    maxWidth: 1200, 
+    maxWidth: "1200px", 
     margin: "0 auto", 
-    fontFamily: "Inter, sans-serif", 
-    padding: "20px",
-    background: "#f8f9fa",
+    fontFamily: "'Inter', sans-serif", 
+    padding: "2rem",
+    background: "#f8f8f8",
     minHeight: "100vh"
   },
   
   // Header Styles
   header: {
+    background: "#fff",
+    padding: "2rem",
+    borderRadius: "8px",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    marginBottom: "2rem",
+    border: "1px solid #e0e0e0",
+  },
+  headerContent: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 30,
-    paddingBottom: 20,
-    borderBottom: "1px solid #e9ecef"
+    flexWrap: "wrap",
+    gap: "1rem",
   },
   headerLeft: {
-    flex: 1
+    flex: "1",
   },
   headerRight: {
     display: "flex",
     alignItems: "center",
-    gap: 20
+    gap: "1.5rem",
+    flexWrap: "wrap",
   },
   title: {
-    fontSize: "28px",
+    fontSize: "2.25rem",
     fontWeight: "700",
     color: "#1a1a1a",
-    margin: "0 0 5px 0"
+    margin: "0 0 0.5rem 0",
   },
   subtitle: {
-    fontSize: "16px",
+    fontSize: "1.1rem",
     color: "#666",
-    margin: 0
+    margin: "0",
+    lineHeight: "1.5",
   },
   
   // Navigation Styles
   nav: {
     display: "flex",
-    gap: 15,
-    flexWrap: "wrap"
+    gap: "0.75rem",
+    flexWrap: "wrap",
   },
   navLink: {
-    padding: "8px 16px",
+    padding: "0.75rem 1.25rem",
     background: "transparent",
-    color: "#495057",
-    borderRadius: 6,
+    color: "#666",
+    borderRadius: "6px",
     textDecoration: "none",
-    fontWeight: 500,
-    fontSize: "14px",
-    border: "1px solid #dee2e6",
+    fontWeight: "500",
+    fontSize: "0.9rem",
+    border: "1px solid #e0e0e0",
     transition: "all 0.2s ease",
-    whiteSpace: "nowrap"
+    whiteSpace: "nowrap",
   },
   
   // Button Styles
   logoutBtn: {
-    padding: "8px 16px",
-    borderRadius: 6,
+    padding: "0.75rem 1.5rem",
+    borderRadius: "6px",
     border: "none",
-    background: "#6c757d",
+    background: "#1a1a1a",
     color: "#fff",
     cursor: "pointer",
     fontWeight: "500",
-    fontSize: "14px",
-    whiteSpace: "nowrap"
+    fontSize: "0.9rem",
+    whiteSpace: "nowrap",
+    transition: "all 0.2s ease",
   },
-  btnPrimary: {
-    background: "#007bff",
+  verifyBtn: {
+    background: "#1a1a1a",
     color: "#fff",
     border: "none",
-    padding: "6px 12px",
-    borderRadius: 4,
+    padding: "0.75rem 1.25rem",
+    borderRadius: "6px",
     cursor: "pointer",
-    fontSize: "12px",
-    fontWeight: "500"
+    fontSize: "0.9rem",
+    fontWeight: "500",
+    transition: "all 0.2s ease",
   },
   retryBtn: {
-    background: "#007bff",
+    background: "#1a1a1a",
     color: "#fff",
     border: "none",
-    padding: "6px 12px",
-    borderRadius: 4,
+    padding: "0.75rem 1.25rem",
+    borderRadius: "6px",
     cursor: "pointer",
-    fontSize: "12px",
-    fontWeight: "500"
+    fontSize: "0.9rem",
+    fontWeight: "500",
+    transition: "all 0.2s ease",
   },
   
   // Alert Styles
   verificationAlert: {
+    background: "#f8f8f8",
+    border: "1px solid #e0e0e0",
+    padding: "1.5rem",
+    borderRadius: "8px",
+    marginBottom: "2rem",
+  },
+  alertContent: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    background: "#fff3cd",
-    color: "#856404",
-    padding: "12px 16px",
-    borderRadius: 6,
-    marginBottom: 24,
-    border: "1px solid #ffeaa7",
-    fontSize: "14px"
+    flexWrap: "wrap",
+    gap: "1rem",
+  },
+  alertText: {
+    color: "#666",
+    fontSize: "0.95rem",
+    fontWeight: "500",
   },
   error: {
-    background: "#f8d7da",
-    color: "#721c24",
-    padding: "12px 16px",
-    borderRadius: 6,
-    marginBottom: 24,
-    border: "1px solid #f5c6cb",
+    background: "#f8f0f0",
+    color: "#8b2d2d",
+    padding: "1.5rem",
+    borderRadius: "8px",
+    marginBottom: "2rem",
+    border: "1px solid #e8d0d0",
+  },
+  errorContent: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: "1rem",
+  },
+  errorText: {
+    fontSize: "0.95rem",
+    fontWeight: "500",
   },
   
   // Institute Card Styles
   instituteCard: {
     background: "#fff",
-    padding: 24,
-    borderRadius: 8,
-    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-    marginBottom: 30
+    padding: "2rem",
+    borderRadius: "8px",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    marginBottom: "2rem",
+    border: "1px solid #e0e0e0",
   },
   instituteHeader: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16
+    alignItems: "flex-start",
+    marginBottom: "1.5rem",
+    flexWrap: "wrap",
+    gap: "1rem",
+  },
+  instituteInfo: {
+    flex: "1",
   },
   instituteName: {
-    fontSize: "20px",
+    fontSize: "1.5rem",
     fontWeight: "600",
     color: "#1a1a1a",
-    margin: 0
+    margin: "0 0 0.5rem 0",
+  },
+  instituteMeta: {
+    display: "flex",
+    gap: "1rem",
+    flexWrap: "wrap",
   },
   instituteDetails: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-    gap: "12px"
+    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+    gap: "1rem",
   },
   detailItem: {
-    fontSize: "14px",
-    color: "#495057"
+    fontSize: "0.9rem",
+    color: "#666",
+    lineHeight: "1.5",
   },
   
   // Badge Styles
   activeBadge: {
-    background: "#d4edda",
-    color: "#155724",
-    padding: "4px 8px",
-    borderRadius: 12,
-    fontSize: "12px",
-    fontWeight: "600"
+    background: "#f0f8f0",
+    color: "#2d5a2d",
+    padding: "0.5rem 1rem",
+    borderRadius: "20px",
+    fontSize: "0.8rem",
+    fontWeight: "600",
+    border: "1px solid #d0e8d0",
   },
   inactiveBadge: {
-    background: "#f8d7da",
-    color: "#721c24",
-    padding: "4px 8px",
-    borderRadius: 12,
-    fontSize: "12px",
-    fontWeight: "600"
+    background: "#f8f0f0",
+    color: "#8b2d2d",
+    padding: "0.5rem 1rem",
+    borderRadius: "20px",
+    fontSize: "0.8rem",
+    fontWeight: "600",
+    border: "1px solid #e8d0d0",
   },
-  verified: {
-    background: "#d4edda",
-    color: "#155724",
-    padding: "2px 6px",
-    borderRadius: 4,
-    fontSize: "12px",
-    fontWeight: "600"
-  },
-  unverified: {
-    background: "#f8d7da",
-    color: "#721c24",
-    padding: "2px 6px",
-    borderRadius: 4,
-    fontSize: "12px",
-    fontWeight: "600"
+  verificationStatus: {
+    fontSize: "0.8rem",
+    color: "#666",
+    fontWeight: "500",
   },
   
   // Stats Section
   statsSection: {
-    marginBottom: 30
+    marginBottom: "2rem",
+  },
+  sectionHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "1.5rem",
+    flexWrap: "wrap",
+    gap: "1rem",
   },
   sectionTitle: {
-    fontSize: "18px",
+    fontSize: "1.25rem",
     fontWeight: "600",
     color: "#1a1a1a",
-    margin: "0 0 20px 0"
+    margin: "0",
   },
-  grid: {
+  performanceIndicator: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    background: "#f8f8f8",
+    padding: "0.75rem 1rem",
+    borderRadius: "6px",
+    border: "1px solid #e0e0e0",
+  },
+  performanceLabel: {
+    fontSize: "0.9rem",
+    color: "#666",
+    fontWeight: "500",
+  },
+  performanceValue: {
+    fontSize: "1rem",
+    fontWeight: "700",
+    color: "#1a1a1a",
+  },
+  statsGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-    gap: 20
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: "1.5rem",
   },
   
   // Card Styles
   card: {
     background: "#fff",
-    borderRadius: 8,
-    padding: 20,
-    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-    border: "1px solid #e9ecef",
-    transition: "transform 0.2s ease, box-shadow 0.2s ease"
+    borderRadius: "8px",
+    padding: "1.5rem",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    border: "1px solid #e0e0e0",
+    transition: "all 0.2s ease",
+    display: "flex",
+    flexDirection: "column",
+    height: "100%",
   },
   cardHeader: {
     display: "flex",
     alignItems: "center",
-    gap: 12,
-    marginBottom: 16
+    gap: "1rem",
+    marginBottom: "1rem",
   },
   cardIcon: {
-    fontSize: 24,
-    width: 40,
-    height: 40,
+    fontSize: "1.5rem",
+    width: "3rem",
+    height: "3rem",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "#f8f9fa",
-    borderRadius: 8
+    background: "#f8f8f8",
+    borderRadius: "8px",
   },
   cardTitle: {
-    fontSize: "16px",
+    fontSize: "1rem",
     fontWeight: "600",
-    color: "#495057",
-    margin: 0
+    color: "#1a1a1a",
+    margin: "0",
   },
   cardContent: {
-    marginBottom: 16
+    marginBottom: "1rem",
+    flex: "1",
   },
   cardNumber: {
-    fontSize: "32px",
+    fontSize: "2.5rem",
     fontWeight: "700",
     color: "#1a1a1a",
-    margin: "0 0 8px 0",
-    lineHeight: 1
+    margin: "0 0 0.5rem 0",
+    lineHeight: "1",
   },
   pendingBadge: {
-    background: "#fff3cd",
-    color: "#856404",
-    padding: "4px 8px",
-    borderRadius: 4,
-    fontSize: "12px",
+    background: "#f8f8f8",
+    color: "#666",
+    padding: "0.5rem 0.75rem",
+    borderRadius: "4px",
+    fontSize: "0.8rem",
     fontWeight: "500",
-    display: "inline-block"
+    display: "inline-block",
+    border: "1px solid #e0e0e0",
   },
   cardLink: {
     textDecoration: "none",
-    color: "#007bff",
-    fontWeight: "500",
-    fontSize: "14px",
+    color: "#1a1a1a",
+    fontWeight: "600",
+    fontSize: "0.9rem",
     display: "flex",
     alignItems: "center",
-    gap: 4,
-    transition: "color 0.2s ease"
+    gap: "0.5rem",
+    transition: "color 0.2s ease",
+  },
+  
+  // Bottom Section
+  bottomSection: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "2rem",
+  },
+  activitySection: {
+    background: "#fff",
+    padding: "1.5rem",
+    borderRadius: "8px",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    border: "1px solid #e0e0e0",
+  },
+  activityList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
+  },
+  activityItem: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "1rem",
+    padding: "1rem",
+    background: "#f8f8f8",
+    borderRadius: "6px",
+    border: "1px solid #e0e0e0",
+  },
+  activityIcon: {
+    fontSize: "1.25rem",
+    marginTop: "0.25rem",
+  },
+  activityContent: {
+    flex: "1",
+  },
+  activityMessage: {
+    margin: "0 0 0.25rem 0",
+    color: "#1a1a1a",
+    fontSize: "0.9rem",
+    fontWeight: "500",
+  },
+  activityTime: {
+    color: "#999",
+    fontSize: "0.8rem",
+  },
+  noActivity: {
+    textAlign: "center",
+    padding: "2rem",
+    color: "#666",
+  },
+  noActivityText: {
+    margin: "0 0 0.5rem 0",
+    fontSize: "1rem",
+    fontWeight: "600",
+  },
+  noActivitySubtext: {
+    margin: "0",
+    fontSize: "0.9rem",
+  },
+  
+  // Actions Section
+  actionsSection: {
+    background: "#fff",
+    padding: "1.5rem",
+    borderRadius: "8px",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    border: "1px solid #e0e0e0",
+  },
+  actionsGrid: {
+    display: "grid",
+    gap: "1rem",
+  },
+  quickAction: {
+    display: "flex",
+    alignItems: "center",
+    gap: "1rem",
+    padding: "1.25rem",
+    background: "#f8f8f8",
+    borderRadius: "6px",
+    border: "1px solid #e0e0e0",
+    textDecoration: "none",
+    color: "inherit",
+    transition: "all 0.2s ease",
+  },
+  quickActionIcon: {
+    fontSize: "1.5rem",
+    width: "3rem",
+    height: "3rem",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "#fff",
+    borderRadius: "6px",
+  },
+  quickActionContent: {
+    flex: "1",
+  },
+  quickActionTitle: {
+    margin: "0 0 0.25rem 0",
+    color: "#1a1a1a",
+    fontSize: "1rem",
+    fontWeight: "600",
+  },
+  quickActionDescription: {
+    margin: "0",
+    color: "#666",
+    fontSize: "0.9rem",
+    lineHeight: "1.4",
   },
   
   // Loading State
-  loading: { 
-    textAlign: "center", 
-    padding: 100, 
-    fontSize: 18,
-    color: "#666"
+  loadingContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "4rem 2rem",
+    color: "#666",
+  },
+  loadingText: {
+    marginTop: "1rem",
+    fontSize: "1rem",
+  },
+  spinner: {
+    width: "40px",
+    height: "40px",
+    border: "4px solid #e0e0e0",
+    borderTop: "4px solid #1a1a1a",
+    borderRadius: "50%",
+    animation: "spin 1s linear infinite",
   },
 };
-
-// Add hover effects
-const navLinkHover = {
-  ...styles.navLink,
-  ':hover': {
-    background: "#007bff",
-    color: "#fff",
-    borderColor: "#007bff"
-  }
-};
-
-const cardHover = {
-  ...styles.card,
-  ':hover': {
-    transform: "translateY(-2px)",
-    boxShadow: "0 4px 8px rgba(0,0,0,0.15)"
-  }
-};
-
-const cardLinkHover = {
-  ...styles.cardLink,
-  ':hover': {
-    color: "#0056b3"
-  }
-};
-
-// Apply hover styles
-styles.navLink = navLinkHover;
-styles.card = cardHover;
-styles.cardLink = cardLinkHover;
 
 export default InstituteHome;
