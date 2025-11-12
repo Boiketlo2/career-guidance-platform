@@ -51,15 +51,33 @@ const PostJobs = () => {
       const res = await companyAPI.postJob(payload);
       console.log('Post Job Response:', res);
       
-      if (res.success) {
+      // Accept common successful results:
+      // - explicit { success: true }
+      // - a returned id/document reference (res.id or res._id)
+      // - firestore-like DocumentReference with a .path or .id
+      // - mongodb-like insert result with acknowledged or insertedId
+      const isSuccess =
+        !!res &&
+        (
+          res.success === true ||
+          Boolean(res.id) ||
+          Boolean(res._id) ||
+          Boolean(res.insertedId) ||
+          Boolean(res.acknowledged) ||
+          Boolean(res.path) ||
+          Boolean(res.name)
+        );
+
+      if (isSuccess) {
         alert("✅ Job posted successfully!");
         navigate(`/company/${companyId}/jobs`);
       } else {
-        setError(res.error || "Job posting failed");
+        // Prefer any provided error, else generic message
+        setError(res?.error || "Job posting failed");
       }
     } catch (err) {
-      console.error("Error posting job:", err, "response:", err.response?.data);
-      setError(err.response?.data?.error || err.response?.data || err.message || "Failed to post job");
+      console.error("Error posting job:", err, "response:", err?.response?.data);
+      setError(err?.response?.data?.error || err?.response?.data || err?.message || "Failed to post job");
     } finally {
       setLoading(false);
     }
