@@ -56,11 +56,10 @@ export const registerCompany = asyncHandler(async (req, res) => {
 });
 
 // ---------------------
-// Post a new job
+// Post a new job (FIXED)
 // ---------------------
 export const postJob = asyncHandler(async (req, res) => {
   const { 
-    companyId, 
     title, 
     description, 
     requirements, 
@@ -71,32 +70,43 @@ export const postJob = asyncHandler(async (req, res) => {
     applicationDeadline 
   } = req.body;
 
-  const companyDoc = await db.collection("companies").doc(companyId).get();
-  if (!companyDoc.exists) return res.status(404).json({ success: false, error: "Company not found" });
-
-  // Log current company status for easier debugging in server logs
-  const companyStatus = companyDoc.data().status || "unknown";
-  console.log(`postJob: companyId=${companyId} status=${companyStatus} requester=${req.user?.uid || 'anonymous'}`);
-
-  // Authorization: if a requester is present, ensure they are the company owner (or admin in future)
-  if (req.user && req.user.role === "company" && req.user.uid !== companyId) {
-    return res.status(403).json({ success: false, error: "Forbidden: cannot post jobs for another company" });
+  // Get company ID from authenticated user (more secure)
+  const companyId = req.user?.uid;
+  if (!companyId) {
+    return res.status(401).json({ success: false, error: "Authentication required" });
   }
 
-  if (companyStatus !== "approved") {
-    return res.status(403).json({ success: false, error: "Company not approved to post jobs" });
+  // Find company by authUserId (the document ID in companies collection)
+  const companyDoc = await db.collection("companies").doc(companyId).get();
+  if (!companyDoc.exists) {
+    return res.status(404).json({ success: false, error: "Company not found" });
+  }
+
+  const companyData = companyDoc.data();
+  const companyStatus = companyData.status || "unknown";
+  
+  console.log(`postJob: companyId=${companyId} status=${companyStatus} companyName=${companyData.name}`);
+
+  // Check if company is approved
+  if (companyStatus !== "approved" && companyStatus !== "Approved") {
+    return res.status(403).json({ 
+      success: false, 
+      error: "Company not approved to post jobs. Current status: " + companyStatus 
+    });
   }
 
   const jobData = {
     title,
     description,
-    requirements: Array.isArray(requirements) ? requirements : [],
-    qualifications: Array.isArray(qualifications) ? qualifications : [],
-    location,
+    requirements: Array.isArray(requirements) ? requirements : 
+                 (typeof requirements === 'string' ? [requirements] : []),
+    qualifications: Array.isArray(qualifications) ? qualifications : 
+                   (typeof qualifications === 'string' ? [qualifications] : []),
+    location: location || companyData.location || "",
     salaryRange: salaryRange || {},
     jobType: jobType || "full-time",
-    companyId,
-    companyName: companyDoc.data().name,
+    companyId: companyId,
+    companyName: companyData.name,
     applicationDeadline: applicationDeadline ? new Date(applicationDeadline).toISOString() : null,
     status: "active",
     applicants: [],
@@ -104,34 +114,95 @@ export const postJob = asyncHandler(async (req, res) => {
     updatedAt: new Date().toISOString()
   };
 
+  // Add to main jobs collection
   const jobRef = await db.collection("jobs").add(jobData);
+  const jobId = jobRef.id;
 
   // Also add to company's jobPosts subcollection
-  await db.collection("companies").doc(companyId).collection("jobPosts").doc(jobRef.id).set(jobData);
+  await db.collection("companies")
+    .doc(companyId)
+    .collection("jobPosts")
+    .doc(jobId)
+    .set({
+      ...jobData,
+      jobId: jobId // Include jobId for reference
+    });
 
   res.status(201).json({ 
     success: true, 
     message: "Job posted successfully", 
-    job: { id: jobRef.id, ...jobData } 
+    job: { id: jobId, ...jobData } 
   });
 });
 
 // ---------------------
-// Get jobs by company
+// Get jobs by company (FIXED)
 // ---------------------
 export const getJobsByCompany = asyncHandler(async (req, res) => {
   const { companyId } = req.params;
-  const companyDoc = await db.collection("companies").doc(companyId).get();
-  if (!companyDoc.exists) return res.status(404).json({ success: false, error: "Company not found" });
+  
+  // If no companyId provided and user is authenticated company, use their ID
+  const actualCompanyId = companyId || req.user?.uid;
+  if (!actualCompanyId) {
+    return res.status(400).json({ success: false, error: "Company ID is required" });
+  }
 
+  const companyDoc = await db.collection("companies").doc(actualCompanyId).get();
+  if (!companyDoc.exists) {
+    return res.status(404).json({ success: false, error: "Company not found" });
+  }
+
+  // Get jobs from main jobs collection
+  const jobsSnapshot = await db.collection("jobs")
+    .where("companyId", "==", actualCompanyId)
+    .orderBy("createdAt", "desc")
+    .get();
+  
+  const jobs = jobsSnapshot.docs.map(doc => ({ 
+    id: doc.id, 
+    ...doc.data(),
+    // Format dates for frontend
+    applicationDeadline: doc.data().applicationDeadline ? 
+      new Date(doc.data().applicationDeadline).toISOString().split('T')[0] : null
+  }));
+
+  res.status(200).json({ success: true, count: jobs.length, jobs });
+});
+
+// ---------------------
+// Get company's own jobs (for authenticated company)
+// ---------------------
+export const getMyJobs = asyncHandler(async (req, res) => {
+  const companyId = req.user?.uid;
+  if (!companyId) {
+    return res.status(401).json({ success: false, error: "Authentication required" });
+  }
+
+  const companyDoc = await db.collection("companies").doc(companyId).get();
+  if (!companyDoc.exists) {
+    return res.status(404).json({ success: false, error: "Company not found" });
+  }
+
+  // Get jobs from main jobs collection
   const jobsSnapshot = await db.collection("jobs")
     .where("companyId", "==", companyId)
     .orderBy("createdAt", "desc")
     .get();
   
-  const jobs = jobsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const jobs = jobsSnapshot.docs.map(doc => ({ 
+    id: doc.id, 
+    ...doc.data(),
+    // Format dates for frontend
+    applicationDeadline: doc.data().applicationDeadline ? 
+      new Date(doc.data().applicationDeadline).toISOString().split('T')[0] : null
+  }));
 
-  res.status(200).json({ success: true, count: jobs.length, jobs });
+  res.status(200).json({ 
+    success: true, 
+    count: jobs.length, 
+    jobs,
+    company: { id: companyId, ...companyDoc.data() }
+  });
 });
 
 // ---------------------
@@ -259,6 +330,27 @@ export const updateCompanyProfile = asyncHandler(async (req, res) => {
 // ---------------------
 export const getCompanyProfile = asyncHandler(async (req, res) => {
   const { companyId } = req.params;
+  const companyDoc = await db.collection("companies").doc(companyId).get();
+  
+  if (!companyDoc.exists) {
+    return res.status(404).json({ success: false, error: "Company not found" });
+  }
+
+  res.status(200).json({ 
+    success: true, 
+    company: { id: companyDoc.id, ...companyDoc.data() } 
+  });
+});
+
+// ---------------------
+// Get my company profile (for authenticated company)
+// ---------------------
+export const getMyCompanyProfile = asyncHandler(async (req, res) => {
+  const companyId = req.user?.uid;
+  if (!companyId) {
+    return res.status(401).json({ success: false, error: "Authentication required" });
+  }
+
   const companyDoc = await db.collection("companies").doc(companyId).get();
   
   if (!companyDoc.exists) {
