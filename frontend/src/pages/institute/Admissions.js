@@ -129,7 +129,7 @@ const Admissions = () => {
       {/* Error Display */}
       {error && (
         <div style={styles.error}>
-          <div style={styles.errorIcon}>⚠️</div>
+          <div style={styles.errorIcon}></div>
           <div style={styles.errorContent}>
             <strong style={styles.errorTitle}>Error</strong>
             <div style={styles.errorMessage}>{error}</div>
@@ -143,22 +143,22 @@ const Admissions = () => {
       {/* Enhanced Stats Overview */}
       <div style={styles.statsOverview}>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}>📊</div>
+          <div style={styles.statIcon}></div>
           <div style={styles.statNumber}>{filteredStudents.length}</div>
           <div style={styles.statLabel}>Total Students</div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}>✅</div>
+          <div style={styles.statIcon}></div>
           <div style={styles.statNumber}>{getStatusCount("approved")}</div>
           <div style={styles.statLabel}>Approved</div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}>🎓</div>
+          <div style={styles.statIcon}></div>
           <div style={styles.statNumber}>{getStatusCount("enrolled")}</div>
           <div style={styles.statLabel}>Enrolled</div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}>🏛️</div>
+          <div style={styles.statIcon}></div>
           <div style={styles.statNumber}>{admissions.length}</div>
           <div style={styles.statLabel}>Active Cycles</div>
         </div>
@@ -225,7 +225,7 @@ const Admissions = () => {
         
         {filteredStudents.length === 0 ? (
           <div style={styles.emptyState}>
-            <div style={styles.emptyIcon}>🎓</div>
+            <div style={styles.emptyIcon}></div>
             <h4 style={styles.emptyTitle}>No Approved Students</h4>
             <p style={styles.emptyText}>
               {selectedAdmission === "all" 
@@ -324,7 +324,7 @@ const Admissions = () => {
                                 Processing...
                               </div>
                             ) : (
-                              "🎓 Enroll Student"
+                              " Enroll Student"
                             )}
                           </button>
                         )}
@@ -340,7 +340,7 @@ const Admissions = () => {
                                 Processing...
                               </div>
                             ) : (
-                              "↩️ Withdraw Enrollment"
+                              " Withdraw Enrollment"
                             )}
                           </button>
                         )}
@@ -348,7 +348,7 @@ const Admissions = () => {
                           to={`/institute/${institutionId}/applications/${student.id}`}
                           style={styles.viewDetailsButton}
                         >
-                          👁️ View Details
+                           View Details
                         </Link>
                       </div>
                     </td>
