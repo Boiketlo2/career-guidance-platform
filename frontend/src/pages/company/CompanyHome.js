@@ -90,19 +90,19 @@ const CompanyHome = () => {
               onClick={() => navigate(`/company/${companyId}/jobs`)} 
               style={styles.navButton}
             >
-              📋 Manage Jobs
+               Manage Jobs
             </button>
             <button 
               onClick={() => navigate(`/company/${companyId}/applicants`)} 
               style={styles.navButton}
             >
-              👥 Applicants
+               Applicants
             </button>
             <button 
               onClick={() => navigate(`/company/${companyId}/profile`)} 
               style={styles.navButton}
             >
-              ⚙️ Profile
+               Profile
             </button>
           </nav>
         </div>
@@ -111,7 +111,7 @@ const CompanyHome = () => {
       {/* Error Message */}
       {error && (
         <div style={styles.error}>
-          <div style={styles.errorIcon}>⚠️</div>
+          <div style={styles.errorIcon}></div>
           <div style={styles.errorContent}>
             <strong style={styles.errorTitle}>Error</strong>
             <div style={styles.errorMessage}>{error}</div>
@@ -143,21 +143,21 @@ const CompanyHome = () => {
                 title="Active Jobs"
                 value={stats.activeJobs}
                 description="Currently open positions"
-                icon="💼"
+                icon=""
                 color="#0f7a0f"
               />
               <StatCard
                 title="Total Applicants"
                 value={stats.totalApplicants}
                 description="All applications received"
-                icon="👥"
+                icon=""
                 color="#0369a1"
               />
               <StatCard
                 title="Jobs Posted"
                 value={stats.jobsPosted}
                 description="Total job postings"
-                icon="📊"
+                icon=""
                 color="#1a1a1a"
               />
             </div>
@@ -170,7 +170,7 @@ const CompanyHome = () => {
                   onClick={() => navigate(`/company/${companyId}/jobs/new`)}
                   style={styles.actionButton}
                 >
-                  <div style={styles.actionIcon}>➕</div>
+                  <div style={styles.actionIcon}></div>
                   <div style={styles.actionContent}>
                     <div style={styles.actionTitle}>Post New Job</div>
                     <div style={styles.actionDescription}>Create a new job listing</div>
@@ -180,7 +180,7 @@ const CompanyHome = () => {
                   onClick={() => navigate(`/company/${companyId}/applicants`)}
                   style={styles.actionButton}
                 >
-                  <div style={styles.actionIcon}>📋</div>
+                  <div style={styles.actionIcon}></div>
                   <div style={styles.actionContent}>
                     <div style={styles.actionTitle}>Review Applications</div>
                     <div style={styles.actionDescription}>View and manage applicants</div>
@@ -190,7 +190,7 @@ const CompanyHome = () => {
                   onClick={() => navigate(`/company/${companyId}/profile`)}
                   style={styles.actionButton}
                 >
-                  <div style={styles.actionIcon}>🏢</div>
+                  <div style={styles.actionIcon}></div>
                   <div style={styles.actionContent}>
                     <div style={styles.actionTitle}>Update Profile</div>
                     <div style={styles.actionDescription}>Edit company information</div>
