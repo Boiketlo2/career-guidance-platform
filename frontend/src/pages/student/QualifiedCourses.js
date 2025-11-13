@@ -48,7 +48,7 @@ const QualifiedCourses = () => {
           if (res.studentSubjectsCount === 0) {
             setError("No academic records found. Please set up your LGCSE subjects and grades first.");
           } else {
-            setMessage("No courses found that match your qualifications. Try browsing all courses instead.");
+            setMessage("No courses found that match your current qualifications. Try browsing all courses instead.");
           }
         }
       } else {
@@ -114,12 +114,22 @@ const QualifiedCourses = () => {
     setError("");
   };
 
-  const handleSetupAcademicRecords = () => {
-    navigate(`/profile/${user.uid}?tab=academic`);
+  const handleUpdateAcademicRecords = () => {
+    if (!user) {
+      alert("Please log in first.");
+      return;
+    }
+    // Navigate to profile with academic tab
+    navigate(`/student/${user.uid}/profile?tab=academic`);
   };
 
   const handleBrowseAllCourses = () => {
-    navigate("/apply-courses");
+    if (!user) {
+      alert("Please log in first.");
+      return;
+    }
+    // Navigate to apply courses page
+    navigate(`/student/${user.uid}/apply`);
   };
 
   const getRequirementText = (requirements) => {
@@ -178,7 +188,7 @@ const QualifiedCourses = () => {
           {error}
           {error.includes("No academic records") && (
             <button 
-              onClick={handleSetupAcademicRecords}
+              onClick={handleUpdateAcademicRecords}
               style={styles.inlineButton}
             >
               Setup Academic Records
@@ -200,18 +210,24 @@ const QualifiedCourses = () => {
         <button 
           onClick={handleBrowseAllCourses}
           style={styles.secondaryButton}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
         >
           ← Browse All Courses
         </button>
         <button 
-          onClick={handleSetupAcademicRecords}
+          onClick={handleUpdateAcademicRecords}
           style={styles.secondaryButton}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
         >
           Update Academic Records
         </button>
         <button 
           onClick={fetchQualifiedCourses}
           style={styles.refreshButton}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#333'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = '#1a1a1a'}
         >
           ↻ Refresh Results
         </button>
@@ -258,6 +274,8 @@ const QualifiedCourses = () => {
                 <button 
                   onClick={() => handleApply(course)}
                   style={styles.applyButton}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#333'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#1a1a1a'}
                 >
                   Apply Now
                 </button>
@@ -270,7 +288,7 @@ const QualifiedCourses = () => {
       {/* No Courses Message */}
       {qualifiedCourses.length === 0 && !loading && !error && (
         <div style={styles.emptyState}>
-          <div style={styles.emptyIcon}></div>
+          <div style={styles.emptyIcon}>📚</div>
           <h3 style={styles.emptyTitle}>No Qualified Courses Found</h3>
           <p style={styles.emptyText}>
             We couldn't find any courses that match your current qualifications. 
@@ -285,12 +303,16 @@ const QualifiedCourses = () => {
             <button 
               onClick={handleBrowseAllCourses}
               style={styles.primaryButton}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#333'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#1a1a1a'}
             >
               Browse All Courses
             </button>
             <button 
-              onClick={handleSetupAcademicRecords}
+              onClick={handleUpdateAcademicRecords}
               style={styles.secondaryButton}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
             >
               Update Academic Records
             </button>
@@ -337,6 +359,8 @@ const QualifiedCourses = () => {
               <button 
                 onClick={closeModal}
                 style={styles.cancelButton}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
               >
                 Cancel
               </button>
@@ -346,6 +370,16 @@ const QualifiedCourses = () => {
                 style={{
                   ...styles.submitButton,
                   ...((!personalStatement.trim() || applying) ? styles.buttonDisabled : {})
+                }}
+                onMouseEnter={(e) => {
+                  if (personalStatement.trim() && !applying) {
+                    e.target.style.backgroundColor = '#333';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (personalStatement.trim() && !applying) {
+                    e.target.style.backgroundColor = '#1a1a1a';
+                  }
                 }}
               >
                 {applying ? "Submitting..." : "Submit Application"}
@@ -607,6 +641,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    transition: "all 0.2s ease",
   },
   modalContent: {
     padding: "2rem",
@@ -708,6 +743,7 @@ const styles = {
     cursor: "pointer",
     fontWeight: "600",
     fontSize: "0.85rem",
+    transition: "all 0.2s ease",
   },
   loadingContainer: {
     display: "flex",
@@ -727,6 +763,7 @@ const styles = {
     border: "4px solid #e0e0e0",
     borderTop: "4px solid #1a1a1a",
     borderRadius: "50%",
+    animation: "spin 1s linear infinite",
   },
 };
 export default QualifiedCourses;
