@@ -32,28 +32,29 @@ const CompanyProfile = () => {
   };
 
   if (loading) return (
-    <div className="flex justify-center items-center min-h-screen">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    <div style={styles.loadingContainer}>
+      <div style={styles.spinner}></div>
+      <p style={styles.loadingText}>Loading Company Profile...</p>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow-sm border">
-          <div className="px-6 py-4 border-b">
-            <h1 className="text-2xl font-bold text-gray-900">Company Profile</h1>
-            <p className="text-sm text-gray-600 mt-1">Company information and details</p>
+    <div style={styles.container}>
+      <div style={styles.contentWrapper}>
+        <div style={styles.profileCard}>
+          <div style={styles.header}>
+            <h1 style={styles.title}>Company Profile</h1>
+            <p style={styles.subtitle}>Company information and details</p>
           </div>
           
           {error ? (
-            <div className="p-6 text-center">
-              <div className="text-red-500 text-lg mb-2"> {error}</div>
-              <p className="text-gray-600">Company ID: {companyId}</p>
+            <div style={styles.errorContainer}>
+              <div style={styles.errorText}>{error}</div>
+              <p style={styles.companyId}>Company ID: {companyId}</p>
             </div>
           ) : company ? (
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div style={styles.profileContent}>
+              <div style={styles.grid}>
                 <InfoField label="Company Name" value={company.name} />
                 <InfoField label="Email" value={company.email} />
                 <InfoField label="Industry" value={company.industry} />
@@ -68,29 +69,33 @@ const CompanyProfile = () => {
               </div>
               
               {company.description && (
-                <div className="mt-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Description
+                <div style={styles.descriptionSection}>
+                  <label style={styles.descriptionLabel}>
+                    Company Description
                   </label>
-                  <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
+                  <div style={styles.descriptionBox}>
                     {company.description}
                   </div>
                 </div>
               )}
 
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-500">
-                <div>
-                  <span className="font-medium">Company ID:</span>
-                  <p className="font-mono">{company.id || companyId}</p>
+              <div style={styles.metaInfo}>
+                <div style={styles.metaItem}>
+                  <span style={styles.metaLabel}>Company ID:</span>
+                  <p style={styles.metaValue}>{company.id || companyId}</p>
                 </div>
-                <div>
-                  <span className="font-medium">Created:</span>
-                  <p>{company.createdAt ? new Date(company.createdAt).toLocaleDateString() : 'N/A'}</p>
+                <div style={styles.metaItem}>
+                  <span style={styles.metaLabel}>Registration Date:</span>
+                  <p style={styles.metaValue}>{company.createdAt ? new Date(company.createdAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  }) : 'Not Available'}</p>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="p-6 text-center text-gray-500">
+            <div style={styles.emptyState}>
               No company information available.
             </div>
           )}
@@ -103,35 +108,243 @@ const CompanyProfile = () => {
 const InfoField = ({ label, value, isLink = false, badge = null }) => {
   if (!value) return null;
 
-  const badgeClasses = {
-    success: 'bg-green-100 text-green-800',
-    warning: 'bg-yellow-100 text-yellow-800',
-    default: 'bg-gray-100 text-gray-800'
+  const badgeStyles = {
+    success: {
+      background: '#dcfce7',
+      color: '#166534',
+      border: '1px solid #bbf7d0'
+    },
+    warning: {
+      background: '#fef3c7',
+      color: '#92400e',
+      border: '1px solid #fde68a'
+    },
+    default: {
+      background: '#f3f4f6',
+      color: '#374151',
+      border: '1px solid #e5e7eb'
+    }
   };
 
   return (
-    <div>
-      <label className="block text-sm font-medium text-gray-600 mb-1">
+    <div style={styles.fieldContainer}>
+      <label style={styles.fieldLabel}>
         {label}
       </label>
       {badge ? (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeClasses[badge] || badgeClasses.default}`}>
-          {value}
+        <span style={{
+          ...styles.badge,
+          ...badgeStyles[badge] || badgeStyles.default
+        }}>
+          {value.charAt(0).toUpperCase() + value.slice(1)}
         </span>
       ) : isLink ? (
         <a 
           href={value.startsWith('http') ? value : `https://${value}`} 
           target="_blank" 
           rel="noopener noreferrer"
-          className="text-blue-600 hover:text-blue-800 text-sm break-words"
+          style={styles.link}
         >
           {value}
         </a>
       ) : (
-        <p className="text-sm text-gray-900">{value}</p>
+        <p style={styles.fieldValue}>{value}</p>
       )}
     </div>
   );
 };
+
+const styles = {
+  container: {
+    minHeight: "100vh",
+    backgroundColor: "#f8f9fa",
+    padding: "32px 20px",
+    fontFamily: "'Arial', sans-serif"
+  },
+  contentWrapper: {
+    maxWidth: "900px",
+    margin: "0 auto"
+  },
+  profileCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: "10px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+    border: "1px solid #e0e0e0",
+    overflow: "hidden"
+  },
+  header: {
+    padding: "32px 32px 24px 32px",
+    borderBottom: "2px solid #f0f0f0",
+    backgroundColor: "#fafafa"
+  },
+  title: {
+    fontSize: "28px",
+    fontWeight: "700",
+    color: "#000000",
+    margin: "0 0 8px 0",
+    letterSpacing: "-0.5px"
+  },
+  subtitle: {
+    fontSize: "16px",
+    color: "#666666",
+    margin: "0",
+    fontWeight: "400"
+  },
+  profileContent: {
+    padding: "32px"
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: "24px",
+    marginBottom: "8px"
+  },
+  fieldContainer: {
+    marginBottom: "4px"
+  },
+  fieldLabel: {
+    display: "block",
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#555555",
+    marginBottom: "6px",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px"
+  },
+  fieldValue: {
+    fontSize: "16px",
+    color: "#000000",
+    fontWeight: "500",
+    margin: "0",
+    lineHeight: "1.4"
+  },
+  link: {
+    fontSize: "16px",
+    color: "#333333",
+    fontWeight: "500",
+    textDecoration: "none",
+    borderBottom: "1px solid #333333",
+    transition: "all 0.2s ease",
+    display: "inline-block",
+    lineHeight: "1.4"
+  },
+  badge: {
+    display: "inline-flex",
+    alignItems: "center",
+    padding: "6px 12px",
+    borderRadius: "6px",
+    fontSize: "13px",
+    fontWeight: "600",
+    textTransform: "capitalize",
+    border: "1px solid transparent"
+  },
+  descriptionSection: {
+    marginTop: "32px",
+    paddingTop: "24px",
+    borderTop: "1px solid #f0f0f0"
+  },
+  descriptionLabel: {
+    display: "block",
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#555555",
+    marginBottom: "12px",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px"
+  },
+  descriptionBox: {
+    backgroundColor: "#f8f9fa",
+    borderRadius: "8px",
+    padding: "20px",
+    fontSize: "15px",
+    color: "#333333",
+    lineHeight: "1.6",
+    border: "1px solid #e8e8e8"
+  },
+  metaInfo: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+    gap: "20px",
+    marginTop: "32px",
+    paddingTop: "24px",
+    borderTop: "1px solid #f0f0f0"
+  },
+  metaItem: {
+    padding: "16px",
+    backgroundColor: "#f8f9fa",
+    borderRadius: "6px",
+    border: "1px solid #e8e8e8"
+  },
+  metaLabel: {
+    fontSize: "13px",
+    fontWeight: "600",
+    color: "#666666",
+    display: "block",
+    marginBottom: "4px",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px"
+  },
+  metaValue: {
+    fontSize: "14px",
+    color: "#000000",
+    fontWeight: "600",
+    margin: "0",
+    fontFamily: "'Courier New', monospace"
+  },
+  loadingContainer: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "100vh",
+    backgroundColor: "#f8f9fa",
+    gap: "16px"
+  },
+  spinner: {
+    width: "48px",
+    height: "48px",
+    border: "3px solid #e0e0e0",
+    borderTop: "3px solid #333333",
+    borderRadius: "50%",
+    animation: "spin 1s linear infinite"
+  },
+  loadingText: {
+    fontSize: "16px",
+    color: "#666666",
+    fontWeight: "600"
+  },
+  errorContainer: {
+    padding: "48px 32px",
+    textAlign: "center"
+  },
+  errorText: {
+    fontSize: "18px",
+    color: "#dc2626",
+    fontWeight: "600",
+    marginBottom: "12px"
+  },
+  companyId: {
+    fontSize: "14px",
+    color: "#666666",
+    fontWeight: "500"
+  },
+  emptyState: {
+    padding: "48px 32px",
+    textAlign: "center",
+    fontSize: "16px",
+    color: "#666666",
+    fontWeight: "500"
+  }
+};
+
+// Add CSS animation for spinner
+const spinnerStyle = document.createElement('style');
+spinnerStyle.textContent = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+document.head.appendChild(spinnerStyle);
 
 export default CompanyProfile;
