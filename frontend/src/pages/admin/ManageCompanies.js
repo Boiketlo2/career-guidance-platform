@@ -115,14 +115,9 @@ export default function ManageCompanies() {
             {companies.map((company) => (
               <div 
                 key={company.id} 
-                style={styles.companyCard}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.12)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)';
+                style={{
+                  ...styles.companyCard,
+                  ...(styles.companyCardHover || {})
                 }}
               >
                 <div style={styles.cardHeader}>
@@ -185,6 +180,21 @@ export default function ManageCompanies() {
           </div>
         )}
       </div>
+
+      {/* Add CSS for animations */}
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        .company-card-hover {
+          transition: all 0.3s ease;
+        }
+        .company-card-hover:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+      `}</style>
     </div>
   );
 }
@@ -368,6 +378,10 @@ const styles = {
     transition: 'all 0.3s ease',
     position: 'relative'
   },
+  companyCardHover: {
+    transform: 'translateY(-4px)',
+    boxShadow: '0 8px 25px rgba(0,0,0,0.12)'
+  },
   cardHeader: {
     display: 'flex',
     alignItems: 'flex-start',
@@ -496,14 +510,4 @@ const styles = {
   }
 };
 
-// Add CSS for spinner animation
-const spinnerStyle = document.createElement('style');
-spinnerStyle.textContent = `
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-`;
-document.head.appendChild(spinnerStyle);
-
-export default ManageCompanies;
+export default ManageCompanies;s
