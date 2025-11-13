@@ -49,7 +49,6 @@ export default function ManageCompanies() {
 
   return (
     <div style={styles.container}>
-      {/* Header Section */}
       <div style={styles.header}>
         <div style={styles.headerContent}>
           <h1 style={styles.title}>Manage Companies</h1>
@@ -57,29 +56,23 @@ export default function ManageCompanies() {
         </div>
       </div>
 
-      {/* Statistics Overview */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}></div>
           <div style={styles.statNumber}>{stats.total}</div>
           <div style={styles.statLabel}>Total Companies</div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}></div>
           <div style={styles.statNumber}>{stats.approved}</div>
           <div style={styles.statLabel}>Approved</div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}></div>
           <div style={styles.statNumber}>{stats.pending}</div>
           <div style={styles.statLabel}>Pending Review</div>
         </div>
       </div>
 
-      {/* Error Message */}
       {error && (
         <div style={styles.error}>
-          <div style={styles.errorIcon}></div>
           <div style={styles.errorContent}>
             <strong style={styles.errorTitle}>Error</strong>
             <div style={styles.errorMessage}>{error}</div>
@@ -90,7 +83,6 @@ export default function ManageCompanies() {
         </div>
       )}
 
-      {/* Main Content */}
       <div style={styles.mainContent}>
         {loading ? (
           <div style={styles.loadingContainer}>
@@ -99,7 +91,6 @@ export default function ManageCompanies() {
           </div>
         ) : companies.length === 0 ? (
           <div style={styles.emptyState}>
-            <div style={styles.emptyIcon}></div>
             <h3 style={styles.emptyTitle}>No Companies Found</h3>
             <p style={styles.emptyText}>
               {error ? "Unable to load companies. Please try again." : "No companies have registered yet."}
@@ -114,7 +105,6 @@ export default function ManageCompanies() {
               <div 
                 key={company.id} 
                 style={styles.companyItem}
-                className="company-item-hover"
               >
                 <div style={styles.companyMain}>
                   <div style={styles.companyAvatar}>
@@ -131,7 +121,7 @@ export default function ManageCompanies() {
                 
                 <div style={styles.companyStatus}>
                   <span style={company.approved ? styles.statusApproved : styles.statusPending}>
-                    {company.approved ? "✓ Approved" : "Pending Approval"}
+                    {company.approved ? "Approved" : "Pending Approval"}
                   </span>
                 </div>
 
@@ -142,14 +132,7 @@ export default function ManageCompanies() {
                       disabled={updating === company.id}
                       style={updating === company.id ? styles.approveButtonDisabled : styles.approveButton}
                     >
-                      {updating === company.id ? (
-                        <div style={styles.buttonContent}>
-                          <div style={styles.smallSpinner}></div>
-                          Approving...
-                        </div>
-                      ) : (
-                        "Approve Company"
-                      )}
+                      {updating === company.id ? "Approving..." : "Approve Company"}
                     </button>
                   </div>
                 )}
@@ -158,21 +141,6 @@ export default function ManageCompanies() {
           </div>
         )}
       </div>
-
-      {/* Add CSS for animations */}
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        .company-item-hover {
-          transition: all 0.3s ease;
-        }
-        .company-item-hover:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-      `}</style>
     </div>
   );
 }
@@ -226,10 +194,6 @@ const styles = {
     textAlign: 'center',
     transition: 'all 0.2s ease'
   },
-  statIcon: {
-    fontSize: '24px',
-    marginBottom: '12px'
-  },
   statNumber: {
     fontSize: '28px',
     fontWeight: '700',
@@ -252,10 +216,6 @@ const styles = {
     alignItems: 'center',
     gap: '12px',
     maxWidth: '1200px'
-  },
-  errorIcon: {
-    fontSize: '16px',
-    flexShrink: 0
   },
   errorContent: {
     flex: 1
@@ -315,10 +275,6 @@ const styles = {
     boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
     border: '1px solid #e1e5e9'
   },
-  emptyIcon: {
-    fontSize: '64px',
-    marginBottom: '24px'
-  },
   emptyTitle: {
     fontSize: '24px',
     fontWeight: '600',
@@ -358,7 +314,8 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: '20px'
+    gap: '20px',
+    transition: 'all 0.3s ease'
   },
   companyMain: {
     display: 'flex',
@@ -449,21 +406,5 @@ const styles = {
     cursor: 'not-allowed',
     fontSize: '14px',
     width: '100%'
-  },
-  buttonContent: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px'
-  },
-  smallSpinner: {
-    width: '14px',
-    height: '14px',
-    border: '2px solid transparent',
-    borderTop: '2px solid #ffffff',
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite'
   }
 };
-
-export default ManageCompanies;
