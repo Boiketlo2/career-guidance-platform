@@ -52,7 +52,7 @@ const PostJobs = () => {
       console.log('Post Job Response:', res);
       
       if (res.success) {
-        alert("✅ Job posted successfully!");
+        alert(" Job posted successfully!");
         navigate(`/company/${companyId}/jobs`);
       } else {
         setError(res.error || "Job posting failed");
@@ -112,7 +112,7 @@ const PostJobs = () => {
             }}>
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <div style={{ flexShrink: 0 }}>
-                  <span style={{ color: '#f87171' }}>❌</span>
+                  <span style={{ color: '#f87171' }}></span>
                 </div>
                 <div style={{ marginLeft: '12px' }}>
                   <h3 style={{
