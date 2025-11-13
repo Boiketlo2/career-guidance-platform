@@ -5,6 +5,7 @@ const API_BASE = process.env.REACT_APP_BACKEND_URL || 'https://career-guidance-p
 const api = axios.create({
   baseURL: API_BASE,
   headers: { 'Content-Type': 'application/json' },
+  timeout: 30000, // 30 seconds timeout
 });
 
 // Attach token automatically for protected routes
@@ -13,6 +14,7 @@ api.interceptors.request.use(
     const token = localStorage.getItem('token');
     console.log('🔐 API Request Interceptor - Token:', token ? 'Exists' : 'MISSING');
     console.log('🔐 API Request URL:', config.url);
+    console.log('🔐 API Request Method:', config.method);
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -29,7 +31,11 @@ api.interceptors.request.use(
 // Add response interceptor for debugging
 api.interceptors.response.use(
   (response) => {
-    console.log('✅ API Response Success:', response.config.url, response.status);
+    console.log('✅ API Response Success:', {
+      url: response.config.url,
+      status: response.status,
+      data: response.data
+    });
     return response;
   },
   (error) => {
@@ -37,7 +43,8 @@ api.interceptors.response.use(
       url: error.config?.url,
       status: error.response?.status,
       data: error.response?.data,
-      headers: error.config?.headers
+      message: error.message,
+      code: error.code
     });
     return Promise.reject(error);
   }
@@ -51,8 +58,20 @@ export const companyAPI = {
 
   postJob: async (jobData) => {
     console.log('📤 Posting job data:', jobData);
-    const { data } = await api.post('/company/jobs', jobData);
-    return data;
+    // Try different endpoints - the server might have different routing
+    try {
+      // First try the main endpoint
+      const { data } = await api.post('/company/jobs', jobData);
+      return data;
+    } catch (error) {
+      if (error.response?.status === 404) {
+        // Try alternative endpoint
+        console.log('🔄 Trying alternative job posting endpoint...');
+        const { data } = await api.post('/jobs', jobData);
+        return data;
+      }
+      throw error;
+    }
   },
 
   getJobs: async (companyId) => {
@@ -94,6 +113,17 @@ export const companyAPI = {
   checkCompanyExists: async (companyId) => {
     const { data } = await api.get(`/company/profile/${companyId}`);
     return data;
+  },
+
+  // Test the jobs endpoint
+  testJobsEndpoint: async () => {
+    try {
+      const { data } = await api.get('/company/jobs');
+      return data;
+    } catch (error) {
+      console.error('Jobs endpoint test failed:', error);
+      throw error;
+    }
   }
 };
 
