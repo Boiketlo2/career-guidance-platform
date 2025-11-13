@@ -111,7 +111,7 @@ const Profile = () => {
 
       {error && (
         <div style={styles.error}>
-          <div style={styles.errorIcon}>⚠️</div>
+          <div style={styles.errorIcon}></div>
           <div style={styles.errorContent}>
             <strong style={styles.errorTitle}>Error</strong>
             <div style={styles.errorMessage}>{error}</div>
@@ -254,7 +254,7 @@ const Profile = () => {
                     Updating Profile...
                   </div>
                 ) : (
-                  "💾 Save Changes"
+                  " Save Changes"
                 )}
               </button>
               <button 
@@ -278,7 +278,7 @@ const Profile = () => {
           
           <div style={styles.statsGrid}>
             <div style={styles.statItem}>
-              <div style={styles.statIcon}>🏛️</div>
+              <div style={styles.statIcon}></div>
               <div style={styles.statContent}>
                 <div style={styles.statLabel}>Institution ID</div>
                 <div style={styles.statValue}>{institutionId}</div>
@@ -286,7 +286,7 @@ const Profile = () => {
             </div>
             
             <div style={styles.statItem}>
-              <div style={styles.statIcon}>📊</div>
+              <div style={styles.statIcon}></div>
               <div style={styles.statContent}>
                 <div style={styles.statLabel}>Status</div>
                 <div style={styles.statValueActive}>{profile.status || "Active"}</div>
@@ -294,7 +294,7 @@ const Profile = () => {
             </div>
             
             <div style={styles.statItem}>
-              <div style={styles.statIcon}>📅</div>
+              <div style={styles.statIcon}></div>
               <div style={styles.statContent}>
                 <div style={styles.statLabel}>Member Since</div>
                 <div style={styles.statValue}>
@@ -304,7 +304,7 @@ const Profile = () => {
             </div>
             
             <div style={styles.statItem}>
-              <div style={styles.statIcon}>🔄</div>
+              <div style={styles.statIcon}></div>
               <div style={styles.statContent}>
                 <div style={styles.statLabel}>Last Updated</div>
                 <div style={styles.statValue}>
@@ -325,11 +325,11 @@ const Profile = () => {
             </div>
             <div style={styles.infoTips}>
               <div style={styles.tipItem}>
-                <span style={styles.tipIcon}>💡</span>
+                <span style={styles.tipIcon}></span>
                 <span style={styles.tipText}>Add a website to increase credibility</span>
               </div>
               <div style={styles.tipItem}>
-                <span style={styles.tipIcon}>💡</span>
+                <span style={styles.tipIcon}></span>
                 <span style={styles.tipText}>Complete description attracts more students</span>
               </div>
             </div>
