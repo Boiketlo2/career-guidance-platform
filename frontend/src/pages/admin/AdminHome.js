@@ -9,35 +9,30 @@ function AdminHome() {
       title: "Institutions", 
       desc: "Manage higher learning institutions", 
       path: "/admin/institutions",
-      icon: "",
       color: "#1a1a1a"
     },
     { 
       title: "Faculties & Courses", 
       desc: "Add or update faculties and courses", 
       path: "/admin/faculties",
-      icon: "",
       color: "#0f7a0f"
     },
     { 
       title: "Admissions", 
       desc: "Publish admissions and view applicants", 
       path: "/admin/publish",
-      icon: "",
       color: "#0369a1"
     },
     { 
       title: "Companies", 
       desc: "Approve or manage companies", 
       path: "/admin/companies",
-      icon: "",
       color: "#7c2d12"
     },
     { 
       title: "Reports", 
       desc: "View and manage reports", 
       path: "/admin/reports",
-      icon: "",
       color: "#3730a3"
     },
   ];
