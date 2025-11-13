@@ -92,12 +92,12 @@ export default function ManageInstitutes() {
     setShowAddForm(true);
   };
 
-  // --- Internal CSS ---
+  // --- Updated Professional CSS with Black, White, Dark Grey Theme ---
   const styles = {
     container: {
       padding: "40px",
       minHeight: "100vh",
-      backgroundColor: "#f5f5f5",
+      backgroundColor: "#f8f9fa",
       fontFamily: "Arial, sans-serif",
     },
     header: {
@@ -106,14 +106,20 @@ export default function ManageInstitutes() {
       alignItems: "center",
       marginBottom: "30px",
     },
-    title: { fontSize: "28px", fontWeight: "700" },
+    title: { 
+      fontSize: "28px", 
+      fontWeight: "700",
+      color: "#000000"
+    },
     returnBtn: {
-      backgroundColor: "#555",
-      color: "#fff",
+      backgroundColor: "#333333",
+      color: "#ffffff",
       padding: "8px 16px",
       border: "none",
       borderRadius: "5px",
       cursor: "pointer",
+      fontWeight: "600",
+      transition: "background-color 0.2s",
     },
     grid: {
       display: "grid",
@@ -123,68 +129,82 @@ export default function ManageInstitutes() {
       margin: "0 auto",
     },
     card: {
-      backgroundColor: "#fff",
-      borderRadius: "10px",
+      backgroundColor: "#ffffff",
+      borderRadius: "8px",
       padding: "20px",
-      boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-      transition: "transform 0.2s, box-shadow 0.2s",
+      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+      border: "1px solid #e0e0e0",
+      transition: "transform 0.2s, box-shadow 0.2s, border-color 0.2s",
       cursor: "pointer",
       display: "flex",
       flexDirection: "column",
       justifyContent: "space-between",
     },
     cardHover: {
-      transform: "translateY(-5px)",
-      boxShadow: "0 8px 12px rgba(0,0,0,0.15)",
+      transform: "translateY(-3px)",
+      boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
+      borderColor: "#333333",
     },
     btn: {
       padding: "6px 12px",
       border: "none",
       borderRadius: "5px",
       cursor: "pointer",
-      color: "#fff",
+      color: "#ffffff",
+      fontWeight: "600",
+      transition: "background-color 0.2s",
     },
-    editBtn: { backgroundColor: "#f0ad4e" },
-    deleteBtn: { backgroundColor: "#d9534f" },
+    editBtn: { 
+      backgroundColor: "#555555",
+    },
+    deleteBtn: { 
+      backgroundColor: "#000000",
+    },
     addCard: {
-      backgroundColor: "#e0f7fa",
+      backgroundColor: "#ffffff",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       padding: "20px",
-      borderRadius: "10px",
-      boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+      borderRadius: "8px",
+      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+      border: "2px dashed #cccccc",
       cursor: "pointer",
       minHeight: "200px",
       textAlign: "center",
       fontWeight: "700",
-      color: "#00796b",
-      transition: "transform 0.2s, box-shadow 0.2s",
+      color: "#333333",
+      transition: "transform 0.2s, box-shadow 0.2s, border-color 0.2s",
     },
     input: {
       width: "100%",
       padding: "8px",
       borderRadius: "5px",
-      border: "1px solid #ccc",
+      border: "1px solid #cccccc",
       marginBottom: "10px",
+      backgroundColor: "#ffffff",
+      color: "#000000",
     },
     textarea: {
       width: "100%",
       padding: "8px",
       borderRadius: "5px",
-      border: "1px solid #ccc",
+      border: "1px solid #cccccc",
       marginBottom: "10px",
       minHeight: "60px",
+      backgroundColor: "#ffffff",
+      color: "#000000",
     },
     submitBtn: {
       width: "100%",
       padding: "10px",
       border: "none",
       borderRadius: "5px",
-      backgroundColor: "#00796b",
-      color: "#fff",
+      backgroundColor: "#333333",
+      color: "#ffffff",
       cursor: "pointer",
       fontWeight: "700",
+      transition: "background-color 0.2s",
     },
   };
 
@@ -193,13 +213,18 @@ export default function ManageInstitutes() {
       {/* Header */}
       <div style={styles.header}>
         <h1 style={styles.title}>Manage Institutions</h1>
-        <button style={styles.returnBtn} onClick={() => navigate("/")}>
+        <button 
+          style={styles.returnBtn} 
+          onClick={() => navigate("/")}
+          onMouseEnter={e => e.currentTarget.style.backgroundColor = "#000000"}
+          onMouseLeave={e => e.currentTarget.style.backgroundColor = "#333333"}
+        >
           Return to Homepage
         </button>
       </div>
 
-      {error && <p style={{ color: "red", textAlign: "center", marginBottom: "15px" }}>{error}</p>}
-      {loading && <p style={{ textAlign: "center" }}>Loading...</p>}
+      {error && <p style={{ color: "#d32f2f", textAlign: "center", marginBottom: "15px", fontWeight: "600" }}>{error}</p>}
+      {loading && <p style={{ textAlign: "center", color: "#333333" }}>Loading...</p>}
 
       <div style={styles.grid}>
 
@@ -209,19 +234,41 @@ export default function ManageInstitutes() {
             key={inst.id}
             style={styles.card}
             onClick={() => handleEdit(inst)}
-            onMouseEnter={e => e.currentTarget.style.transform = "translateY(-5px)"}
-            onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = "translateY(-3px)";
+              e.currentTarget.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
+              e.currentTarget.style.borderColor = "#333333";
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+              e.currentTarget.style.borderColor = "#e0e0e0";
+            }}
           >
             <div>
-              <h3 style={{ fontSize: "20px", fontWeight: "700" }}>{inst.name}</h3>
-              <p style={{ color: "#666" }}>{inst.location}</p>
-              <p style={{ color: "#666", fontStyle: "italic" }}>{inst.type}</p>
-              <p style={{ color: "#666" }}>{inst.contact} | {inst.email}</p>
-              <p style={{ fontSize: "14px", marginTop: "10px" }}>{inst.description}</p>
+              <h3 style={{ fontSize: "20px", fontWeight: "700", color: "#000000", marginBottom: "8px" }}>{inst.name}</h3>
+              <p style={{ color: "#555555", marginBottom: "4px" }}>{inst.location}</p>
+              <p style={{ color: "#555555", fontStyle: "italic", marginBottom: "4px" }}>{inst.type}</p>
+              <p style={{ color: "#555555", marginBottom: "4px" }}>{inst.contact} | {inst.email}</p>
+              <p style={{ fontSize: "14px", marginTop: "10px", color: "#666666", lineHeight: "1.4" }}>{inst.description}</p>
             </div>
             <div style={{ marginTop: "15px", display: "flex", justifyContent: "center", gap: "10px" }}>
-              <button style={{ ...styles.btn, ...styles.editBtn }} onClick={(e) => { e.stopPropagation(); handleEdit(inst); }}>Edit</button>
-              <button style={{ ...styles.btn, ...styles.deleteBtn }} onClick={(e) => { e.stopPropagation(); handleDelete(inst.id); }}>Delete</button>
+              <button 
+                style={{ ...styles.btn, ...styles.editBtn }} 
+                onClick={(e) => { e.stopPropagation(); handleEdit(inst); }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = "#333333"}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = "#555555"}
+              >
+                Edit
+              </button>
+              <button 
+                style={{ ...styles.btn, ...styles.deleteBtn }} 
+                onClick={(e) => { e.stopPropagation(); handleDelete(inst.id); }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = "#333333"}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = "#000000"}
+              >
+                Delete
+              </button>
             </div>
           </div>
         ))}
@@ -230,11 +277,19 @@ export default function ManageInstitutes() {
         <div
           style={styles.addCard}
           onClick={() => setShowAddForm(!showAddForm)}
-          onMouseEnter={e => e.currentTarget.style.transform = "translateY(-5px)"}
-          onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
+          onMouseEnter={e => {
+            e.currentTarget.style.transform = "translateY(-3px)";
+            e.currentTarget.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
+            e.currentTarget.style.borderColor = "#333333";
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.transform = "translateY(0)";
+            e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+            e.currentTarget.style.borderColor = "#cccccc";
+          }}
         >
           {!showAddForm ? (
-            <span>+ Add New Institution</span>
+            <span style={{ fontSize: "18px", color: "#333333" }}>+ Add New Institution</span>
           ) : (
             <form onSubmit={handleSubmit} style={{ width: "100%" }}>
               <input style={styles.input} placeholder="Auth User ID" value={form.authUserId} onChange={(e) => setForm({ ...form, authUserId: e.target.value })} required />
@@ -248,7 +303,14 @@ export default function ManageInstitutes() {
                 <option value="Private">Private</option>
               </select>
               <textarea style={styles.textarea} placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-              <button type="submit" style={styles.submitBtn}>{loading ? "Saving..." : editingId ? "Save Changes" : "Add Institution"}</button>
+              <button 
+                type="submit" 
+                style={styles.submitBtn}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = "#000000"}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = "#333333"}
+              >
+                {loading ? "Saving..." : editingId ? "Save Changes" : "Add Institution"}
+              </button>
             </form>
           )}
         </div>
