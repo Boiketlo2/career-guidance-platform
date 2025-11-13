@@ -201,12 +201,6 @@ const ManageCourses = () => {
 
                 <div style={styles.courseActions}>
                   <button
-                    onClick={() => navigate(`/institute/${institutionId}/courses/${course.id}/edit`)}
-                    style={styles.editBtn}
-                  >
-                    Edit Course
-                  </button>
-                  <button
                     onClick={() => handleDeleteCourse(course.id, course.name)}
                     style={
                       deleteLoading === course.id 
@@ -221,7 +215,7 @@ const ManageCourses = () => {
                         Deleting...
                       </div>
                     ) : (
-                      "Delete"
+                      "Delete Course"
                     )}
                   </button>
                 </div>
@@ -387,21 +381,8 @@ const styles = {
     paddingTop: 16,
     borderTop: "1px solid #f0f0f0"
   },
-  editBtn: {
-    flex: 2,
-    padding: "10px 16px",
-    background: "transparent",
-    color: "#333",
-    border: "1px solid #d0d7de",
-    borderRadius: 6,
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "500",
-    transition: "all 0.2s ease"
-  },
   deleteBtn: {
-    flex: 1,
-    padding: "10px 16px",
+    padding: "12px 16px",
     background: "#dc2626",
     color: "#ffffff",
     border: "none",
@@ -409,17 +390,18 @@ const styles = {
     cursor: "pointer",
     fontSize: "14px",
     fontWeight: "500",
-    transition: "all 0.2s ease"
+    transition: "all 0.2s ease",
+    width: "100%"
   },
   deleteBtnDisabled: {
-    flex: 1,
-    padding: "10px 16px",
+    padding: "12px 16px",
     background: "#8c8c8c",
     color: "#ffffff",
     border: "none",
     borderRadius: 6,
     cursor: "not-allowed",
-    fontSize: "14px"
+    fontSize: "14px",
+    width: "100%"
   },
   buttonContent: {
     display: "flex",
