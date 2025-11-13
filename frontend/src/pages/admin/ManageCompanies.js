@@ -62,17 +62,17 @@ export default function ManageCompanies() {
       {/* Statistics Overview */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}>🏢</div>
+          <div style={styles.statIcon}></div>
           <div style={styles.statNumber}>{stats.total}</div>
           <div style={styles.statLabel}>Total Companies</div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}>✅</div>
+          <div style={styles.statIcon}></div>
           <div style={styles.statNumber}>{stats.approved}</div>
           <div style={styles.statLabel}>Approved</div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}>⏳</div>
+          <div style={styles.statIcon}></div>
           <div style={styles.statNumber}>{stats.pending}</div>
           <div style={styles.statLabel}>Pending Review</div>
         </div>
@@ -81,7 +81,7 @@ export default function ManageCompanies() {
       {/* Error Message */}
       {error && (
         <div style={styles.error}>
-          <div style={styles.errorIcon}>⚠️</div>
+          <div style={styles.errorIcon}></div>
           <div style={styles.errorContent}>
             <strong style={styles.errorTitle}>Error</strong>
             <div style={styles.errorMessage}>{error}</div>
@@ -101,7 +101,7 @@ export default function ManageCompanies() {
           </div>
         ) : companies.length === 0 ? (
           <div style={styles.emptyState}>
-            <div style={styles.emptyIcon}>🏢</div>
+            <div style={styles.emptyIcon}></div>
             <h3 style={styles.emptyTitle}>No Companies Found</h3>
             <p style={styles.emptyText}>
               {error ? "Unable to load companies. Please try again." : "No companies have registered yet."}
@@ -162,7 +162,7 @@ export default function ManageCompanies() {
                           Approving...
                         </div>
                       ) : (
-                        "✅ Approve Company"
+                        " Approve Company"
                       )}
                     </button>
                   </div>
@@ -503,5 +503,3 @@ const styles = {
     border: '1px solid #e1f5e1'
   }
 };
-
-export default ManageCompanies;
