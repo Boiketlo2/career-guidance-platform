@@ -25,8 +25,8 @@ const PostJobs = () => {
   // Check authentication and company approval status on component mount
   useEffect(() => {
     const token = localStorage.getItem('token');
-    console.log('🔍 Component Mount - Token:', token);
-    console.log('🔍 Company ID:', companyId);
+    console.log(' Component Mount - Token:', token);
+    console.log(' Company ID:', companyId);
     
     if (!token) {
       setError('Please log in to post a job');
@@ -45,9 +45,9 @@ const PostJobs = () => {
   const checkCompanyApprovalStatus = async () => {
     try {
       setCheckingStatus(true);
-      console.log('🔍 Checking company approval status...');
+      console.log(' Checking company approval status...');
       const profile = await companyAPI.getProfile(companyId);
-      console.log('🔍 Full company profile response:', profile);
+      console.log(' Full company profile response:', profile);
       
       // Handle different response structures
       let companyData = null;
@@ -68,8 +68,8 @@ const PostJobs = () => {
         isApproved = profile.isApproved === true;
       }
 
-      console.log('🔍 Extracted company data:', companyData);
-      console.log('🔍 Company approval status:', isApproved);
+      console.log(' Extracted company data:', companyData);
+      console.log(' Company approval status:', isApproved);
 
       setCompanyProfile(companyData);
       setCompanyApproved(isApproved);
@@ -78,7 +78,7 @@ const PostJobs = () => {
         setError('Your company is pending approval. You will be able to post jobs once approved by an administrator.');
       }
     } catch (err) {
-      console.error('🔍 Error checking company status:', err);
+      console.error(' Error checking company status:', err);
       setCompanyApproved(false);
       setError('Unable to verify company status. Please try again later.');
     } finally {
@@ -134,20 +134,20 @@ const PostJobs = () => {
         applicationDeadline: form.applicationDeadline
       };
 
-      console.log('📤 Posting job with payload:', payload);
+      console.log(' Posting job with payload:', payload);
 
       const res = await companyAPI.postJob(payload);
-      console.log('✅ Post Job Response:', res);
+      console.log(' Post Job Response:', res);
       
       if (res.success) {
-        alert("✅ Job posted successfully!");
+        alert(" Job posted successfully!");
         navigate(`/company/${companyId}/jobs`);
       } else {
         setError(res.error || "Job posting failed");
       }
     } catch (err) {
-      console.error("❌ Error posting job:", err);
-      console.error("❌ Error details:", {
+      console.error(" Error posting job:", err);
+      console.error(" Error details:", {
         message: err.message,
         code: err.code,
         status: err.response?.status,
@@ -237,7 +237,7 @@ const PostJobs = () => {
         <div className="glass-panel">
           <div className="text-center py-8">
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-4">
-              <span className="text-2xl">⏳</span>
+              <span className="text-2xl"></span>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Waiting for Approval</h1>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
@@ -308,7 +308,7 @@ const PostJobs = () => {
                 ? 'bg-green-100 text-green-700' 
                 : 'bg-yellow-100 text-yellow-700'
             }`}>
-              Status: {companyApproved === null ? 'Unknown' : companyApproved ? 'Approved ✅' : 'Pending Approval ⏳'}
+              Status: {companyApproved === null ? 'Unknown' : companyApproved ? 'Approved ' : 'Pending Approval '}
             </p>
           </div>
         </div>
@@ -330,8 +330,8 @@ const PostJobs = () => {
                     ? 'text-yellow-400' 
                     : 'text-red-400'
                 }`}>
-                  {error.includes('timeout') || error.includes('unavailable') ? '⚠️' : 
-                   error.includes('approved') || error.includes('pending') ? '⏳' : '❌'}
+                  {error.includes('timeout') || error.includes('unavailable') ? '' : 
+                   error.includes('approved') || error.includes('pending') ? '' : ''}
                 </span>
               </div>
               <div className="ml-3">
