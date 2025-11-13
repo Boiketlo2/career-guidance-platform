@@ -82,7 +82,7 @@ const AddFaculty = () => {
       
       {error && (
         <div style={styles.error}>
-          <div style={styles.errorIcon}></div>
+          <div style={styles.errorIcon}>⚠️</div>
           <div>
             <strong style={styles.errorTitle}>Error</strong>
             <div style={styles.errorMessage}>{error}</div>
