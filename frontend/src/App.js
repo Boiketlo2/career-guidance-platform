@@ -32,6 +32,7 @@ import JobPortal from "./pages/student/JobPortal";
 import StudentProfile from "./pages/student/Profile";
 import UploadDocuments from "./pages/student/UploadDocuments";
 import ViewAdmissions from "./pages/student/ViewAdmissions";
+import QualifiedCourses from "./pages/student/QualifiedCourses"; // NEW IMPORT
 
 // Company Pages
 import CompanyHome from "./pages/company/CompanyHome";
@@ -276,6 +277,15 @@ function App() {
                   element={
                     <ProtectedRoute requiredRole="student">
                       <ApplyCourses />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* NEW QUALIFIED COURSES ROUTE */}
+                <Route
+                  path="/qualified-courses"
+                  element={
+                    <ProtectedRoute requiredRole="student">
+                      <QualifiedCourses />
                     </ProtectedRoute>
                   }
                 />
