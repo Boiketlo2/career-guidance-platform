@@ -11,10 +11,36 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+    console.log('🔐 API Request Interceptor - Token:', token ? 'Exists' : 'MISSING');
+    console.log('🔐 API Request URL:', config.url);
+    
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log('🔐 Authorization header set');
+    } else {
+      console.warn('⚠️ No token found in localStorage');
+    }
+    
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+// Add response interceptor for debugging
+api.interceptors.response.use(
+  (response) => {
+    console.log('✅ API Response Success:', response.config.url, response.status);
+    return response;
+  },
+  (error) => {
+    console.error('❌ API Response Error:', {
+      url: error.config?.url,
+      status: error.response?.status,
+      data: error.response?.data,
+      headers: error.config?.headers
+    });
+    return Promise.reject(error);
+  }
 );
 
 export const companyAPI = {
@@ -24,6 +50,7 @@ export const companyAPI = {
   },
 
   postJob: async (jobData) => {
+    console.log('📤 Posting job data:', jobData);
     const { data } = await api.post('/company/jobs', jobData);
     return data;
   },
