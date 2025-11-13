@@ -253,26 +253,7 @@ const ApplyCourses = () => {
             </div>
           )}
 
-          <button
-            onClick={handleApply}
-            disabled={!selectedInstitution || !selectedCourse || applying}
-            style={{ 
-              ...styles.button, 
-              ...((selectedInstitution && selectedCourse && !applying) ? styles.buttonActive : styles.buttonDisabled) 
-            }}
-            onMouseEnter={(e) => {
-              if (selectedInstitution && selectedCourse && !applying) {
-                e.target.style.backgroundColor = '#333';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (selectedInstitution && selectedCourse && !applying) {
-                e.target.style.backgroundColor = '#1a1a1a';
-              }
-            }}
-          >
-            {applying ? "Submitting Application..." : "Submit Application"}
-          </button>
+          {/* Submit Application Button Removed - Students can only browse without applying */}
         </div>
       )}
 
