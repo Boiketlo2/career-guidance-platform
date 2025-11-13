@@ -20,6 +20,7 @@ const PostJobs = () => {
   const [error, setError] = useState('');
   const [companyApproved, setCompanyApproved] = useState(null);
   const [companyProfile, setCompanyProfile] = useState(null);
+  const [checkingStatus, setCheckingStatus] = useState(true);
 
   // Check authentication and company approval status on component mount
   useEffect(() => {
@@ -36,14 +37,17 @@ const PostJobs = () => {
     // Check if company exists and is approved
     if (companyId) {
       checkCompanyApprovalStatus();
+    } else {
+      setCheckingStatus(false);
     }
   }, [companyId, navigate]);
 
   const checkCompanyApprovalStatus = async () => {
     try {
+      setCheckingStatus(true);
       console.log('🔍 Checking company approval status...');
       const profile = await companyAPI.getProfile(companyId);
-      console.log('🔍 Company profile:', profile);
+      console.log('🔍 Full company profile response:', profile);
       
       // Handle different response structures
       let companyData = null;
@@ -51,14 +55,21 @@ const PostJobs = () => {
 
       if (profile.company) {
         companyData = profile.company;
-        isApproved = profile.company.isApproved;
+        isApproved = profile.company.isApproved === true;
       } else if (profile.data) {
         companyData = profile.data;
-        isApproved = profile.data.isApproved;
+        isApproved = profile.data.isApproved === true;
       } else if (profile.success && profile.data) {
         companyData = profile.data;
-        isApproved = profile.data.isApproved;
+        isApproved = profile.data.isApproved === true;
+      } else if (profile.isApproved !== undefined) {
+        // Direct isApproved property
+        companyData = profile;
+        isApproved = profile.isApproved === true;
       }
+
+      console.log('🔍 Extracted company data:', companyData);
+      console.log('🔍 Company approval status:', isApproved);
 
       setCompanyProfile(companyData);
       setCompanyApproved(isApproved);
@@ -70,6 +81,8 @@ const PostJobs = () => {
       console.error('🔍 Error checking company status:', err);
       setCompanyApproved(false);
       setError('Unable to verify company status. Please try again later.');
+    } finally {
+      setCheckingStatus(false);
     }
   };
 
@@ -84,6 +97,12 @@ const PostJobs = () => {
     // Prevent submission if company is not approved
     if (companyApproved === false) {
       setError('Your company is not approved to post jobs yet. Please complete the approval process first.');
+      return;
+    }
+
+    // Prevent submission if still checking status
+    if (checkingStatus) {
+      setError('Please wait while we verify your company status...');
       return;
     }
 
@@ -128,19 +147,30 @@ const PostJobs = () => {
       }
     } catch (err) {
       console.error("❌ Error posting job:", err);
-      console.error("❌ Error response:", err.response?.data);
+      console.error("❌ Error details:", {
+        message: err.message,
+        code: err.code,
+        status: err.response?.status,
+        data: err.response?.data
+      });
       
-      if (err.response?.status === 403) {
+      if (err.code === 'ECONNABORTED' || err.message === 'timeout exceeded') {
+        setError('Request timeout. The server is taking too long to respond. Please try again later.');
+      } else if (err.response?.status === 404) {
+        setError('Job posting service is currently unavailable. Please try again later or contact support.');
+      } else if (err.response?.status === 403) {
         const errorMessage = err.response?.data?.error;
         
         if (errorMessage === 'Company not approved to post jobs') {
           setCompanyApproved(false);
-          setError('Your company needs to be approved by an administrator before you can post jobs. Please contact support or wait for approval.');
+          setError('Your company needs to be approved by an administrator before you can post jobs.');
         } else {
-          setError('Access denied: ' + (errorMessage || 'Unknown authorization issue'));
+          setError('Access denied: ' + (errorMessage || 'Please check your permissions'));
         }
+      } else if (err.response?.status === 500) {
+        setError('Server error. Please try again later or contact support.');
       } else {
-        setError(err.response?.data?.error || err.response?.data?.message || err.message || "Failed to post job");
+        setError(err.response?.data?.error || err.response?.data?.message || err.message || "Failed to post job. Please check your connection and try again.");
       }
     } finally {
       setLoading(false);
@@ -149,7 +179,7 @@ const PostJobs = () => {
 
   // Check if form is valid for submission
   const isFormValid = () => {
-    if (companyApproved === false) {
+    if (companyApproved === false || checkingStatus) {
       return false;
     }
 
@@ -169,6 +199,9 @@ const PostJobs = () => {
 
   // Get button text based on state
   const getButtonText = () => {
+    if (checkingStatus) {
+      return "Checking Status...";
+    }
     if (companyApproved === false) {
       return "Waiting Approval";
     }
@@ -181,6 +214,21 @@ const PostJobs = () => {
       "Post Job"
     );
   };
+
+  // Show loading while checking status
+  if (checkingStatus) {
+    return (
+      <div className="auth-page">
+        <div className="glass-panel">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold text-gray-900">Checking Company Status</h2>
+            <p className="text-gray-600 mt-2">Please wait while we verify your company information...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // If company is not approved, show a more prominent message
   if (companyApproved === false) {
@@ -260,30 +308,37 @@ const PostJobs = () => {
                 ? 'bg-green-100 text-green-700' 
                 : 'bg-yellow-100 text-yellow-700'
             }`}>
-              Status: {companyApproved === null ? 'Checking...' : companyApproved ? 'Approved ✅' : 'Pending Approval ⏳'}
+              Status: {companyApproved === null ? 'Unknown' : companyApproved ? 'Approved ✅' : 'Pending Approval ⏳'}
             </p>
           </div>
         </div>
 
-        {error && companyApproved !== false && (
+        {error && (
           <div className={`mx-6 mt-4 border rounded-lg p-4 ${
-            error.includes('approved') || error.includes('pending') 
+            error.includes('timeout') || error.includes('unavailable') 
+              ? 'bg-orange-50 border-orange-200' 
+              : error.includes('approved') || error.includes('pending') 
               ? 'bg-yellow-50 border-yellow-200' 
               : 'bg-red-50 border-red-200'
           }`}>
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <span className={`${
-                  error.includes('approved') || error.includes('pending') 
+                  error.includes('timeout') || error.includes('unavailable') 
+                    ? 'text-orange-400' 
+                    : error.includes('approved') || error.includes('pending') 
                     ? 'text-yellow-400' 
                     : 'text-red-400'
                 }`}>
-                  {error.includes('approved') || error.includes('pending') ? '⚠️' : '❌'}
+                  {error.includes('timeout') || error.includes('unavailable') ? '⚠️' : 
+                   error.includes('approved') || error.includes('pending') ? '⏳' : '❌'}
                 </span>
               </div>
               <div className="ml-3">
                 <h3 className={`text-sm font-medium ${
-                  error.includes('approved') || error.includes('pending') 
+                  error.includes('timeout') || error.includes('unavailable') 
+                    ? 'text-orange-800' 
+                    : error.includes('approved') || error.includes('pending') 
                     ? 'text-yellow-800' 
                     : 'text-red-800'
                 }`}>
