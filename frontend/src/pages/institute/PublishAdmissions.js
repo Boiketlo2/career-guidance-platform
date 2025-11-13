@@ -57,16 +57,6 @@ const PublishAdmissions = () => {
     navigate(`/institute/${institutionId}/admissions`);
   };
 
-  const handleInputFocus = (e) => {
-    e.target.style.borderColor = styles.inputFocus.borderColor;
-    e.target.style.boxShadow = styles.inputFocus.boxShadow;
-  };
-
-  const handleInputBlur = (e) => {
-    e.target.style.borderColor = styles.input.borderColor;
-    e.target.style.boxShadow = styles.input.boxShadow;
-  };
-
   const getMinDate = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -91,7 +81,7 @@ const PublishAdmissions = () => {
 
       {error && (
         <div style={styles.error}>
-          <div style={styles.errorIcon}>⚠️</div>
+          <div style={styles.errorIcon}></div>
           <div style={styles.errorContent}>
             <strong style={styles.errorTitle}>Error</strong>
             <div style={styles.errorMessage}>{error}</div>
@@ -120,8 +110,6 @@ const PublishAdmissions = () => {
               name="title" 
               value={form.title} 
               onChange={handleChange}
-              onFocus={handleInputFocus}
-              onBlur={handleInputBlur}
               placeholder="e.g., Fall 2024 Admissions, Spring 2025 Intake"
               required 
               style={styles.input}
@@ -141,8 +129,6 @@ const PublishAdmissions = () => {
               name="description" 
               value={form.description} 
               onChange={handleChange}
-              onFocus={handleInputFocus}
-              onBlur={handleInputBlur}
               placeholder="Provide details about this admission cycle, requirements, important notes..."
               style={styles.textarea}
               disabled={loading}
@@ -162,8 +148,6 @@ const PublishAdmissions = () => {
               name="deadline" 
               value={form.deadline} 
               onChange={handleChange}
-              onFocus={handleInputFocus}
-              onBlur={handleInputBlur}
               min={getMinDate()}
               style={styles.input}
               disabled={loading}
@@ -189,7 +173,7 @@ const PublishAdmissions = () => {
                   Publishing Admissions...
                 </div>
               ) : (
-                "📢 Publish Admissions"
+                " Publish Admissions"
               )}
             </button>
             
@@ -208,28 +192,28 @@ const PublishAdmissions = () => {
           <h4 style={styles.sidePanelTitle}>Admission Guidelines</h4>
           <div style={styles.guidelines}>
             <div style={styles.guidelineItem}>
-              <div style={styles.guidelineIcon}>💡</div>
+              <div style={styles.guidelineIcon}></div>
               <div style={styles.guidelineContent}>
                 <strong>Clear Titles</strong>
                 <p>Use descriptive titles that indicate the intake period and year</p>
               </div>
             </div>
             <div style={styles.guidelineItem}>
-              <div style={styles.guidelineIcon}>📝</div>
+              <div style={styles.guidelineIcon}></div>
               <div style={styles.guidelineContent}>
                 <strong>Detailed Descriptions</strong>
                 <p>Include important requirements, dates, and special instructions</p>
               </div>
             </div>
             <div style={styles.guidelineItem}>
-              <div style={styles.guidelineIcon}>⏰</div>
+              <div style={styles.guidelineIcon}></div>
               <div style={styles.guidelineContent}>
                 <strong>Realistic Deadlines</strong>
                 <p>Set deadlines that give students enough time to apply</p>
               </div>
             </div>
             <div style={styles.guidelineItem}>
-              <div style={styles.guidelineIcon}>🔔</div>
+              <div style={styles.guidelineIcon}></div>
               <div style={styles.guidelineContent}>
                 <strong>Student Notifications</strong>
                 <p>Students will be notified when admissions are published</p>
@@ -321,12 +305,7 @@ const styles = {
     fontSize: "15px",
     transition: "all 0.2s ease",
     background: "#ffffff",
-    color: "#1a1a1a",
-    boxShadow: "none"
-  },
-  inputFocus: {
-    borderColor: "#1a1a1a",
-    boxShadow: "0 0 0 3px rgba(26, 26, 26, 0.1)"
+    color: "#1a1a1a"
   },
   textarea: { 
     padding: "12px 16px", 
@@ -339,8 +318,7 @@ const styles = {
     background: "#ffffff",
     color: "#1a1a1a",
     lineHeight: "1.5",
-    minHeight: 120,
-    boxShadow: "none"
+    minHeight: 120
   },
   helperText: {
     fontSize: "13px",
@@ -365,8 +343,7 @@ const styles = {
     fontSize: "15px",
     fontWeight: "600",
     flex: 2,
-    transition: "all 0.2s ease",
-    height: "48px"
+    transition: "all 0.2s ease"
   },
   primaryButtonDisabled: { 
     background: "#8c8c8c", 
@@ -376,8 +353,7 @@ const styles = {
     borderRadius: 6, 
     cursor: "not-allowed",
     fontSize: "15px",
-    flex: 2,
-    height: "48px"
+    flex: 2
   },
   secondaryButton: {
     background: "transparent",
@@ -389,8 +365,7 @@ const styles = {
     fontSize: "15px",
     fontWeight: "500",
     flex: 1,
-    transition: "all 0.2s ease",
-    height: "48px"
+    transition: "all 0.2s ease"
   },
   buttonContent: {
     display: "flex",
@@ -485,18 +460,6 @@ const styles = {
   },
   guidelineContent: {
     flex: 1
-  },
-  guidelineContent strong: {
-    display: "block",
-    fontSize: "14px",
-    color: "#1a1a1a",
-    marginBottom: 4
-  },
-  guidelineContent p: {
-    fontSize: "13px",
-    color: "#666",
-    margin: 0,
-    lineHeight: "1.4"
   }
 };
 
