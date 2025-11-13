@@ -37,17 +37,16 @@ export default function PublishAdmissions() {
       <style>{`
         .publish-admissions-page {
           min-height: 100vh;
-          background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(147, 197, 253, 0.15));
-          backdrop-filter: blur(8px);
+          background-color: #f8f9fa;
           padding: 60px 20px;
-          font-family: 'Poppins', sans-serif;
+          font-family: 'Arial', sans-serif;
         }
 
         .publish-title {
           text-align: center;
           font-size: 2.5rem;
           font-weight: 700;
-          color: #1e3a8a;
+          color: #000000;
           margin-bottom: 40px;
           text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
@@ -61,33 +60,34 @@ export default function PublishAdmissions() {
         }
 
         .admission-card {
-          background: rgba(255, 255, 255, 0.25);
-          border-radius: 16px;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          backdrop-filter: blur(12px);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+          background: #ffffff;
+          border-radius: 8px;
+          border: 1px solid #e0e0e0;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
           padding: 25px;
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
         }
 
         .admission-card:hover {
-          transform: translateY(-6px);
-          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+          transform: translateY(-4px);
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+          border-color: #333333;
         }
 
         .admission-title {
           font-size: 1.2rem;
           font-weight: 600;
-          color: #1e3a8a;
+          color: #000000;
           margin-bottom: 10px;
         }
 
         .admission-status {
           font-size: 0.95rem;
           margin-bottom: 15px;
+          color: #555555;
         }
 
         .status-published {
@@ -96,32 +96,34 @@ export default function PublishAdmissions() {
         }
 
         .status-pending {
-          color: #f59e0b;
+          color: #d97706;
           font-weight: 600;
         }
 
         .publish-btn {
           align-self: flex-start;
-          background: linear-gradient(90deg, #2563eb, #1e40af);
-          color: white;
+          background-color: #333333;
+          color: #ffffff;
           padding: 10px 18px;
           border: none;
-          border-radius: 12px;
+          border-radius: 5px;
           font-size: 0.95rem;
+          font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
         }
 
         .publish-btn:hover {
-          background: linear-gradient(90deg, #1d4ed8, #1e3a8a);
+          background-color: #000000;
           transform: translateY(-2px);
         }
 
         .loading, .no-admissions {
           text-align: center;
           font-size: 1.1rem;
-          color: #374151;
+          color: #333333;
           margin-top: 40px;
+          font-weight: 600;
         }
       `}</style>
 
