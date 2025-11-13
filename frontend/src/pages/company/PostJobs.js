@@ -19,6 +19,7 @@ const PostJobs = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [companyApproved, setCompanyApproved] = useState(null);
+  const [companyProfile, setCompanyProfile] = useState(null);
 
   // Check authentication and company approval status on component mount
   useEffect(() => {
@@ -41,44 +42,54 @@ const PostJobs = () => {
   const checkCompanyApprovalStatus = async () => {
     try {
       console.log('🔍 Checking company approval status...');
-      const companyProfile = await companyAPI.getProfile(companyId);
-      console.log('🔍 Company profile:', companyProfile);
+      const profile = await companyAPI.getProfile(companyId);
+      console.log('🔍 Company profile:', profile);
       
-      if (companyProfile.company) {
-        const isApproved = companyProfile.company.isApproved;
-        console.log('🔍 Company approval status:', isApproved);
-        setCompanyApproved(isApproved);
-        
-        if (!isApproved) {
-          setError('Your company is pending approval. You will be able to post jobs once approved by an administrator.');
-        }
-      } else if (companyProfile.success && companyProfile.data) {
-        // Alternative response structure
-        const isApproved = companyProfile.data.isApproved;
-        console.log('🔍 Company approval status (alt):', isApproved);
-        setCompanyApproved(isApproved);
-        
-        if (!isApproved) {
-          setError('Your company is pending approval. You will be able to post jobs once approved by an administrator.');
-        }
+      // Handle different response structures
+      let companyData = null;
+      let isApproved = false;
+
+      if (profile.company) {
+        companyData = profile.company;
+        isApproved = profile.company.isApproved;
+      } else if (profile.data) {
+        companyData = profile.data;
+        isApproved = profile.data.isApproved;
+      } else if (profile.success && profile.data) {
+        companyData = profile.data;
+        isApproved = profile.data.isApproved;
+      }
+
+      setCompanyProfile(companyData);
+      setCompanyApproved(isApproved);
+      
+      if (!isApproved) {
+        setError('Your company is pending approval. You will be able to post jobs once approved by an administrator.');
       }
     } catch (err) {
       console.error('🔍 Error checking company status:', err);
       setCompanyApproved(false);
+      setError('Unable to verify company status. Please try again later.');
     }
   };
 
   const handleChange = (e) => {
+    if (companyApproved === false) return; // Prevent changes if not approved
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Prevent submission if company is not approved
+    if (companyApproved === false) {
+      setError('Your company is not approved to post jobs yet. Please complete the approval process first.');
+      return;
+    }
+
     setError('');
 
     const token = localStorage.getItem('token');
-    console.log('🚀 Form Submit - Token exists:', !!token);
-
     if (!token) {
       setError('Please log in to post a job');
       navigate('/login');
@@ -87,12 +98,6 @@ const PostJobs = () => {
 
     if (!companyId) {
       setError("Company ID is required");
-      return;
-    }
-
-    // Double-check approval status before submitting
-    if (companyApproved === false) {
-      setError('Your company is not approved to post jobs yet. Please contact support.');
       return;
     }
 
@@ -125,24 +130,15 @@ const PostJobs = () => {
       console.error("❌ Error posting job:", err);
       console.error("❌ Error response:", err.response?.data);
       
-      // Handle specific error cases
       if (err.response?.status === 403) {
         const errorMessage = err.response?.data?.error;
         
         if (errorMessage === 'Company not approved to post jobs') {
-          setError('Your company needs to be approved by an administrator before you can post jobs. Please contact support or wait for approval.');
           setCompanyApproved(false);
-        } else if (errorMessage === 'No token provided') {
-          setError('Session expired. Please log in again.');
-          localStorage.removeItem('token');
-          setTimeout(() => navigate('/login'), 2000);
+          setError('Your company needs to be approved by an administrator before you can post jobs. Please contact support or wait for approval.');
         } else {
           setError('Access denied: ' + (errorMessage || 'Unknown authorization issue'));
         }
-      } else if (err.response?.status === 401) {
-        setError('Session expired. Please log in again.');
-        localStorage.removeItem('token');
-        setTimeout(() => navigate('/login'), 2000);
       } else {
         setError(err.response?.data?.error || err.response?.data?.message || err.message || "Failed to post job");
       }
@@ -153,6 +149,10 @@ const PostJobs = () => {
 
   // Check if form is valid for submission
   const isFormValid = () => {
+    if (companyApproved === false) {
+      return false;
+    }
+
     const token = localStorage.getItem('token');
     const hasRequiredFields = (
       form.title.trim() &&
@@ -163,11 +163,6 @@ const PostJobs = () => {
       form.applicationDeadline &&
       !loading
     );
-    
-    // If we know company is not approved, disable the button
-    if (companyApproved === false) {
-      return false;
-    }
     
     return token && hasRequiredFields;
   };
@@ -187,6 +182,69 @@ const PostJobs = () => {
     );
   };
 
+  // If company is not approved, show a more prominent message
+  if (companyApproved === false) {
+    return (
+      <div className="auth-page">
+        <div className="glass-panel">
+          <div className="text-center py-8">
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-4">
+              <span className="text-2xl">⏳</span>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Waiting for Approval</h1>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              Your company <strong>{companyProfile?.name || 'Unknown Company'}</strong> is currently under review and needs to be approved before you can post jobs.
+            </p>
+            
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 max-w-2xl mx-auto mb-6">
+              <h3 className="font-semibold text-yellow-800 mb-3">Next Steps:</h3>
+              <ul className="text-left space-y-2 text-yellow-700">
+                <li className="flex items-start">
+                  <span className="mr-2">•</span>
+                  <span>Complete your company profile with all required information</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="mr-2">•</span>
+                  <span>Contact our support team to expedite the approval process</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="mr-2">•</span>
+                  <span>Approval typically takes 24-48 hours after profile completion</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="flex justify-center space-x-4">
+              <button 
+                onClick={() => navigate(`/company/${companyId}/profile`)}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Complete Company Profile
+              </button>
+              <button 
+                onClick={() => navigate('/contact')}
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Contact Support
+              </button>
+              <button 
+                onClick={() => navigate(-1)}
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Go Back
+              </button>
+            </div>
+
+            <div className="mt-6 text-xs text-gray-500">
+              <p>Company ID: {companyId}</p>
+              <p>Status: Pending Approval</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="auth-page">
       <div className="glass-panel">
@@ -195,62 +253,42 @@ const PostJobs = () => {
           <p className="text-sm text-gray-600 mt-1">Fill in the details below to create a new, professional job posting</p>
           <div className="flex items-center space-x-4 mt-2">
             <p className="text-xs text-gray-500">Company ID: {companyId}</p>
-            <p className="text-xs px-2 py-1 rounded-full bg-gray-100">
+            <p className={`text-xs px-2 py-1 rounded-full ${
+              companyApproved === null 
+                ? 'bg-gray-100 text-gray-700' 
+                : companyApproved 
+                ? 'bg-green-100 text-green-700' 
+                : 'bg-yellow-100 text-yellow-700'
+            }`}>
               Status: {companyApproved === null ? 'Checking...' : companyApproved ? 'Approved ✅' : 'Pending Approval ⏳'}
             </p>
           </div>
         </div>
 
-        {error && (
+        {error && companyApproved !== false && (
           <div className={`mx-6 mt-4 border rounded-lg p-4 ${
-            error.includes('approved') || error.includes('pending') || error.includes('Waiting Approval') 
+            error.includes('approved') || error.includes('pending') 
               ? 'bg-yellow-50 border-yellow-200' 
               : 'bg-red-50 border-red-200'
           }`}>
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <span className={`${
-                  error.includes('approved') || error.includes('pending') || error.includes('Waiting Approval') 
+                  error.includes('approved') || error.includes('pending') 
                     ? 'text-yellow-400' 
                     : 'text-red-400'
                 }`}>
-                  {error.includes('approved') || error.includes('pending') || error.includes('Waiting Approval') ? '⚠️' : '❌'}
+                  {error.includes('approved') || error.includes('pending') ? '⚠️' : '❌'}
                 </span>
               </div>
               <div className="ml-3">
                 <h3 className={`text-sm font-medium ${
-                  error.includes('approved') || error.includes('pending') || error.includes('Waiting Approval') 
+                  error.includes('approved') || error.includes('pending') 
                     ? 'text-yellow-800' 
                     : 'text-red-800'
                 }`}>
                   {error}
                 </h3>
-                {(error.includes('approved') || error.includes('pending')) && (
-                  <div className="mt-2 text-sm text-yellow-700">
-                    <p className="font-medium">What you can do:</p>
-                    <ul className="list-disc list-inside mt-1 space-y-1">
-                      <li>Contact platform administrators for approval</li>
-                      <li>Complete your company profile if not done already</li>
-                      <li>Wait for the approval process (usually 24-48 hours)</li>
-                    </ul>
-                    <div className="mt-3 flex space-x-3">
-                      <button 
-                        type="button"
-                        onClick={() => navigate(`/company/${companyId}/profile`)}
-                        className="text-xs bg-yellow-100 text-yellow-800 px-3 py-1 rounded hover:bg-yellow-200 transition-colors"
-                      >
-                        Complete Profile
-                      </button>
-                      <button 
-                        type="button"
-                        onClick={() => window.open('mailto:support@careerplatform.com', '_blank')}
-                        className="text-xs bg-yellow-100 text-yellow-800 px-3 py-1 rounded hover:bg-yellow-200 transition-colors"
-                      >
-                        Contact Support
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -267,7 +305,7 @@ const PostJobs = () => {
                 value={form.title} 
                 onChange={handleChange} 
                 className="glass-input" 
-                disabled={companyApproved === false}
+                disabled={companyApproved === false || loading}
               />
             </div>
 
@@ -281,7 +319,7 @@ const PostJobs = () => {
                 onChange={handleChange} 
                 rows={4} 
                 className="glass-input" 
-                disabled={companyApproved === false}
+                disabled={companyApproved === false || loading}
               />
             </div>
 
@@ -295,7 +333,7 @@ const PostJobs = () => {
                 onChange={handleChange} 
                 rows={3} 
                 className="glass-input" 
-                disabled={companyApproved === false}
+                disabled={companyApproved === false || loading}
               />
               <p className="text-xs text-gray-500 mt-1">Separate with commas</p>
             </div>
@@ -310,7 +348,7 @@ const PostJobs = () => {
                 onChange={handleChange} 
                 rows={3} 
                 className="glass-input" 
-                disabled={companyApproved === false}
+                disabled={companyApproved === false || loading}
               />
               <p className="text-xs text-gray-500 mt-1">Separate with commas</p>
             </div>
@@ -324,7 +362,7 @@ const PostJobs = () => {
                 value={form.location} 
                 onChange={handleChange} 
                 className="glass-input" 
-                disabled={companyApproved === false}
+                disabled={companyApproved === false || loading}
               />
             </div>
 
@@ -335,7 +373,7 @@ const PostJobs = () => {
                 value={form.jobType} 
                 onChange={handleChange} 
                 className="glass-input" 
-                disabled={companyApproved === false}
+                disabled={companyApproved === false || loading}
               >
                 <option value="full-time">Full Time</option>
                 <option value="part-time">Part Time</option>
@@ -353,7 +391,7 @@ const PostJobs = () => {
                 value={form.salaryRange} 
                 onChange={handleChange} 
                 className="glass-input" 
-                disabled={companyApproved === false}
+                disabled={companyApproved === false || loading}
               />
             </div>
 
@@ -366,7 +404,7 @@ const PostJobs = () => {
                 value={form.applicationDeadline} 
                 onChange={handleChange} 
                 className="glass-input" 
-                disabled={companyApproved === false}
+                disabled={companyApproved === false || loading}
               />
             </div>
           </div>
