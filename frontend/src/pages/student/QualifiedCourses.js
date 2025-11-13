@@ -288,7 +288,7 @@ const QualifiedCourses = () => {
       {/* No Courses Message */}
       {qualifiedCourses.length === 0 && !loading && !error && (
         <div style={styles.emptyState}>
-          <div style={styles.emptyIcon}>📚</div>
+          <div style={styles.emptyIcon}></div>
           <h3 style={styles.emptyTitle}>No Qualified Courses Found</h3>
           <p style={styles.emptyText}>
             We couldn't find any courses that match your current qualifications. 
