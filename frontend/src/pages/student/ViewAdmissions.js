@@ -205,7 +205,7 @@ const ViewAdmissions = () => {
 
         {admission.status === "pending" && (
           <div style={styles.pendingMessage}>
-            <span style={styles.pendingIcon}>📋</span>
+            <span style={styles.pendingIcon}></span>
             <div>
               <strong>Under Review</strong> - The institution is currently reviewing your application. 
               Check back regularly for updates.
