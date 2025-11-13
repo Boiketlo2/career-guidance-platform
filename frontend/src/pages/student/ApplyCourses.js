@@ -125,7 +125,8 @@ const ApplyCourses = () => {
       alert("Please log in first.");
       return;
     }
-    navigate(`/profile/${user.uid}?tab=academic`);
+    // Fixed navigation - redirects to student profile with academic tab
+    navigate(`/student/${user.uid}/profile?tab=academic`);
   };
 
   return (
