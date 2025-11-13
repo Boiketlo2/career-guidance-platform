@@ -19,15 +19,34 @@ const PostJobs = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Check authentication on component mount
+  // Check authentication and company existence on component mount
   useEffect(() => {
     const token = localStorage.getItem('token');
+    console.log('🔍 Component Mount - Token:', token);
+    console.log('🔍 Company ID:', companyId);
+    
     if (!token) {
       setError('Please log in to post a job');
-      // Optional: redirect to login after showing error
       setTimeout(() => navigate('/login'), 2000);
+      return;
     }
-  }, [navigate]);
+
+    // Optional: Check if company exists
+    if (companyId) {
+      checkCompanyExists();
+    }
+  }, [companyId, navigate]);
+
+  const checkCompanyExists = async () => {
+    try {
+      console.log('🔍 Checking if company exists:', companyId);
+      const company = await companyAPI.checkCompanyExists(companyId);
+      console.log('🔍 Company found:', company);
+    } catch (err) {
+      console.error('🔍 Company check failed:', err);
+      setError('Company not found or access denied');
+    }
+  };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -37,8 +56,11 @@ const PostJobs = () => {
     e.preventDefault();
     setError('');
 
-    // Check authentication before submitting
+    // Debug authentication
     const token = localStorage.getItem('token');
+    console.log('🚀 Form Submit - Token exists:', !!token);
+    console.log('🚀 Form Submit - Token value:', token);
+
     if (!token) {
       setError('Please log in to post a job');
       navigate('/login');
@@ -64,10 +86,11 @@ const PostJobs = () => {
         applicationDeadline: form.applicationDeadline
       };
 
-      console.log('Posting job with payload:', payload);
+      console.log('📤 Posting job with payload:', payload);
+      console.log('📤 Full URL will be:', `https://career-guidance-platform-1-t41w.onrender.com/api/company/jobs`);
 
       const res = await companyAPI.postJob(payload);
-      console.log('Post Job Response:', res);
+      console.log('✅ Post Job Response:', res);
       
       if (res.success) {
         alert("✅ Job posted successfully!");
@@ -76,15 +99,16 @@ const PostJobs = () => {
         setError(res.error || "Job posting failed");
       }
     } catch (err) {
-      console.error("Error posting job:", err, "response:", err.response?.data);
+      console.error("❌ Error posting job:", err);
+      console.error("❌ Error response:", err.response?.data);
+      console.error("❌ Error status:", err.response?.status);
+      console.error("❌ Error headers:", err.response?.headers);
       
       // Handle specific error cases
       if (err.response?.status === 403) {
-        setError('Session expired. Please log in again.');
-        localStorage.removeItem('token');
-        setTimeout(() => navigate('/login'), 2000);
+        setError('Access denied. Please check if you have permission to post jobs for this company.');
       } else if (err.response?.status === 401) {
-        setError('Unauthorized access. Please log in.');
+        setError('Session expired. Please log in again.');
         localStorage.removeItem('token');
         setTimeout(() => navigate('/login'), 2000);
       } else {
@@ -115,6 +139,7 @@ const PostJobs = () => {
           <h1 className="text-2xl font-bold text-gray-900">Post a New Job</h1>
           <p className="text-sm text-gray-600 mt-1">Fill in the details below to create a new, professional job posting</p>
           <p className="text-xs text-gray-500 mt-1">Company ID: {companyId}</p>
+          <p className="text-xs text-gray-500 mt-1">Token: {localStorage.getItem('token') ? 'Exists' : 'Missing'}</p>
         </div>
 
         {error && (
@@ -133,6 +158,7 @@ const PostJobs = () => {
         )}
 
         <form onSubmit={handleSubmit} className="p-4">
+          {/* Your existing form fields remain the same */}
           <div className="glass-form-grid">
             <div className="glass-full">
               <label className="block text-sm font-medium text-gray-700 mb-2">Job Title *</label>
