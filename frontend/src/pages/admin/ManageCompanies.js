@@ -14,26 +14,24 @@ export default function ManageCompanies() {
       const res = await adminAPI.getCompanies();
       if (res.success) setCompanies(res.companies);
       else setError(res.error || "Failed to fetch companies");
-    } catch (err) {
-      console.error(err);
+    } catch (err) { 
+      console.error(err); 
       setError("Failed to fetch companies. Please try again.");
-    } finally {
-      setLoading(false);
+    } finally { 
+      setLoading(false); 
     }
   };
 
-  useEffect(() => {
-    fetchCompanies();
-  }, []);
+  useEffect(() => { fetchCompanies(); }, []);
 
   const handleApprove = async (id, companyName) => {
     setUpdating(id);
     setError("");
-    try {
-      await adminAPI.approveCompany(id);
-      fetchCompanies();
-    } catch (err) {
-      console.error(err);
+    try { 
+      await adminAPI.approveCompany(id); 
+      fetchCompanies(); 
+    } catch (err) { 
+      console.error(err); 
       setError(`Failed to approve ${companyName}. Please try again.`);
     } finally {
       setUpdating(null);
@@ -111,46 +109,34 @@ export default function ManageCompanies() {
             </button>
           </div>
         ) : (
-          <div style={styles.companiesGrid}>
+          <div style={styles.companiesList}>
             {companies.map((company) => (
               <div 
                 key={company.id} 
-                style={styles.companyCard}
-                className="company-card-hover"
+                style={styles.companyItem}
+                className="company-item-hover"
               >
-                <div style={styles.cardHeader}>
+                <div style={styles.companyMain}>
                   <div style={styles.companyAvatar}>
                     {company.name?.charAt(0) || 'C'}
                   </div>
                   <div style={styles.companyInfo}>
                     <h3 style={styles.companyName}>{company.name}</h3>
                     <p style={styles.companyEmail}>{company.email || 'No email provided'}</p>
+                    {company.industry && (
+                      <p style={styles.companyIndustry}>{company.industry}</p>
+                    )}
                   </div>
                 </div>
-
-                <div style={styles.companyDetails}>
-                  {company.industry && (
-                    <div style={styles.detailItem}>
-                      <span style={styles.detailLabel}>Industry:</span>
-                      <span style={styles.detailValue}>{company.industry}</span>
-                    </div>
-                  )}
-                  {company.location && (
-                    <div style={styles.detailItem}>
-                      <span style={styles.detailLabel}>Location:</span>
-                      <span style={styles.detailValue}>{company.location}</span>
-                    </div>
-                  )}
-                  <div style={styles.detailItem}>
-                    <span style={styles.detailLabel}>Status:</span>
-                    <span style={company.approved ? styles.statusApproved : styles.statusPending}>
-                      {company.approved ? "Approved" : "Pending Approval"}
-                    </span>
-                  </div>
+                
+                <div style={styles.companyStatus}>
+                  <span style={company.approved ? styles.statusApproved : styles.statusPending}>
+                    {company.approved ? "✓ Approved" : "Pending Approval"}
+                  </span>
                 </div>
 
                 {!company.approved && (
-                  <div style={styles.cardActions}>
+                  <div style={styles.companyActions}>
                     <button
                       onClick={() => handleApprove(company.id, company.name)}
                       disabled={updating === company.id}
@@ -162,15 +148,9 @@ export default function ManageCompanies() {
                           Approving...
                         </div>
                       ) : (
-                        " Approve Company"
+                        "Approve Company"
                       )}
                     </button>
-                  </div>
-                )}
-
-                {company.approved && (
-                  <div style={styles.approvedBadge}>
-                    ✓ Approved
                   </div>
                 )}
               </div>
@@ -185,12 +165,12 @@ export default function ManageCompanies() {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
-        .company-card-hover {
+        .company-item-hover {
           transition: all 0.3s ease;
         }
-        .company-card-hover:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        .company-item-hover:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
       `}</style>
     </div>
@@ -362,29 +342,33 @@ const styles = {
     fontWeight: '500',
     transition: 'all 0.2s ease'
   },
-  companiesGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-    gap: '24px'
+  companiesList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+    maxWidth: '800px',
+    margin: '0 auto'
   },
-  companyCard: {
+  companyItem: {
     background: '#ffffff',
-    padding: '28px',
+    padding: '24px',
     borderRadius: '12px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
     border: '1px solid #e1e5e9',
-    transition: 'all 0.3s ease',
-    position: 'relative'
-  },
-  cardHeader: {
     display: 'flex',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '20px'
+  },
+  companyMain: {
+    display: 'flex',
+    alignItems: 'center',
     gap: '16px',
-    marginBottom: '20px'
+    flex: 1
   },
   companyAvatar: {
-    width: '50px',
-    height: '50px',
+    width: '48px',
+    height: '48px',
     borderRadius: '50%',
     background: '#1a1a1a',
     color: '#ffffff',
@@ -392,7 +376,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     fontWeight: '600',
-    fontSize: '18px',
+    fontSize: '16px',
     flexShrink: 0
   },
   companyInfo: {
@@ -408,57 +392,47 @@ const styles = {
   companyEmail: {
     fontSize: '14px',
     color: '#666',
-    margin: 0
+    margin: '0 0 4px 0'
   },
-  companyDetails: {
+  companyIndustry: {
+    fontSize: '13px',
+    color: '#8c8c8c',
+    margin: 0,
+    fontStyle: 'italic'
+  },
+  companyStatus: {
     display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    marginBottom: '20px'
-  },
-  detailItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-  detailLabel: {
-    fontSize: '14px',
-    color: '#666',
-    fontWeight: '500'
-  },
-  detailValue: {
-    fontSize: '14px',
-    color: '#1a1a1a',
-    fontWeight: '400'
+    alignItems: 'center',
+    minWidth: '120px'
   },
   statusApproved: {
-    fontSize: '13px',
+    fontSize: '14px',
     color: '#0f7a0f',
     fontWeight: '600',
     background: '#f0f9f0',
-    padding: '4px 8px',
+    padding: '6px 12px',
     borderRadius: '12px',
     border: '1px solid #e1f5e1'
   },
   statusPending: {
-    fontSize: '13px',
+    fontSize: '14px',
     color: '#dc2626',
     fontWeight: '600',
     background: '#fef2f2',
-    padding: '4px 8px',
+    padding: '6px 12px',
     borderRadius: '12px',
     border: '1px solid #fecaca'
   },
-  cardActions: {
-    marginTop: '16px',
-    paddingTop: '20px',
-    borderTop: '1px solid #f0f0f0'
+  companyActions: {
+    display: 'flex',
+    alignItems: 'center',
+    minWidth: '140px'
   },
   approveButton: {
     background: '#0f7a0f',
     color: '#ffffff',
     border: 'none',
-    padding: '12px 20px',
+    padding: '10px 16px',
     borderRadius: '6px',
     cursor: 'pointer',
     fontSize: '14px',
@@ -470,7 +444,7 @@ const styles = {
     background: '#8c8c8c',
     color: '#ffffff',
     border: 'none',
-    padding: '12px 20px',
+    padding: '10px 16px',
     borderRadius: '6px',
     cursor: 'not-allowed',
     fontSize: '14px',
@@ -489,17 +463,7 @@ const styles = {
     borderTop: '2px solid #ffffff',
     borderRadius: '50%',
     animation: 'spin 1s linear infinite'
-  },
-  approvedBadge: {
-    position: 'absolute',
-    top: '20px',
-    right: '20px',
-    background: '#f0f9f0',
-    color: '#0f7a0f',
-    padding: '6px 12px',
-    borderRadius: '12px',
-    fontSize: '12px',
-    fontWeight: '600',
-    border: '1px solid #e1f5e1'
   }
 };
+
+export default ManageCompanies;
