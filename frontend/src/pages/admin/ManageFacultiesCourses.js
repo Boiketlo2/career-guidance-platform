@@ -134,17 +134,17 @@ export default function ManageFacultiesCourses() {
       {/* Statistics Overview */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}>🏛️</div>
+          <div style={styles.statIcon}></div>
           <div style={styles.statNumber}>{stats.totalInstitutions}</div>
           <div style={styles.statLabel}>Institutions</div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}>📚</div>
+          <div style={styles.statIcon}></div>
           <div style={styles.statNumber}>{stats.totalFaculties}</div>
           <div style={styles.statLabel}>Faculties</div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statIcon}>🎓</div>
+          <div style={styles.statIcon}></div>
           <div style={styles.statNumber}>{stats.totalCourses}</div>
           <div style={styles.statLabel}>Courses</div>
         </div>
@@ -153,7 +153,7 @@ export default function ManageFacultiesCourses() {
       {/* Messages */}
       {error && (
         <div style={styles.error}>
-          <div style={styles.errorIcon}>⚠️</div>
+          <div style={styles.errorIcon}></div>
           <div style={styles.errorContent}>
             <strong style={styles.errorTitle}>Error</strong>
             <div style={styles.errorMessage}>{error}</div>
@@ -180,7 +180,7 @@ export default function ManageFacultiesCourses() {
           </div>
         ) : institutions.length === 0 ? (
           <div style={styles.emptyState}>
-            <div style={styles.emptyIcon}>🏛️</div>
+            <div style={styles.emptyIcon}></div>
             <h3 style={styles.emptyTitle}>No Institutions Found</h3>
             <p style={styles.emptyText}>
               {error ? "Unable to load institutions. Please try again." : "No institutions are registered in the system."}
@@ -267,7 +267,7 @@ export default function ManageFacultiesCourses() {
                               Adding...
                             </div>
                           ) : (
-                            "💾 Save Faculty"
+                            " Save Faculty"
                           )}
                         </button>
                       </div>
@@ -364,7 +364,7 @@ export default function ManageFacultiesCourses() {
                               Adding...
                             </div>
                           ) : (
-                            "💾 Save Course"
+                            " Save Course"
                           )}
                         </button>
                       </div>
