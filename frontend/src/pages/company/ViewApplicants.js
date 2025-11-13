@@ -109,7 +109,7 @@ const ViewApplicants = () => {
 
         {jobs.length === 0 ? (
           <div style={styles.emptyState}>
-            <div style={styles.emptyStateIcon}>👥</div>
+            <div style={styles.emptyStateIcon}></div>
             <h3 style={styles.emptyStateTitle}>No jobs posted yet</h3>
             <p style={styles.emptyStateText}>Post a job to start receiving applications</p>
           </div>
@@ -152,7 +152,7 @@ const ViewApplicants = () => {
 
                 {applicants.length === 0 ? (
                   <div style={styles.noApplicants}>
-                    <div style={styles.noApplicantsIcon}>📝</div>
+                    <div style={styles.noApplicantsIcon}></div>
                     <h3 style={styles.noApplicantsTitle}>No applicants yet</h3>
                     <p style={styles.noApplicantsText}>Applications will appear here when students apply</p>
                   </div>
