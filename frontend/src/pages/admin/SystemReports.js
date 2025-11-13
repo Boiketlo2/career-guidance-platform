@@ -37,105 +37,251 @@ export default function SystemReports() {
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <style>{`
+        .system-reports-container {
+          padding: 2rem;
+          min-height: 100vh;
+          background-color: #f8f9fa;
+          font-family: 'Arial', sans-serif;
+        }
+        
         .report-card {
-          background: white;
-          border-radius: 12px;
+          background: #ffffff;
+          border-radius: 8px;
           padding: 1.5rem;
-          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-          transition: transform 0.2s, box-shadow 0.2s;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          border: 1px solid #e0e0e0;
+          transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
         }
+        
         .report-card:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+          transform: translateY(-4px);
+          box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+          border-color: #333333;
         }
+        
+        .stat-card {
+          background: #ffffff;
+          border-radius: 8px;
+          padding: 2rem 1.5rem;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          border: 1px solid #e0e0e0;
+          text-align: center;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .stat-number {
+          font-size: 2.5rem;
+          font-weight: 700;
+          margin: 0.5rem 0;
+        }
+        
+        .stat-label {
+          font-size: 1rem;
+          font-weight: 600;
+          color: #555555;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        
         .approve-btn {
-          background-color: #16a34a;
-          color: white;
-          padding: 0.4rem 1rem;
-          border-radius: 6px;
+          background-color: #333333;
+          color: #ffffff;
+          padding: 0.5rem 1.2rem;
+          border-radius: 5px;
           border: none;
           cursor: pointer;
-          transition: background 0.2s;
+          font-weight: 600;
+          transition: all 0.3s ease;
         }
+        
         .approve-btn:hover {
-          background-color: #15803d;
+          background-color: #000000;
+          transform: translateY(-1px);
+        }
+        
+        .tab-button {
+          padding: 0.75rem 1.5rem;
+          border-radius: 5px;
+          border: 1px solid #e0e0e0;
+          background: #ffffff;
+          color: #333333;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+          background: #333333;
+          color: #ffffff;
+          border-color: #333333;
+        }
+        
+        .tab-button:hover:not(.active) {
+          background: #f5f5f5;
+          border-color: #cccccc;
+        }
+        
+        .company-card {
+          background: #ffffff;
+          border-radius: 8px;
+          padding: 1.5rem;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          border: 1px solid #e0e0e0;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          transition: all 0.3s ease;
+        }
+        
+        .company-card:hover {
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          border-color: #333333;
+        }
+        
+        .status-approved {
+          color: #16a34a;
+          font-weight: 600;
+        }
+        
+        .status-pending {
+          color: #d97706;
+          font-weight: 600;
+        }
+        
+        .page-title {
+          text-align: center;
+          font-size: 2.5rem;
+          font-weight: 700;
+          color: #000000;
+          margin-bottom: 2rem;
+          text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .tab-container {
+          display: flex;
+          justify-content: center;
+          gap: 1rem;
+          margin-bottom: 2rem;
+        }
+        
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 1.5rem;
+          max-width: 900px;
+          margin: 0 auto;
+        }
+        
+        .companies-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+          gap: 1.5rem;
+          max-width: 1000px;
+          margin: 0 auto;
+        }
+        
+        .loading-state {
+          text-align: center;
+          color: #333333;
+          font-size: 1.1rem;
+          font-weight: 600;
+          padding: 2rem;
         }
       `}</style>
 
-      <h1 className="text-3xl font-bold mb-6 text-center">
-        System Reports & Management
-      </h1>
+      <div className="system-reports-container">
+        <h1 className="page-title">
+          System Reports & Management
+        </h1>
 
-      <div className="flex justify-center space-x-4 mb-6">
-        <button
-          onClick={() => setActiveTab("summary")}
-          className={`px-4 py-2 rounded ${
-            activeTab === "summary"
-              ? "bg-blue-600 text-white"
-              : "bg-white text-gray-700"
-          }`}
-        >
-          Summary
-        </button>
-        <button
-          onClick={() => setActiveTab("companies")}
-          className={`px-4 py-2 rounded ${
-            activeTab === "companies"
-              ? "bg-blue-600 text-white"
-              : "bg-white text-gray-700"
-          }`}
-        >
-          Companies
-        </button>
-      </div>
+        <div className="tab-container">
+          <button
+            onClick={() => setActiveTab("summary")}
+            className={`tab-button ${activeTab === "summary" ? "active" : ""}`}
+          >
+            Summary Overview
+          </button>
+          <button
+            onClick={() => setActiveTab("companies")}
+            className={`tab-button ${activeTab === "companies" ? "active" : ""}`}
+          >
+            Company Management
+          </button>
+        </div>
 
-      {activeTab === "summary" && (
-        <div className="space-y-8 max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="report-card text-center">
-              <h2 className="text-lg font-semibold">Total Institutions</h2>
-              <p className="text-3xl font-bold text-blue-600">
-                {summary.totalInstitutions || 0}
-              </p>
-            </div>
-            <div className="report-card text-center">
-              <h2 className="text-lg font-semibold">Registered Users</h2>
-              <p className="text-3xl font-bold text-green-600">
-                {summary.totalUsers || 0}
-              </p>
-            </div>
-            <div className="report-card text-center">
-              <h2 className="text-lg font-semibold">Registered Companies</h2>
-              <p className="text-3xl font-bold text-purple-600">
-                {summary.totalCompanies || 0}
-              </p>
+        {activeTab === "summary" && (
+          <div className="space-y-8">
+            <div className="stats-grid">
+              <div className="stat-card">
+                <div className="stat-label">Total Institutions</div>
+                <div className="stat-number" style={{ color: "#000000" }}>
+                  {summary.totalInstitutions || 0}
+                </div>
+                <div style={{ color: "#666666", fontSize: "0.9rem" }}>
+                  Registered educational institutions
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-label">Registered Users</div>
+                <div className="stat-number" style={{ color: "#333333" }}>
+                  {summary.totalUsers || 0}
+                </div>
+                <div style={{ color: "#666666", fontSize: "0.9rem" }}>
+                  Students and institutional users
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-label">Registered Companies</div>
+                <div className="stat-number" style={{ color: "#555555" }}>
+                  {summary.totalCompanies || 0}
+                </div>
+                <div style={{ color: "#666666", fontSize: "0.9rem" }}>
+                  Partner companies for employment
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {activeTab === "companies" && (
-        <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {companies.map((c) => (
-            <div key={c.id} className="report-card flex justify-between items-center">
-              <span>
-                <strong>{c.name}</strong> —{" "}
-                <span className={c.status === "Approved" ? "text-green-600" : "text-yellow-600"}>
-                  {c.status}
-                </span>
-              </span>
-              {c.status !== "Approved" && (
-                <button
-                  onClick={() => approveCompany(c.id)}
-                  className="approve-btn"
-                >
-                  Approve
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+        {activeTab === "companies" && (
+          <div className="companies-grid">
+            {companies.length === 0 ? (
+              <div className="loading-state">
+                No companies registered yet.
+              </div>
+            ) : (
+              companies.map((c) => (
+                <div key={c.id} className="company-card">
+                  <div>
+                    <div style={{ fontWeight: "600", color: "#000000", marginBottom: "0.25rem" }}>
+                      {c.name}
+                    </div>
+                    <div style={{ fontSize: "0.9rem", color: "#555555" }}>
+                      Status:{" "}
+                      <span className={c.status === "Approved" ? "status-approved" : "status-pending"}>
+                        {c.status}
+                      </span>
+                    </div>
+                  </div>
+                  {c.status !== "Approved" && (
+                    <button
+                      onClick={() => approveCompany(c.id)}
+                      className="approve-btn"
+                    >
+                      Approve
+                    </button>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
